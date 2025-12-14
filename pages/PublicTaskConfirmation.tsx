@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Task, User, TaskStatus } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { CheckCircle, MapPin, Calendar, Clock, Star, MessageSquare, AlertTriangle, Send } from 'lucide-react';
+import { CheckCircle, MapPin, Calendar, Clock, Star, MessageSquare, AlertTriangle, Send, ExternalLink } from 'lucide-react';
 
 export const PublicTaskConfirmation: React.FC = () => {
   const [tasks, setTasks] = useLocalStorage<Task[]>('crm_tasks', []);
@@ -129,10 +129,34 @@ export const PublicTaskConfirmation: React.FC = () => {
                     </div>
                     <h2 className="text-2xl font-bold text-slate-900 mb-2">Спасибо!</h2>
                     <p className="text-slate-500 mb-6">Ваш отзыв принят. Мы рады, что вы выбрали нас.</p>
-                    <div className="inline-flex gap-1 justify-center">
+                    <div className="inline-flex gap-1 justify-center mb-8">
                         {[1,2,3,4,5].map(star => (
                             <Star key={star} size={24} className={`${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`} />
                         ))}
+                    </div>
+
+                    {/* 2GIS CTA Block */}
+                    <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-left relative overflow-hidden group">
+                        <div className="relative z-10">
+                            <h3 className="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                                <MapPin className="text-[#2ECC71]" size={20} />
+                                Оставьте отзыв в 2GIS
+                            </h3>
+                            <p className="text-slate-600 text-sm mb-4">
+                                Вам понравилось обслуживание? Будем очень благодарны, если вы поделитесь мнением на карте города.
+                            </p>
+                            <a 
+                                href="https://2gis.kz/aktau/firm/70000001081123283" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center gap-2 w-full py-3.5 bg-[#2ECC71] hover:bg-[#27AE60] text-white rounded-xl font-bold transition-all shadow-lg shadow-green-500/20 active:scale-95"
+                            >
+                                Перейти в 2GIS
+                                <ExternalLink size={18} />
+                            </a>
+                        </div>
+                        {/* Decorative circle */}
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-[#2ECC71]/10 rounded-full blur-2xl group-hover:bg-[#2ECC71]/20 transition-colors"></div>
                     </div>
                 </div>
             ) : (
@@ -215,13 +239,13 @@ export const PublicTaskConfirmation: React.FC = () => {
                         </div>
 
                         <div className="mb-6">
-                            <label className="block text-sm font-bold text-slate-700 mb-2">Комментарий (опционально)</label>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Комментарий (для внутреннего контроля)</label>
                             <textarea 
                                 rows={3}
                                 value={feedback}
                                 onChange={(e) => setFeedback(e.target.value)}
                                 className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none text-slate-900"
-                                placeholder="Всё отлично, спасибо!"
+                                placeholder="Например: Мастер приехал вовремя, всё отлично."
                             />
                         </div>
 
