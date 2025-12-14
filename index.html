@@ -56,20 +56,37 @@
         min-height: 100vh;
       }
 
-      /* Custom scrollbar */
+      /* Custom Scrollbar - Project Style (Blue Accent) */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: #3b82f6 transparent; /* Firefox: blue-500 */
+      }
+
+      /* WebKit Browsers (Chrome, Safari, Edge) */
       ::-webkit-scrollbar {
         width: 6px;
         height: 6px;
       }
+
       ::-webkit-scrollbar-track {
-        background: transparent; 
+        background: transparent;
+        margin: 4px;
       }
+
       ::-webkit-scrollbar-thumb {
-        background: #c7c7cc; 
-        border-radius: 10px;
+        background-color: #3b82f6; /* blue-500 */
+        border-radius: 20px;
+        border: 2px solid transparent; /* Creates padding around thumb */
+        background-clip: content-box; /* Makes the thumb look floating */
+        transition: background-color 0.2s ease;
       }
+
       ::-webkit-scrollbar-thumb:hover {
-        background: #aeaeb2; 
+        background-color: #2563eb; /* blue-600 */
+      }
+
+      ::-webkit-scrollbar-corner {
+        background: transparent;
       }
 
       /* Glass Utility */
