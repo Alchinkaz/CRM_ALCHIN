@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, UserRole, FinancialAccount, Transaction, AccountType } from '../types';
 import { ACCOUNTS, TRANSACTIONS } from '../mockData';
-import { Wallet, TrendingUp, TrendingDown, Plus, CreditCard, Landmark, DollarSign, Search, Filter, X, Save, ArrowDownLeft, ArrowUpRight, Calendar as CalendarIcon, ChevronDown, Check, ChevronLeft, ChevronRight, CornerDownRight, Hash, Edit2, Upload, AlertTriangle, FileText, Trash2, CheckCircle, CheckSquare, ArrowUpDown, ChevronUp, AlertOctagon, ShieldAlert, Scale, FileUp, RefreshCw, FileWarning, History, CalendarOff, Lock } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, Plus, CreditCard, Landmark, DollarSign, Search, Filter, X, Save, ArrowDownLeft, ArrowUpRight, Calendar as CalendarIcon, ChevronDown, Check, ChevronLeft, ChevronRight, CornerDownRight, Hash, Edit2, Upload, AlertTriangle, FileText, Trash2, CheckCircle, CheckSquare, ArrowUpDown, ChevronUp, AlertOctagon, ShieldAlert, Scale, FileUp, RefreshCw, FileWarning } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface FinancePageProps {
@@ -65,9 +65,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       duplicates: number;
       fileFinalBalance?: number; // From 1C file
       projectedBalance: number; // Current System Balance + Added Txs
-      isOutdated?: boolean; // Flag: Statement is NOT from today
-      statementDate?: string;
-  }>({ open: false, accountName: '', accountId: '', added: 0, duplicates: 0, projectedBalance: 0, isOutdated: false });
+  }>({ open: false, accountName: '', accountId: '', added: 0, duplicates: 0, projectedBalance: 0 });
 
   // --- NEW: CASH RECONCILIATION STATE ---
   const [cashReconcileAccount, setCashReconcileAccount] = useState<FinancialAccount | null>(null);
@@ -242,18 +240,45 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       if (!cashReconcileAccount || !cashActualBalance) return;
 
       const actual = parseFloat(cashActualBalance);
-      
-      // UPDATED: Simply update account balance, NO TRANSACTION created.
-      setAccounts(prev => prev.map(a => a.id === cashReconcileAccount.id ? { ...a, balance: actual } : a));
+      const diff = actual - cashReconcileAccount.balance;
+
+      if (Math.abs(diff) > 0) {
+          const correctionTx: Transaction = {
+              id: `fix_${Date.now()}`,
+              date: formatDate(new Date()),
+              amount: Math.abs(diff),
+              type: diff > 0 ? 'Income' : 'Expense',
+              category: 'Корректировка баланса',
+              accountId: cashReconcileAccount.id,
+              description: `Сверка кассы: ${diff > 0 ? 'Излишек' : 'Недостача'}`,
+              is1C: false
+          };
+          setTransactions(prev => [correctionTx, ...prev]);
+          setAccounts(prev => prev.map(a => a.id === cashReconcileAccount.id ? { ...a, balance: actual } : a));
+      }
+
       setCashReconcileAccount(null);
   };
 
   // --- 1C Import Reconciliation Logic ---
   const applyImportCorrection = () => {
-      // NOTE: This is only available if isOutdated is FALSE (i.e., today's statement)
       if (!importResult.fileFinalBalance && importResult.fileFinalBalance !== 0) return;
+      if (importResult.fileFinalBalance === importResult.projectedBalance) return;
+
+      const diff = importResult.fileFinalBalance - importResult.projectedBalance;
       
-      // UPDATED: Simply update account balance to match file, NO TRANSACTION created.
+      const correctionTx: Transaction = {
+          id: `imp_fix_${Date.now()}`,
+          date: formatDate(new Date()),
+          amount: Math.abs(diff),
+          type: diff > 0 ? 'Income' : 'Expense',
+          category: 'Корректировка по выписке',
+          accountId: importResult.accountId,
+          description: `Авто-корректировка при импорте. Выписка: ${importResult.fileFinalBalance}, Расчетный: ${importResult.projectedBalance}`,
+          is1C: true
+      };
+
+      setTransactions(prev => [correctionTx, ...prev]);
       setAccounts(prev => prev.map(a => a.id === importResult.accountId ? { ...a, balance: importResult.fileFinalBalance! } : a));
       
       // Close modal
@@ -269,7 +294,6 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
           const text = event.target?.result as string;
           parse1CFile(text);
       };
-      // FIX: Removed 'windows-1251' to use default/auto detection (often UTF-8 for modern systems)
       reader.readAsText(file); 
       e.target.value = '';
   };
@@ -288,12 +312,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
           if (upperLine.startsWith('СЕКЦИЯРАСЧСЧЕТ')) { currentSection = 'account'; continue; }
           else if (upperLine.startsWith('КОНЕЦРАСЧСЧЕТ')) { currentSection = ''; continue; }
           else if (upperLine.startsWith('СЕКЦИЯДОКУМЕНТ')) { currentSection = 'document'; continue; }
-          else if (upperLine.startsWith('КОНЕЦДОКУМЕНТА')) { 
-              if (Object.keys(currentDoc).length > 0) documents.push(currentDoc); 
-              currentDoc = {}; 
-              currentSection = ''; 
-              continue; 
-          }
+          else if (upperLine.startsWith('КОНЕЦДОКУМЕНТА')) { documents.push(currentDoc); currentDoc = {}; currentSection = ''; continue; }
 
           const [rawKey, ...values] = trimmed.split('=');
           const key = rawKey.trim().toUpperCase(); 
@@ -303,12 +322,10 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               if (key === 'РАСЧСЧЕТ') accountInfo.number = value;
               if (key === 'НАЧАЛЬНЫЙОСТАТОК') accountInfo.initialBalance = parseFloat(value);
               if (key === 'КОНЕЧНЫЙОСТАТОК') accountInfo.finalBalance = parseFloat(value);
-              if (key === 'ДАТАКОНЦА') accountInfo.endDate = value; // Capture End Date
           } else if (currentSection === 'document') {
               currentDoc[key] = value;
-          } else if (!currentSection) {
-              if (key === 'РАСЧСЧЕТ' && !accountInfo.number) accountInfo.number = value;
-              if (key === 'ДАТАКОНЦА') accountInfo.endDate = value; // Global header End Date
+          } else if (!currentSection && key === 'РАСЧСЧЕТ') {
+              if (!accountInfo.number) accountInfo.number = value;
           }
       }
 
@@ -317,8 +334,8 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
           if (existingAccount) {
               const { newTransactions } = getTransactionsFromDocs(documents, existingAccount.id, accountInfo.number);
               const totalFound = newTransactions.length;
-              // Allow import even if 0 new found, to show status
-              
+              if (totalFound === 0) { alert(`В файле не найдено транзакций для счета "${existingAccount.name}".`); return; }
+
               const uniqueTransactions = newTransactions.filter(newTx => {
                   return !transactions.some(existingTx => 
                       existingTx.accountId === newTx.accountId &&
@@ -335,20 +352,9 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               const transactionDelta = uniqueTransactions.reduce((acc, tx) => acc + (tx.type === 'Income' ? tx.amount : -tx.amount), 0);
               const newProjectedBalance = existingAccount.balance + transactionDelta;
 
-              // --- DATE CHECK LOGIC (STRICT) ---
-              const today = new Date();
-              const todayStr = `${String(today.getDate()).padStart(2, '0')}.${String(today.getMonth() + 1).padStart(2, '0')}.${today.getFullYear()}`;
-              
-              // Check if the file's end date matches today's date
-              const isOutdated = accountInfo.endDate !== todayStr;
-
               if (addedCount > 0) {
                   setTransactions(prev => [...uniqueTransactions, ...prev]);
-                  
-                  // ONLY update account balance if the statement is for TODAY
-                  if (!isOutdated) {
-                      setAccounts(prev => prev.map(a => a.id === existingAccount.id ? { ...a, balance: newProjectedBalance } : a));
-                  }
+                  setAccounts(prev => prev.map(a => a.id === existingAccount.id ? { ...a, balance: newProjectedBalance } : a));
               }
               
               setImportResult({ 
@@ -358,9 +364,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   added: addedCount, 
                   duplicates: duplicateCount,
                   fileFinalBalance: accountInfo.finalBalance, // From file
-                  projectedBalance: newProjectedBalance, // System calculated
-                  isOutdated: isOutdated,
-                  statementDate: accountInfo.endDate
+                  projectedBalance: newProjectedBalance // System calculated
               });
           } else {
               // ... (Same as before: Unknown Account logic)
@@ -374,7 +378,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               setPendingNewAccountDetails({ number: accountInfo.number, balance: accountInfo.initialBalance || 0, bankName: bankName });
               setIsUnknownAccountModalOpen(true);
           }
-      } else { alert('Не удалось определить номер счета в файле выписки. Проверьте, что файл не поврежден и соответствует формату 1С.'); }
+      } else { alert('Не удалось определить номер счета в файле выписки.'); }
   };
 
   const proceedToCreateAccount = () => {
@@ -1314,110 +1318,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
           )}
       </div>
 
-      {/* --- MODALS --- */}
-      {/* ... (Existing Tx Modal, Account Modal, Delete Confirmations) ... */}
-      
-      {/* --- MODAL: IMPORT RESULT --- */}
-      {importResult.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
-             {/* Header */}
-             <div className="p-6 bg-blue-50 border-b border-blue-100 flex items-center justify-center flex-col text-center">
-                 <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${importResult.added > 0 ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
-                     {importResult.isOutdated ? <CalendarOff size={28} className="text-red-500" /> : <CheckCircle size={28} />}
-                 </div>
-                 <h2 className="text-xl font-bold text-gray-900">Импорт завершен</h2>
-                 <p className="text-sm text-gray-500 mt-1">Счет: <span className="font-semibold">{importResult.accountName}</span></p>
-                 {importResult.isOutdated && (
-                     <span className="mt-2 inline-flex items-center gap-1 bg-red-100 text-red-800 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wide">
-                         <History size={12} /> Архивная выписка ({importResult.statementDate})
-                     </span>
-                 )}
-             </div>
-             
-             {/* Body */}
-             <div className="p-6 space-y-4">
-                 <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-center">
-                        <div className="text-xs text-gray-500 font-medium">Добавлено</div>
-                        <div className="text-lg font-bold text-green-600">+{importResult.added}</div>
-                    </div>
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-center">
-                        <div className="text-xs text-gray-500 font-medium">Дубликаты</div>
-                        <div className="text-lg font-bold text-orange-600">{importResult.duplicates}</div>
-                    </div>
-                 </div>
-
-                 {importResult.isOutdated ? (
-                     <div className="bg-red-50/50 border border-red-100 rounded-xl p-4 text-sm text-red-800 animate-pulse">
-                         <p className="font-bold flex items-center gap-2 mb-1"><AlertTriangle size={16}/> Внимание: Устаревшая выписка</p>
-                         <p className="opacity-90">
-                             Файл содержит данные за <b>{importResult.statementDate}</b>, но сегодня <b>{todayIso.split('-').reverse().join('.')}</b>.
-                             <br/><br/>
-                             Баланс счета <b>не был обновлен</b>, чтобы избежать ошибок. Транзакции добавлены только в историю.
-                             <br/>
-                             Пожалуйста, запросите в банке выписку за текущий день.
-                         </p>
-                     </div>
-                 ) : (
-                    /* Balance Check Logic (Only show if NOT outdated) */
-                    <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 space-y-3">
-                        <h4 className="text-sm font-bold text-blue-900 flex items-center gap-2">
-                            <Scale size={16} /> Сверка баланса по выписке
-                        </h4>
-                        
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-600">Конечный остаток (Файл):</span>
-                            <span className="font-bold text-gray-900">
-                                {importResult.fileFinalBalance !== undefined ? importResult.fileFinalBalance.toLocaleString() : 'Н/Д'} ₸
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-gray-600">Расчетный остаток (CRM):</span>
-                            <span className="font-bold text-gray-900">{importResult.projectedBalance.toLocaleString()} ₸</span>
-                        </div>
-
-                        {importResult.fileFinalBalance !== undefined && importResult.fileFinalBalance !== importResult.projectedBalance && (
-                            <div className="bg-yellow-50 p-2 rounded-lg border border-yellow-200 text-xs text-yellow-800 mt-2">
-                                <div className="font-bold flex items-center gap-1 mb-1">
-                                    <AlertTriangle size={12} /> Расхождение: {(importResult.fileFinalBalance - importResult.projectedBalance).toLocaleString()} ₸
-                                </div>
-                                Необходимо выровнять баланс, чтобы он соответствовал выписке банка за прошедший период.
-                            </div>
-                        )}
-                    </div>
-                 )}
-                 
-                 {importResult.added === 0 && importResult.duplicates === 0 && (
-                     <p className="text-center text-gray-500 text-sm">Нет данных для импорта.</p>
-                 )}
-             </div>
-             
-             {/* Footer */}
-             <div className="p-4 border-t border-gray-100 flex flex-col gap-2">
-                 {(!importResult.isOutdated && importResult.fileFinalBalance !== undefined && importResult.fileFinalBalance !== importResult.projectedBalance) ? (
-                     <button 
-                        onClick={applyImportCorrection}
-                        className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 transition-colors"
-                     >
-                        Скорректировать баланс
-                     </button>
-                 ) : (
-                    <button 
-                        onClick={() => setImportResult({...importResult, open: false})}
-                        className="w-full py-3 bg-black text-white rounded-xl font-bold shadow-md hover:bg-gray-800 transition-colors"
-                    >
-                        Отлично, закрыть
-                    </button>
-                 )}
-             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ... (Keep existing Account Modal and other modals) ... */}
-      
-      {/* Re-render existing modals to ensure they are present in file output (Account, Tx, etc.) */}
+      {/* --- MODAL: NEW TRANSACTION --- */}
       {isTxModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col">
@@ -1431,6 +1332,8 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
             </div>
             
             <form onSubmit={handleTxSubmit} className="p-6 space-y-4">
+              {/* ... existing form content ... */}
+              {/* Type Switcher */}
               <div className="flex bg-gray-100 p-1 rounded-xl">
                 <button
                   type="button"
@@ -1553,6 +1456,359 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
         </div>
       )}
 
+      {/* --- MODAL: UNKNOWN ACCOUNT WARNING --- */}
+      {isUnknownAccountModalOpen && pendingNewAccountDetails && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+              <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
+                  <div className="p-6 bg-red-50 border-b border-red-100 flex gap-4 items-start">
+                      <div className="p-2 bg-red-100 rounded-full text-red-600 shrink-0">
+                          <AlertTriangle size={24} />
+                      </div>
+                      <div>
+                          <h3 className="text-lg font-bold text-red-900">Счет не найден</h3>
+                          <p className="text-sm text-red-700 mt-1">
+                              В файле выписки указан счет, которого еще нет в вашей системе.
+                          </p>
+                      </div>
+                  </div>
+                  
+                  <div className="p-6 space-y-4">
+                      {/* ... existing modal content ... */}
+                      <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm">
+                          <div className="mb-2 flex justify-between">
+                              <span className="text-gray-500 font-medium">Номер счета:</span> 
+                              <span className="font-mono font-bold text-gray-900">{pendingNewAccountDetails.number}</span>
+                          </div>
+                          <div className="mb-2 flex justify-between">
+                              <span className="text-gray-500 font-medium">Банк:</span> 
+                              <span className="font-bold text-gray-900 text-right max-w-[200px] truncate">{pendingNewAccountDetails.bankName}</span>
+                          </div>
+                          <div className="flex justify-between">
+                              <span className="text-gray-500 font-medium">Остаток в файле:</span> 
+                              <span className="font-bold text-gray-900">{pendingNewAccountDetails.balance.toLocaleString()} ₸</span>
+                          </div>
+                      </div>
+
+                      <p className="text-sm text-gray-600">
+                          Чтобы продолжить импорт транзакций, необходимо сначала добавить этот счет в систему.
+                      </p>
+                  </div>
+
+                  <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                      <button 
+                          onClick={() => { setIsUnknownAccountModalOpen(false); setPendingImportTransactions(null); }}
+                          className="flex-1 px-4 py-2.5 text-gray-600 hover:bg-gray-200 rounded-xl transition-colors font-medium"
+                      >
+                          Отмена
+                      </button>
+                      <button 
+                          onClick={proceedToCreateAccount}
+                          className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-md font-bold transition-colors"
+                      >
+                          Создать этот счет
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
+
+      {/* --- MODAL: DELETE TRANSACTIONS CONFIRMATION --- */}
+      {isDeleteTxModalOpen && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                  <div className="p-6 text-center">
+                      <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Trash2 size={32} />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">Удалить транзакции?</h3>
+                      <p className="text-sm text-gray-500 mb-4">
+                          Вы выбрали <span className="font-bold text-gray-800">{selectedTxIds.size}</span> операций.
+                          <br/>
+                          Это действие отменит влияние этих операций на баланс счетов.
+                      </p>
+                      <div className="bg-red-50 p-3 rounded-lg border border-red-100 text-xs text-red-700 font-medium text-left flex items-start gap-2">
+                          <AlertTriangle size={14} className="shrink-0 mt-0.5" />
+                          <div>
+                              Действие необратимо. Удаленные транзакции нельзя будет восстановить.
+                          </div>
+                      </div>
+                  </div>
+                  <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                      <button 
+                          onClick={() => setIsDeleteTxModalOpen(false)}
+                          className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-xl transition-colors font-medium"
+                      >
+                          Отмена
+                      </button>
+                      <button 
+                          onClick={executeDeleteSelected}
+                          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 shadow-md font-bold transition-colors"
+                      >
+                          Да, удалить
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
+
+      {/* --- MODAL: CASH RECONCILE --- */}
+      {cashReconcileAccount && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                  <div className="p-6 border-b border-gray-100 bg-green-50 flex items-center justify-between">
+                      <h3 className="text-lg font-bold text-green-900 flex items-center gap-2">
+                          <Scale size={20} />
+                          Сверка кассы
+                      </h3>
+                      <button onClick={() => setCashReconcileAccount(null)} className="text-gray-400 hover:text-gray-600">
+                          <X size={20} />
+                      </button>
+                  </div>
+                  
+                  <form onSubmit={handleCashReconcileSubmit} className="p-6 space-y-4">
+                      <div className="text-center mb-4">
+                          <div className="text-sm text-gray-500 mb-1">Расчетный остаток по системе</div>
+                          <div className="text-3xl font-bold text-gray-900">{cashReconcileAccount.balance.toLocaleString()} ₸</div>
+                      </div>
+
+                      <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Фактический остаток (в наличии)</label>
+                          <input 
+                              autoFocus
+                              type="number" 
+                              required
+                              value={cashActualBalance}
+                              onChange={(e) => setCashActualBalance(e.target.value)}
+                              placeholder="Введите сумму"
+                              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 font-bold text-lg"
+                          />
+                      </div>
+
+                      {cashActualBalance && (
+                          <div className={`p-3 rounded-lg border text-sm font-medium flex justify-between items-center ${
+                              parseFloat(cashActualBalance) === cashReconcileAccount.balance 
+                              ? 'bg-green-100 border-green-200 text-green-800' 
+                              : 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                          }`}>
+                              <span>Разница:</span>
+                              <span className="font-bold">
+                                  {(parseFloat(cashActualBalance) - cashReconcileAccount.balance) > 0 ? '+' : ''}
+                                  {(parseFloat(cashActualBalance) - cashReconcileAccount.balance).toLocaleString()} ₸
+                              </span>
+                          </div>
+                      )}
+
+                      <button 
+                          type="submit"
+                          disabled={!cashActualBalance}
+                          className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                          Подтвердить остаток
+                      </button>
+                  </form>
+              </div>
+          </div>
+      )}
+
+      {/* --- MODAL: DELETE ACCOUNT CONFIRMATION --- */}
+      {deletingAccount && deleteStep > 0 && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                  
+                  {/* Step 1: Warning */}
+                  {deleteStep === 1 && (
+                      <>
+                        <div className="p-6 text-center">
+                            <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <AlertTriangle size={32} />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Удалить счет?</h3>
+                            <p className="text-sm text-gray-500 mb-1">
+                                Вы собираетесь удалить счет <span className="font-bold text-gray-800">"{deletingAccount.name}"</span>.
+                            </p>
+                            <p className="text-sm text-gray-500">
+                                Это действие требует подтверждения.
+                            </p>
+                        </div>
+                        <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                            <button 
+                                onClick={() => { setDeletingAccount(null); setDeleteStep(0); }}
+                                className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-xl transition-colors font-medium"
+                            >
+                                Отмена
+                            </button>
+                            <button 
+                                onClick={() => setDeleteStep(2)}
+                                className="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 shadow-md font-bold transition-colors"
+                            >
+                                Продолжить
+                            </button>
+                        </div>
+                      </>
+                  )}
+
+                  {/* Step 2: Critical Danger */}
+                  {deleteStep === 2 && (
+                      <>
+                        <div className="p-6 text-center bg-red-50">
+                            <div className="w-16 h-16 bg-white text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border-4 border-red-100">
+                                <AlertOctagon size={32} />
+                            </div>
+                            <h3 className="text-xl font-extrabold text-red-900 mb-2">ВНИМАНИЕ!</h3>
+                            <p className="text-sm text-red-800 mb-4 font-medium leading-relaxed">
+                                Если вы удалите этот счет, 
+                                <br/>
+                                <span className="text-base font-black underline decoration-red-400 decoration-2">ВСЕ {transactions.filter(t => t.accountId === deletingAccount.id).length} ТРАНЗАКЦИЙ</span>
+                                <br/>
+                                связанные с ним, будут удалены безвозвратно!
+                            </p>
+                            <div className="text-xs text-red-600/80 bg-red-100/50 p-2 rounded-lg border border-red-200">
+                                Это действие нельзя отменить. Баланс будет пересчитан.
+                            </div>
+                        </div>
+                        <div className="p-4 bg-white border-t border-red-100 flex gap-3">
+                            <button 
+                                onClick={() => { setDeletingAccount(null); setDeleteStep(0); }}
+                                className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors font-medium"
+                            >
+                                Отмена
+                            </button>
+                            <button 
+                                onClick={() => setDeleteStep(3)}
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 shadow-lg shadow-red-500/30 font-bold transition-colors"
+                            >
+                                Я понимаю, продолжить
+                            </button>
+                        </div>
+                      </>
+                  )}
+
+                  {/* Step 3: Manual Confirmation */}
+                  {deleteStep === 3 && (
+                      <>
+                        <div className="p-6 bg-white">
+                            <div className="flex flex-col items-center text-center mb-4">
+                                <div className="w-12 h-12 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center mb-3">
+                                    <ShieldAlert size={24} />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-1">Финальная проверка</h3>
+                                <p className="text-sm text-gray-500">
+                                    Чтобы подтвердить удаление, введите название счета <br/>
+                                    <span className="font-mono font-bold text-black bg-gray-100 px-1 rounded select-all">{deletingAccount.name}</span>
+                                </p>
+                            </div>
+                            
+                            <input 
+                                autoFocus
+                                type="text" 
+                                value={deleteConfirmationName}
+                                onChange={(e) => setDeleteConfirmationName(e.target.value)}
+                                placeholder="Введите название счета"
+                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all font-medium text-center"
+                            />
+                        </div>
+                        <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                            <button 
+                                onClick={() => { setDeletingAccount(null); setDeleteStep(0); setDeleteConfirmationName(''); }}
+                                className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-xl transition-colors font-medium"
+                            >
+                                Отмена
+                            </button>
+                            <button 
+                                onClick={executeDeleteAccount}
+                                disabled={deleteConfirmationName !== deletingAccount.name}
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 shadow-md font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Удалить навсегда
+                            </button>
+                        </div>
+                      </>
+                  )}
+              </div>
+          </div>
+      )}
+
+      {/* --- MODAL: IMPORT RESULT --- */}
+      {importResult.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
+             {/* Header */}
+             <div className="p-6 bg-blue-50 border-b border-blue-100 flex items-center justify-center flex-col text-center">
+                 <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${importResult.added > 0 ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
+                     <CheckCircle size={28} />
+                 </div>
+                 <h2 className="text-xl font-bold text-gray-900">Импорт завершен</h2>
+                 <p className="text-sm text-gray-500 mt-1">Счет: <span className="font-semibold">{importResult.accountName}</span></p>
+             </div>
+             
+             {/* Body */}
+             <div className="p-6 space-y-4">
+                 <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-center">
+                        <div className="text-xs text-gray-500 font-medium">Добавлено</div>
+                        <div className="text-lg font-bold text-green-600">+{importResult.added}</div>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-center">
+                        <div className="text-xs text-gray-500 font-medium">Дубликаты</div>
+                        <div className="text-lg font-bold text-orange-600">{importResult.duplicates}</div>
+                    </div>
+                 </div>
+
+                 {/* Balance Check Logic */}
+                 <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 space-y-3">
+                     <h4 className="text-sm font-bold text-blue-900 flex items-center gap-2">
+                         <Scale size={16} /> Сверка баланса по выписке
+                     </h4>
+                     
+                     <div className="flex justify-between items-center text-sm">
+                         <span className="text-gray-600">Конечный остаток (Файл):</span>
+                         <span className="font-bold text-gray-900">
+                             {importResult.fileFinalBalance !== undefined ? importResult.fileFinalBalance.toLocaleString() : 'Н/Д'} ₸
+                         </span>
+                     </div>
+                     <div className="flex justify-between items-center text-sm">
+                         <span className="text-gray-600">Расчетный остаток (CRM):</span>
+                         <span className="font-bold text-gray-900">{importResult.projectedBalance.toLocaleString()} ₸</span>
+                     </div>
+
+                     {importResult.fileFinalBalance !== undefined && importResult.fileFinalBalance !== importResult.projectedBalance && (
+                         <div className="bg-yellow-50 p-2 rounded-lg border border-yellow-200 text-xs text-yellow-800 mt-2">
+                             <div className="font-bold flex items-center gap-1 mb-1">
+                                 <AlertTriangle size={12} /> Расхождение: {(importResult.fileFinalBalance - importResult.projectedBalance).toLocaleString()} ₸
+                             </div>
+                             Необходимо выровнять баланс, чтобы он соответствовал выписке банка за прошедший период.
+                         </div>
+                     )}
+                 </div>
+                 
+                 {importResult.added === 0 && importResult.duplicates === 0 && (
+                     <p className="text-center text-gray-500 text-sm">Нет данных для импорта.</p>
+                 )}
+             </div>
+             
+             {/* Footer */}
+             <div className="p-4 border-t border-gray-100 flex flex-col gap-2">
+                 {(importResult.fileFinalBalance !== undefined && importResult.fileFinalBalance !== importResult.projectedBalance) ? (
+                     <button 
+                        onClick={applyImportCorrection}
+                        className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 transition-colors"
+                     >
+                        Скорректировать баланс
+                     </button>
+                 ) : (
+                    <button 
+                        onClick={() => setImportResult({...importResult, open: false})}
+                        className="w-full py-3 bg-black text-white rounded-xl font-bold shadow-md hover:bg-gray-800 transition-colors"
+                    >
+                        Отлично, закрыть
+                    </button>
+                 )}
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL: NEW / EDIT ACCOUNT --- */}
       {isAccountModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col">
@@ -1583,39 +1839,22 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center justify-between">
-                    Тип счета
-                    {editingAccount && editingAccount.balance !== 0 && (
-                        <span className="text-xs text-orange-600 font-normal flex items-center gap-1 bg-orange-50 px-2 py-0.5 rounded">
-                            <Lock size={10} /> Изменение заблокировано (есть баланс)
-                        </span>
-                    )}
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Тип счета</label>
                 <div className="grid grid-cols-3 gap-2">
                     {[
                       { id: 'Cash', label: 'Касса' }, 
                       { id: 'Bank', label: 'Банк' }, 
                       { id: 'SubAccount', label: 'Подсчет' }
-                    ].map(type => {
-                        // Lock changing type if account exists and has balance
-                        const isLocked = !!editingAccount && editingAccount.balance !== 0;
-                        
-                        return (
-                            <button
-                                key={type.id}
-                                type="button"
-                                disabled={isLocked}
-                                onClick={() => setAccForm({...accForm, type: type.id as AccountType, accountNumber: '', parentId: ''})}
-                                className={`py-2 px-1 rounded-lg border text-sm font-medium transition-colors ${
-                                    accForm.type === type.id 
-                                        ? 'bg-blue-50 border-blue-500 text-blue-700' 
-                                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                                } ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                                {type.label}
-                            </button>
-                        );
-                    })}
+                    ].map(type => (
+                        <button
+                            key={type.id}
+                            type="button"
+                            onClick={() => setAccForm({...accForm, type: type.id as AccountType, accountNumber: '', parentId: ''})}
+                            className={`py-2 px-1 rounded-lg border text-sm font-medium transition-colors ${accForm.type === type.id ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                        >
+                            {type.label}
+                        </button>
+                    ))}
                 </div>
               </div>
 
@@ -1694,65 +1933,6 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
             </form>
           </div>
         </div>
-      )}
-
-      {/* --- MODAL: CASH RECONCILE --- */}
-      {cashReconcileAccount && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                  <div className="p-6 border-b border-gray-100 bg-green-50 flex items-center justify-between">
-                      <h3 className="text-lg font-bold text-green-900 flex items-center gap-2">
-                          <Scale size={20} />
-                          Сверка кассы
-                      </h3>
-                      <button onClick={() => setCashReconcileAccount(null)} className="text-gray-400 hover:text-gray-600">
-                          <X size={20} />
-                      </button>
-                  </div>
-                  
-                  <form onSubmit={handleCashReconcileSubmit} className="p-6 space-y-4">
-                      <div className="text-center mb-4">
-                          <div className="text-sm text-gray-500 mb-1">Расчетный остаток по системе</div>
-                          <div className="text-3xl font-bold text-gray-900">{cashReconcileAccount.balance.toLocaleString()} ₸</div>
-                      </div>
-
-                      <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Фактический остаток (в наличии)</label>
-                          <input 
-                              autoFocus
-                              type="number" 
-                              required
-                              value={cashActualBalance}
-                              onChange={(e) => setCashActualBalance(e.target.value)}
-                              placeholder="Введите сумму"
-                              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 font-bold text-lg"
-                          />
-                      </div>
-
-                      {cashActualBalance && (
-                          <div className={`p-3 rounded-lg border text-sm font-medium flex justify-between items-center ${
-                              parseFloat(cashActualBalance) === cashReconcileAccount.balance 
-                              ? 'bg-green-100 border-green-200 text-green-800' 
-                              : 'bg-yellow-50 border-yellow-200 text-yellow-800'
-                          }`}>
-                              <span>Разница:</span>
-                              <span className="font-bold">
-                                  {(parseFloat(cashActualBalance) - cashReconcileAccount.balance) > 0 ? '+' : ''}
-                                  {(parseFloat(cashActualBalance) - cashReconcileAccount.balance).toLocaleString()} ₸
-                              </span>
-                          </div>
-                      )}
-
-                      <button 
-                          type="submit"
-                          disabled={!cashActualBalance}
-                          className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                          Подтвердить остаток
-                      </button>
-                  </form>
-              </div>
-          </div>
       )}
 
     </div>
