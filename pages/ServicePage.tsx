@@ -79,8 +79,8 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] text-center p-8 glass-panel rounded-3xl m-8">
         <Lock size={48} className="mb-4 text-slate-400" />
-        <h2 className="text-2xl font-bold mb-2 text-slate-800">Доступ ограничен</h2>
-        <p className="text-slate-600">Инженеры не имеют доступа к разделу сервиса и биллинга.</p>
+        <h2 className="text-2xl font-bold mb-2 text-slate-800 dark:text-white">Доступ ограничен</h2>
+        <p className="text-slate-600 dark:text-gray-300">Инженеры не имеют доступа к разделу сервиса и биллинга.</p>
       </div>
     );
   }
@@ -234,8 +234,8 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
     <div className="space-y-6 relative">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800">Обслуживание</h1>
-          <p className="text-slate-600 font-medium">Управление парком GPS, объектами ЦОУ и ТО</p>
+          <h1 className="text-3xl font-extrabold text-slate-800 dark:text-white">Обслуживание</h1>
+          <p className="text-slate-600 dark:text-gray-400 font-medium">Управление парком GPS, объектами ЦОУ и ТО</p>
         </div>
         
         {/* Actions based on current section */}
@@ -276,8 +276,8 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
           onClick={() => setActiveSection('gps')}
           className={`flex-1 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
             activeSection === 'gps' 
-              ? 'bg-white/60 text-blue-700 shadow-sm' 
-              : 'text-slate-600 hover:bg-white/30'
+              ? 'bg-white/60 text-blue-700 dark:text-blue-300 shadow-sm' 
+              : 'text-slate-600 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-white/10'
           }`}
         >
           <div className="flex items-center justify-center gap-2">
@@ -289,8 +289,8 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
           onClick={() => setActiveSection('cou')}
           className={`flex-1 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
             activeSection === 'cou' 
-              ? 'bg-white/60 text-indigo-700 shadow-sm' 
-              : 'text-slate-600 hover:bg-white/30'
+              ? 'bg-white/60 text-indigo-700 dark:text-indigo-300 shadow-sm' 
+              : 'text-slate-600 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-white/10'
           }`}
         >
           <div className="flex items-center justify-center gap-2">
@@ -302,8 +302,8 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
           onClick={() => setActiveSection('maintenance')}
           className={`flex-1 px-6 py-3 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${
             activeSection === 'maintenance' 
-              ? 'bg-white/60 text-orange-700 shadow-sm' 
-              : 'text-slate-600 hover:bg-white/30'
+              ? 'bg-white/60 text-orange-700 dark:text-orange-300 shadow-sm' 
+              : 'text-slate-600 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-white/10'
           }`}
         >
           <div className="flex items-center justify-center gap-2">
@@ -320,8 +320,8 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
             onClick={() => setActiveGpsTab('payments')}
             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
               activeGpsTab === 'payments' 
-                ? 'bg-blue-100 text-blue-700 shadow-sm' 
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 shadow-sm' 
+                : 'text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -333,8 +333,8 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
             onClick={() => setActiveGpsTab('trackers')}
             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
               activeGpsTab === 'trackers' 
-                ? 'bg-blue-100 text-blue-700 shadow-sm' 
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 shadow-sm' 
+                : 'text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-gray-200'
             }`}
           >
             <div className="flex items-center gap-2">
@@ -352,7 +352,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
             {activeGpsTab === 'payments' && (
                 <div className="glass-panel rounded-3xl overflow-hidden">
                 <table className="w-full text-left text-sm">
-                    <thead className="bg-white/30 text-slate-700 font-bold border-b border-white/20">
+                    <thead className="bg-white/30 text-slate-700 dark:text-white font-bold border-b border-white/20">
                     <tr>
                         <th className="px-6 py-5">Клиент</th>
                         <th className="px-6 py-5">Объект</th>
@@ -365,21 +365,21 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                     <tbody className="divide-y divide-white/20">
                     {monthlyServices.map(service => (
                         <tr key={service.id} className="hover:bg-white/20 transition-colors">
-                        <td className="px-6 py-4 font-bold text-slate-800">{service.clientName}</td>
-                        <td className="px-6 py-4 text-slate-600">{service.objectName}</td>
+                        <td className="px-6 py-4 font-bold text-slate-800 dark:text-white">{service.clientName}</td>
+                        <td className="px-6 py-4 text-slate-600 dark:text-gray-300">{service.objectName}</td>
                         <td className="px-6 py-4">
-                            <span className={`px-2 py-1 rounded-lg text-xs font-bold ${service.serviceType === 'GPS' ? 'bg-indigo-100 text-indigo-700' : 'bg-orange-100 text-orange-700'}`}>
+                            <span className={`px-2 py-1 rounded-lg text-xs font-bold ${service.serviceType === 'GPS' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300'}`}>
                             {service.serviceType}
                             </span>
                         </td>
-                        <td className="px-6 py-4 font-bold">{service.amount} ₸</td>
+                        <td className="px-6 py-4 font-bold dark:text-white">{service.amount} ₸</td>
                         <td className="px-6 py-4">
                             {service.status === 'Done' ? (
-                            <span className="flex items-center gap-1 text-green-600 text-xs font-extrabold uppercase bg-green-100 px-2 py-1 rounded-lg w-fit">
+                            <span className="flex items-center gap-1 text-green-600 dark:text-green-400 text-xs font-extrabold uppercase bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-lg w-fit">
                                 <Check size={14} /> Оплачено
                             </span>
                             ) : (
-                            <span className="flex items-center gap-1 text-yellow-600 text-xs font-extrabold uppercase bg-yellow-100 px-2 py-1 rounded-lg w-fit">
+                            <span className="flex items-center gap-1 text-yellow-600 dark:text-yellow-400 text-xs font-extrabold uppercase bg-yellow-100 dark:bg-yellow-900/30 px-2 py-1 rounded-lg w-fit">
                                 <AlertTriangle size={14} /> Ожидание
                             </span>
                             )}
@@ -387,10 +387,10 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                         <td className="px-6 py-4 flex gap-2">
                             {service.status === 'Pending' && (
                             <>
-                                <button className="p-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg transition-colors" title="Подтвердить оплату">
+                                <button className="p-2 bg-green-100 hover:bg-green-200 text-green-700 dark:bg-green-900/30 dark:hover:bg-green-900/50 dark:text-green-400 rounded-lg transition-colors" title="Подтвердить оплату">
                                     <Check size={16} />
                                 </button>
-                                <button className="p-2 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors" title="Отключить">
+                                <button className="p-2 bg-red-100 hover:bg-red-200 text-red-600 dark:bg-red-900/30 dark:hover:bg-red-900/50 dark:text-red-400 rounded-lg transition-colors" title="Отключить">
                                     <X size={16} />
                                 </button>
                             </>
@@ -413,13 +413,13 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                         value={trackerSearch}
                         onChange={(e) => setTrackerSearch(e.target.value)}
                         placeholder="Поиск по IMEI, Модели или Клиенту..." 
-                        className="glass-input w-full pl-12 pr-4 py-3 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400 text-slate-800"
+                        className="glass-input w-full pl-12 pr-4 py-3 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-slate-400 text-slate-800 dark:text-white"
                     />
                 </div>
 
                 <div className="glass-panel rounded-3xl overflow-hidden">
                     <table className="w-full text-left text-sm">
-                    <thead className="bg-white/30 text-slate-700 font-bold border-b border-white/20">
+                    <thead className="bg-white/30 text-slate-700 dark:text-white font-bold border-b border-white/20">
                         <tr>
                         <th className="px-6 py-5">Модель</th>
                         <th className="px-6 py-5">IMEI</th>
@@ -432,18 +432,18 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                     <tbody className="divide-y divide-white/20">
                         {filteredTrackers.map(tracker => (
                         <tr key={tracker.id} className="hover:bg-white/20 transition-colors">
-                            <td className="px-6 py-4 font-bold text-slate-800 flex items-center gap-2">
+                            <td className="px-6 py-4 font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                 <Satellite size={16} className="text-blue-500" />
                                 {tracker.model}
                             </td>
-                            <td className="px-6 py-4 font-mono text-xs text-slate-600">{tracker.imei}</td>
-                            <td className="px-6 py-4 text-slate-600">{tracker.simNumber}</td>
+                            <td className="px-6 py-4 font-mono text-xs text-slate-600 dark:text-gray-300">{tracker.imei}</td>
+                            <td className="px-6 py-4 text-slate-600 dark:text-gray-300">{tracker.simNumber}</td>
                             <td className="px-6 py-4">
-                                <span className="font-semibold text-slate-800">{tracker.clientName}</span>
+                                <span className="font-semibold text-slate-800 dark:text-white">{tracker.clientName}</span>
                             </td>
-                            <td className="px-6 py-4 text-slate-500">{tracker.installDate}</td>
+                            <td className="px-6 py-4 text-slate-500 dark:text-gray-400">{tracker.installDate}</td>
                             <td className="px-6 py-4">
-                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded-lg text-xs font-bold">
+                                <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-xs font-bold">
                                     {tracker.status}
                                 </span>
                             </td>
@@ -467,13 +467,13 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                   value={cmsSearch}
                   onChange={(e) => setCmsSearch(e.target.value)}
                   placeholder="Поиск по объекту, клиенту или адресу..." 
-                  className="glass-input w-full pl-12 pr-4 py-3 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 text-slate-800"
+                  className="glass-input w-full pl-12 pr-4 py-3 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 text-slate-800 dark:text-white"
               />
           </div>
 
           <div className="glass-panel rounded-3xl overflow-hidden">
             <table className="w-full text-left text-sm">
-              <thead className="bg-white/30 text-slate-700 font-bold border-b border-white/20">
+              <thead className="bg-white/30 text-slate-700 dark:text-white font-bold border-b border-white/20">
                 <tr>
                   <th className="px-6 py-5">Объект</th>
                   <th className="px-6 py-5">Адрес</th>
@@ -486,21 +486,21 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               <tbody className="divide-y divide-white/20">
                 {filteredCmsObjects.map(obj => (
                   <tr key={obj.id} className="hover:bg-white/20 transition-colors">
-                    <td className="px-6 py-4 font-bold text-slate-800 flex items-center gap-2">
+                    <td className="px-6 py-4 font-bold text-slate-800 dark:text-white flex items-center gap-2">
                         <Home size={16} className="text-indigo-500" />
                         {obj.name}
                     </td>
-                    <td className="px-6 py-4 text-slate-600">{obj.address}</td>
+                    <td className="px-6 py-4 text-slate-600 dark:text-gray-300">{obj.address}</td>
                     <td className="px-6 py-4">
-                        <span className="font-semibold text-slate-800">{obj.clientName}</span>
+                        <span className="font-semibold text-slate-800 dark:text-white">{obj.clientName}</span>
                     </td>
-                    <td className="px-6 py-4 text-slate-500 flex items-center gap-1 font-mono text-xs">
+                    <td className="px-6 py-4 text-slate-500 dark:text-gray-400 flex items-center gap-1 font-mono text-xs">
                         <FileText size={14} />
                         {obj.contractNumber}
                     </td>
-                    <td className="px-6 py-4 font-bold text-slate-900">{obj.monthlyFee} ₸</td>
+                    <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{obj.monthlyFee} ₸</td>
                     <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-lg text-xs font-bold ${obj.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        <span className={`px-2 py-1 rounded-lg text-xs font-bold ${obj.status === 'Active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
                             {obj.status === 'Active' ? 'На охране' : 'Приостановлен'}
                         </span>
                     </td>
@@ -522,13 +522,13 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                   value={maintenanceSearch}
                   onChange={(e) => setMaintenanceSearch(e.target.value)}
                   placeholder="Поиск по системе, клиенту или адресу..." 
-                  className="glass-input w-full pl-12 pr-4 py-3 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder:text-slate-400 text-slate-800"
+                  className="glass-input w-full pl-12 pr-4 py-3 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder:text-slate-400 text-slate-800 dark:text-white"
               />
           </div>
 
           <div className="glass-panel rounded-3xl overflow-hidden">
             <table className="w-full text-left text-sm">
-              <thead className="bg-white/30 text-slate-700 font-bold border-b border-white/20">
+              <thead className="bg-white/30 text-slate-700 dark:text-white font-bold border-b border-white/20">
                 <tr>
                   <th className="px-6 py-5">Система</th>
                   <th className="px-6 py-5">Объект / Адрес</th>
@@ -540,26 +540,26 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               <tbody className="divide-y divide-white/20">
                 {filteredMaintenanceObjects.map(obj => (
                   <tr key={obj.id} className="hover:bg-white/20 transition-colors">
-                    <td className="px-6 py-4 font-bold text-slate-800 flex items-center gap-2">
+                    <td className="px-6 py-4 font-bold text-slate-800 dark:text-white flex items-center gap-2">
                         {getMaintenanceIcon(obj.type)}
                         <span>{obj.type === 'CCTV' ? 'Видео' : obj.type === 'APS' ? 'АПС' : obj.type === 'OPS' ? 'ОПС' : 'СКУД'}</span>
                     </td>
                     <td className="px-6 py-4">
-                        <div className="font-semibold text-slate-900">{obj.name}</div>
-                        <div className="text-xs text-slate-500">{obj.address}</div>
+                        <div className="font-semibold text-slate-900 dark:text-white">{obj.name}</div>
+                        <div className="text-xs text-slate-500 dark:text-gray-400">{obj.address}</div>
                     </td>
                     <td className="px-6 py-4">
-                        <span className="font-medium text-slate-800">{obj.clientName}</span>
+                        <span className="font-medium text-slate-800 dark:text-gray-300">{obj.clientName}</span>
                     </td>
-                    <td className="px-6 py-4 font-bold text-slate-900">{obj.monthlyFee} ₸</td>
-                    <td className="px-6 py-4 text-slate-500">
+                    <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{obj.monthlyFee} ₸</td>
+                    <td className="px-6 py-4 text-slate-500 dark:text-gray-400">
                         {obj.lastCheckDate}
                     </td>
                   </tr>
                 ))}
                 {filteredMaintenanceObjects.length === 0 && (
                     <tr>
-                        <td colSpan={6} className="px-6 py-8 text-center text-slate-500 font-medium">
+                        <td colSpan={6} className="px-6 py-8 text-center text-slate-500 dark:text-gray-400 font-medium">
                             Объекты на обслуживании не найдены
                         </td>
                     </tr>
@@ -573,17 +573,17 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
       {/* --- ADD TRACKER MODAL --- */}
       {isTrackerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="glass-panel bg-white/80 rounded-3xl w-full max-w-md shadow-2xl flex flex-col border border-white/50">
+          <div className="glass-panel bg-white/80 dark:bg-slate-800/90 rounded-3xl w-full max-w-md shadow-2xl flex flex-col border border-white/50 dark:border-slate-700">
             <div className="p-6 border-b border-white/20 flex justify-between items-center">
-              <h2 className="text-xl font-extrabold text-slate-800">Новый GPS трекер</h2>
-              <button onClick={() => setIsTrackerModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+              <h2 className="text-xl font-extrabold text-slate-800 dark:text-white">Новый GPS трекер</h2>
+              <button onClick={() => setIsTrackerModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-300 transition-colors">
                 <X size={24} />
               </button>
             </div>
             
             <form onSubmit={handleAddTracker} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Модель оборудования</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Модель оборудования</label>
                 <div className="relative">
                     <Satellite size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input 
@@ -591,14 +591,14 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                     type="text" 
                     value={newTracker.model}
                     onChange={e => setNewTracker({...newTracker, model: e.target.value})}
-                    className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
                     placeholder="Например: Teltonika FMB920"
                     />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">IMEI</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">IMEI</label>
                 <div className="relative">
                     <Barcode size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input 
@@ -606,7 +606,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                     type="text" 
                     value={newTracker.imei}
                     onChange={e => setNewTracker({...newTracker, imei: e.target.value})}
-                    className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
                     placeholder="15-значный код"
                     maxLength={15}
                     />
@@ -614,7 +614,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">SIM-карта (Номер)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">SIM-карта (Номер)</label>
                 <div className="relative">
                     <Smartphone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input 
@@ -622,7 +622,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                     type="text" 
                     value={newTracker.simNumber}
                     onChange={e => setNewTracker({...newTracker, simNumber: e.target.value})}
-                    className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white"
                     placeholder="+7 700 000 00 00"
                     />
                 </div>
@@ -630,7 +630,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
 
               {/* CLIENT SELECTION */}
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Владелец (Клиент)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label>
                 <div className="relative">
                     <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <select 
@@ -644,10 +644,10 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                                 setNewTracker(prev => ({...prev, clientId: val}));
                             }
                         }}
-                        className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                        className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-white"
                     >
                         <option value="">Выберите клиента из списка</option>
-                        <option value="NEW" className="font-bold text-blue-600">+ Создать нового клиента</option>
+                        <option value="NEW" className="font-bold text-blue-600 dark:text-blue-400">+ Создать нового клиента</option>
                         <optgroup label="Существующие клиенты">
                             {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </optgroup>
@@ -659,7 +659,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 <button 
                   type="button" 
                   onClick={() => setIsTrackerModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 text-slate-600 hover:bg-white/50 rounded-xl transition-colors font-medium"
+                  className="flex-1 px-4 py-2.5 text-slate-600 dark:text-gray-300 hover:bg-white/50 rounded-xl transition-colors font-medium"
                 >
                   Отмена
                 </button>
@@ -679,62 +679,62 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
       {/* --- ADD CMS OBJECT MODAL --- */}
       {isCmsModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="glass-panel bg-white/80 rounded-3xl w-full max-w-md shadow-2xl flex flex-col border border-white/50">
+          <div className="glass-panel bg-white/80 dark:bg-slate-800/90 rounded-3xl w-full max-w-md shadow-2xl flex flex-col border border-white/50 dark:border-slate-700">
             <div className="p-6 border-b border-white/20 flex justify-between items-center">
-              <h2 className="text-xl font-extrabold text-indigo-900 flex items-center gap-2">
+              <h2 className="text-xl font-extrabold text-indigo-900 dark:text-white flex items-center gap-2">
                   <Shield size={24} />
                   Новый объект ЦОУ
               </h2>
-              <button onClick={() => setIsCmsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsCmsModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-300">
                 <X size={24} />
               </button>
             </div>
             
             <form onSubmit={handleAddCmsObject} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Название объекта</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Название объекта</label>
                 <input 
                   required
                   type="text" 
                   value={newCmsObject.name}
                   onChange={e => setNewCmsObject({...newCmsObject, name: e.target.value})}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
                   placeholder="Магазин 'Продукты', Дом"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Адрес объекта</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Адрес объекта</label>
                 <input 
                   required
                   type="text" 
                   value={newCmsObject.address}
                   onChange={e => setNewCmsObject({...newCmsObject, address: e.target.value})}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
                   placeholder="Улица, дом..."
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1">№ Договора</label>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">№ Договора</label>
                     <input 
                       required
                       type="text" 
                       value={newCmsObject.contractNumber}
                       onChange={e => setNewCmsObject({...newCmsObject, contractNumber: e.target.value})}
-                      className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
                       placeholder="123-А"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1">Абон. плата (₸)</label>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Абон. плата (₸)</label>
                     <input 
                       required
                       type="number" 
                       value={newCmsObject.monthlyFee}
                       onChange={e => setNewCmsObject({...newCmsObject, monthlyFee: e.target.value})}
-                      className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:text-white"
                       placeholder="5000"
                     />
                   </div>
@@ -742,7 +742,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
 
               {/* CLIENT SELECTION */}
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Владелец (Клиент)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label>
                 <div className="relative">
                     <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <select 
@@ -756,10 +756,10 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                                 setNewCmsObject(prev => ({...prev, clientId: val}));
                             }
                         }}
-                        className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800"
+                        className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
                     >
                         <option value="">Выберите клиента из списка</option>
-                        <option value="NEW" className="font-bold text-indigo-600">+ Создать нового клиента</option>
+                        <option value="NEW" className="font-bold text-indigo-600 dark:text-indigo-400">+ Создать нового клиента</option>
                         <optgroup label="Существующие клиенты">
                             {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </optgroup>
@@ -771,7 +771,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 <button 
                   type="button" 
                   onClick={() => setIsCmsModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 text-slate-600 hover:bg-white/50 rounded-xl transition-colors font-medium"
+                  className="flex-1 px-4 py-2.5 text-slate-600 dark:text-gray-300 hover:bg-white/50 rounded-xl transition-colors font-medium"
                 >
                   Отмена
                 </button>
@@ -791,20 +791,20 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
        {/* --- ADD MAINTENANCE OBJECT MODAL --- */}
        {isMaintenanceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="glass-panel bg-white/80 rounded-3xl w-full max-w-md shadow-2xl flex flex-col border border-white/50">
-            <div className="p-6 border-b border-white/20 flex justify-between items-center bg-orange-50/50">
-              <h2 className="text-xl font-extrabold text-orange-900 flex items-center gap-2">
+          <div className="glass-panel bg-white/80 dark:bg-slate-800/90 rounded-3xl w-full max-w-md shadow-2xl flex flex-col border border-white/50 dark:border-slate-700">
+            <div className="p-6 border-b border-white/20 flex justify-between items-center bg-orange-50/50 dark:bg-orange-900/20">
+              <h2 className="text-xl font-extrabold text-orange-900 dark:text-white flex items-center gap-2">
                   <Wrench size={24} />
                   На обслуживание (ТО)
               </h2>
-              <button onClick={() => setIsMaintenanceModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsMaintenanceModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-300">
                 <X size={24} />
               </button>
             </div>
             
             <form onSubmit={handleAddMaintenanceObject} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Тип системы</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Тип системы</label>
                 <div className="grid grid-cols-2 gap-2">
                     {['CCTV', 'APS', 'OPS', 'ACCESS'].map((type) => (
                         <button
@@ -814,7 +814,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                             className={`py-2 px-3 rounded-xl border text-sm font-bold transition-all ${
                                 newMaintenanceObject.type === type
                                 ? 'bg-orange-100 border-orange-500 text-orange-800 shadow-sm'
-                                : 'bg-white/40 border-white/60 text-slate-600 hover:bg-white/60'
+                                : 'bg-white/40 dark:bg-slate-700/50 border-white/60 dark:border-slate-600 text-slate-600 dark:text-gray-300 hover:bg-white/60'
                             }`}
                         >
                             {type === 'CCTV' ? 'Видеонаблюдение' : type === 'APS' ? 'АПС (Пожарная)' : type === 'OPS' ? 'ОПС (Охранная)' : 'СКУД'}
@@ -824,44 +824,44 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Название объекта</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Название объекта</label>
                 <input 
                   required
                   type="text" 
                   value={newMaintenanceObject.name}
                   onChange={e => setNewMaintenanceObject({...newMaintenanceObject, name: e.target.value})}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 dark:text-white"
                   placeholder="Офис, Склад, Магазин"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Адрес</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Адрес</label>
                 <input 
                   required
                   type="text" 
                   value={newMaintenanceObject.address}
                   onChange={e => setNewMaintenanceObject({...newMaintenanceObject, address: e.target.value})}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 dark:text-white"
                   placeholder="Адрес установки"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Стоимость ТО (₸)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Стоимость ТО (₸)</label>
                 <input 
                   required
                   type="number" 
                   value={newMaintenanceObject.monthlyFee}
                   onChange={e => setNewMaintenanceObject({...newMaintenanceObject, monthlyFee: e.target.value})}
-                  className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="glass-input w-full px-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 dark:text-white"
                   placeholder="15000"
                 />
               </div>
 
               {/* CLIENT SELECTION */}
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-1">Владелец (Клиент)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label>
                 <div className="relative">
                     <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                     <select 
@@ -875,7 +875,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                                 setNewMaintenanceObject(prev => ({...prev, clientId: val}));
                             }
                         }}
-                        className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800"
+                        className="glass-input w-full pl-9 pr-3 py-2 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800 dark:text-white"
                     >
                         <option value="">Выберите клиента из списка</option>
                         <option value="NEW" className="font-bold text-orange-600">+ Создать нового клиента</option>
@@ -890,7 +890,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 <button 
                   type="button" 
                   onClick={() => setIsMaintenanceModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 text-slate-600 hover:bg-white/50 rounded-xl transition-colors font-medium"
+                  className="flex-1 px-4 py-2.5 text-slate-600 dark:text-gray-300 hover:bg-white/50 rounded-xl transition-colors font-medium"
                 >
                   Отмена
                 </button>
@@ -910,30 +910,30 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
       {/* --- CREATE CLIENT MODAL (SHARED) --- */}
       {isClientModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col border border-gray-100">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900">Новый клиент</h2>
-              <button onClick={() => setIsClientModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col border border-gray-100 dark:border-slate-700">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Новый клиент</h2>
+              <button onClick={() => setIsClientModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                 <X size={24} />
               </button>
             </div>
             
             <form onSubmit={handleCreateClient} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Название / ФИО</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Название / ФИО</label>
                 <input 
                   required
                   autoFocus
                   type="text" 
                   value={newClientFormData.name}
                   onChange={e => setNewClientFormData({...newClientFormData, name: e.target.value})}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                   placeholder="Например: ТОО Ромашка"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Тип клиента</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Тип клиента</label>
                 <div className="grid grid-cols-3 gap-2">
                   {[ClientType.COMPANY, ClientType.INDIVIDUAL, ClientType.GOV].map((type) => (
                     <button
@@ -942,8 +942,8 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                       onClick={() => setNewClientFormData({...newClientFormData, type})}
                       className={`py-2 px-1 text-xs sm:text-sm rounded-lg border transition-colors ${
                         newClientFormData.type === type 
-                          ? 'bg-blue-50 border-blue-500 text-blue-700 font-medium' 
-                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300 font-medium' 
+                          : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'
                       }`}
                     >
                       {type}
@@ -953,29 +953,29 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Телефон</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Телефон</label>
                 <div className="relative">
-                  <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                   <input 
                     required
                     type="tel" 
                     value={newClientFormData.phone}
                     onChange={e => setNewClientFormData({...newClientFormData, phone: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                     placeholder="+7 (7xx) xxx xx xx"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Адрес (основной)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Адрес (основной)</label>
                 <div className="relative">
-                  <MapPin size={16} className="absolute left-3 top-3 text-gray-400" />
+                  <MapPin size={16} className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" />
                   <textarea 
                     rows={2}
                     value={newClientFormData.address}
                     onChange={e => setNewClientFormData({...newClientFormData, address: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                     placeholder="Город, Улица, Дом..."
                   />
                 </div>
@@ -985,7 +985,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 <button 
                   type="button" 
                   onClick={() => setIsClientModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   Отмена
                 </button>

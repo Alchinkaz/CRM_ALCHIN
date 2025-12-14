@@ -242,8 +242,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
     return (
       <div className="p-8 text-center glass-panel rounded-3xl m-8">
         <Lock className="mx-auto h-12 w-12 text-slate-400 mb-4" />
-        <h2 className="text-xl font-bold text-slate-800 mb-2">Доступ ограничен</h2>
-        <p className="text-slate-600">Только администраторы могут управлять настройками системы.</p>
+        <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Доступ ограничен</h2>
+        <p className="text-slate-600 dark:text-gray-400">Только администраторы могут управлять настройками системы.</p>
       </div>
     );
   }
@@ -252,8 +252,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800">Настройки системы</h1>
-          <p className="text-slate-600 font-medium">Управление пользователями, ролями и правами доступа</p>
+          <h1 className="text-3xl font-extrabold text-slate-800 dark:text-white">Настройки системы</h1>
+          <p className="text-slate-600 dark:text-gray-400 font-medium">Управление пользователями, ролями и правами доступа</p>
         </div>
       </div>
 
@@ -262,21 +262,21 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
         <div className="md:col-span-1 space-y-3">
            <button 
                 onClick={() => setActiveTab('users')}
-                className={`w-full text-left px-5 py-4 font-bold rounded-2xl flex items-center gap-3 transition-all ${activeTab === 'users' ? 'bg-white/60 text-blue-700 shadow-glass border border-white/40' : 'text-slate-600 hover:bg-white/30'}`}
+                className={`w-full text-left px-5 py-4 font-bold rounded-2xl flex items-center gap-3 transition-all ${activeTab === 'users' ? 'bg-white/60 dark:bg-slate-700/60 text-blue-700 dark:text-blue-300 shadow-glass border border-white/40 dark:border-slate-600' : 'text-slate-600 dark:text-gray-400 hover:bg-white/30 dark:hover:bg-slate-800/30'}`}
             >
              <UserCheck size={20} />
              Пользователи
            </button>
            <button 
                 onClick={() => setActiveTab('roles')}
-                className={`w-full text-left px-5 py-4 font-bold rounded-2xl flex items-center gap-3 transition-all ${activeTab === 'roles' ? 'bg-white/60 text-blue-700 shadow-glass border border-white/40' : 'text-slate-600 hover:bg-white/30'}`}
+                className={`w-full text-left px-5 py-4 font-bold rounded-2xl flex items-center gap-3 transition-all ${activeTab === 'roles' ? 'bg-white/60 dark:bg-slate-700/60 text-blue-700 dark:text-blue-300 shadow-glass border border-white/40 dark:border-slate-600' : 'text-slate-600 dark:text-gray-400 hover:bg-white/30 dark:hover:bg-slate-800/30'}`}
             >
              <Shield size={20} />
              Роли и Права
            </button>
            <button 
                 onClick={() => setActiveTab('security')}
-                className={`w-full text-left px-5 py-4 font-bold rounded-2xl flex items-center gap-3 transition-all ${activeTab === 'security' ? 'bg-white/60 text-blue-700 shadow-glass border border-white/40' : 'text-slate-600 hover:bg-white/30'}`}
+                className={`w-full text-left px-5 py-4 font-bold rounded-2xl flex items-center gap-3 transition-all ${activeTab === 'security' ? 'bg-white/60 dark:bg-slate-700/60 text-blue-700 dark:text-blue-300 shadow-glass border border-white/40 dark:border-slate-600' : 'text-slate-600 dark:text-gray-400 hover:bg-white/30 dark:hover:bg-slate-800/30'}`}
             >
              <Key size={20} />
              Безопасность
@@ -289,9 +289,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
           {/* --- TAB: USERS --- */}
           {activeTab === 'users' && (
               <div className="glass-panel rounded-3xl overflow-hidden animate-in fade-in">
-                <div className="p-6 border-b border-white/20 flex justify-between items-center bg-white/20">
-                <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                    <Users size={20} className="text-blue-600" />
+                <div className="p-6 border-b border-white/20 dark:border-slate-700 flex justify-between items-center bg-white/20 dark:bg-slate-800/50">
+                <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <Users size={20} className="text-blue-600 dark:text-blue-400" />
                     Список пользователей
                 </h3>
                 <button 
@@ -305,7 +305,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
 
                 <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                    <thead className="bg-white/30 text-slate-500 border-b border-white/20">
+                    <thead className="bg-white/30 dark:bg-slate-700/30 text-slate-500 dark:text-gray-400 border-b border-white/20 dark:border-slate-700">
                     <tr>
                         <th className="px-6 py-4 font-bold">Пользователь</th>
                         <th className="px-6 py-4 font-bold">Логин (Email)</th>
@@ -313,30 +313,30 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                         <th className="px-6 py-4 font-bold text-center">Статус</th>
                     </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/20">
+                    <tbody className="divide-y divide-white/20 dark:divide-slate-700">
                     {systemUsers.map(u => {
                         const userRoleName = roles.find(r => r.id === u.customRoleId)?.name || u.role;
                         return (
-                        <tr key={u.id} className="hover:bg-white/20 transition-colors">
+                        <tr key={u.id} className="hover:bg-white/20 dark:hover:bg-slate-700/30 transition-colors">
                         <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                                 <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-xl shadow-sm" />
                                 <div>
-                                    <div className="font-bold text-slate-800">{u.name}</div>
-                                    <div className="text-xs text-slate-500">{u.position}</div>
+                                    <div className="font-bold text-slate-800 dark:text-white">{u.name}</div>
+                                    <div className="text-xs text-slate-500 dark:text-gray-400">{u.position}</div>
                                 </div>
                             </div>
                         </td>
-                        <td className="px-6 py-4 font-mono text-xs text-slate-600">
+                        <td className="px-6 py-4 font-mono text-xs text-slate-600 dark:text-gray-300">
                             {u.email || 'Не указан'}
                         </td>
                         <td className="px-6 py-4">
-                            <span className="px-2 py-1 rounded-lg text-xs font-bold uppercase bg-blue-100 text-blue-700">
+                            <span className="px-2 py-1 rounded-lg text-xs font-bold uppercase bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
                                 {userRoleName}
                             </span>
                         </td>
                         <td className="px-6 py-4 text-center">
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300">
                                 Активен
                             </span>
                         </td>
@@ -363,18 +363,18 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
 
                   <div className="grid grid-cols-1 gap-4">
                       {roles.map(role => (
-                          <div key={role.id} className="glass-panel p-6 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-white/60 transition-colors">
+                          <div key={role.id} className="glass-panel p-6 rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors">
                               <div className="flex items-start gap-4">
-                                  <div className={`p-4 rounded-2xl ${role.isSystem ? 'bg-slate-100 text-slate-600' : 'bg-indigo-100 text-indigo-600'} shadow-sm`}>
+                                  <div className={`p-4 rounded-2xl ${role.isSystem ? 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'} shadow-sm`}>
                                       <Shield size={24} />
                                   </div>
                                   <div>
-                                      <h4 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                      <h4 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                           {role.name}
-                                          {role.isSystem && <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold">System</span>}
+                                          {role.isSystem && <span className="text-[10px] bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full uppercase tracking-wider font-extrabold">System</span>}
                                       </h4>
-                                      <p className="text-sm text-slate-500">{role.description}</p>
-                                      <div className="mt-2 text-xs font-bold text-slate-400 bg-white/40 w-fit px-2 py-1 rounded-lg">
+                                      <p className="text-sm text-slate-500 dark:text-gray-400">{role.description}</p>
+                                      <div className="mt-2 text-xs font-bold text-slate-400 dark:text-gray-500 bg-white/40 dark:bg-slate-700/40 w-fit px-2 py-1 rounded-lg">
                                           Доступ к: {role.permissions.length} разделам
                                       </div>
                                   </div>
@@ -382,14 +382,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                               <div className="flex gap-2">
                                   <button 
                                     onClick={() => openRoleModal(role)}
-                                    className="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors" title="Редактировать права"
+                                    className="p-3 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl transition-colors" title="Редактировать права"
                                   >
                                       <Edit size={20} />
                                   </button>
                                   {!role.isSystem && (
                                     <button 
                                         onClick={() => deleteRole(role.id)}
-                                        className="p-3 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors" title="Удалить роль"
+                                        className="p-3 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors" title="Удалить роль"
                                     >
                                         <Trash2 size={20} />
                                     </button>
@@ -404,12 +404,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
           {/* --- TAB: SECURITY --- */}
           {activeTab === 'security' && (
               <div className="glass-panel p-12 rounded-3xl text-center animate-in fade-in">
-                  <div className="inline-block p-6 bg-slate-100 rounded-full mb-6 shadow-inner">
-                      <Lock size={40} className="text-slate-400" />
+                  <div className="inline-block p-6 bg-slate-100 dark:bg-slate-700 rounded-full mb-6 shadow-inner">
+                      <Lock size={40} className="text-slate-400 dark:text-gray-300" />
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-800">Журнал безопасности</h3>
-                  <p className="text-slate-500 mb-8 max-w-md mx-auto">История входов и действий пользователей будет отображена здесь.</p>
-                  <button className="px-6 py-3 border border-slate-300 rounded-xl text-slate-600 hover:bg-white/50 transition-colors font-bold">
+                  <h3 className="text-2xl font-bold text-slate-800 dark:text-white">Журнал безопасности</h3>
+                  <p className="text-slate-500 dark:text-gray-400 mb-8 max-w-md mx-auto">История входов и действий пользователей будет отображена здесь.</p>
+                  <button className="px-6 py-3 border border-slate-300 dark:border-slate-600 rounded-xl text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700/50 transition-colors font-bold">
                       Скачать логи (CSV)
                   </button>
               </div>
@@ -421,30 +421,30 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
       {/* --- CREATE USER MODAL --- */}
       {isUserModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="glass-panel bg-white/80 rounded-3xl w-full max-w-md shadow-2xl flex flex-col border border-white/50">
-            <div className="p-6 border-b border-white/20 flex justify-between items-center bg-blue-50/50">
-              <h2 className="text-xl font-extrabold text-blue-900 flex items-center gap-2">
+          <div className="glass-panel bg-white/80 dark:bg-slate-800/90 rounded-3xl w-full max-w-md shadow-2xl flex flex-col border border-white/50 dark:border-slate-700">
+            <div className="p-6 border-b border-white/20 dark:border-slate-700 flex justify-between items-center bg-blue-50/50 dark:bg-blue-900/20">
+              <h2 className="text-xl font-extrabold text-blue-900 dark:text-blue-300 flex items-center gap-2">
                   <UserPlus size={24} />
                   Создание пользователя
               </h2>
-              <button onClick={() => setIsUserModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsUserModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-200">
                 <X size={24} />
               </button>
             </div>
             
             <form onSubmit={handleCreateSystemUser} className="p-6 space-y-4">
               
-              <div className="bg-yellow-50/70 p-4 rounded-2xl border border-yellow-100 mb-4">
-                <label className="block text-sm font-bold text-yellow-800 mb-2">
+              <div className="bg-yellow-50/70 dark:bg-yellow-900/20 p-4 rounded-2xl border border-yellow-100 dark:border-yellow-900/30 mb-4">
+                <label className="block text-sm font-bold text-yellow-800 dark:text-yellow-200 mb-2">
                   1. Выберите сотрудника
                 </label>
                 <div className="relative">
-                    <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
                     <select 
                       required
                       value={selectedEmployeeId}
                       onChange={e => setSelectedEmployeeId(e.target.value)}
-                      className="glass-input w-full pl-9 pr-3 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                      className="glass-input w-full pl-9 pr-3 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500 text-slate-800 dark:text-white"
                     >
                       <option value="">-- Выберите из списка --</option>
                       {availableEmployees.map(emp => (
@@ -454,47 +454,47 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-white/20">
-                <h3 className="text-sm font-bold text-slate-700 mb-3">2. Настройка доступа</h3>
+              <div className="pt-2 border-t border-white/20 dark:border-slate-700">
+                <h3 className="text-sm font-bold text-slate-700 dark:text-gray-300 mb-3">2. Настройка доступа</h3>
                 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Email (Логин)</label>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1">Email (Логин)</label>
                     <div className="relative">
-                        <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
                         <input 
                           required
                           type="email" 
                           value={userFormData.email}
                           onChange={e => setUserFormData({...userFormData, email: e.target.value})}
-                          className="glass-input w-full pl-9 pr-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="glass-input w-full pl-9 pr-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-white"
                           placeholder="employee@company.com"
                         />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Пароль</label>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1">Пароль</label>
                     <div className="relative">
-                        <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
                         <input 
                           required
                           type="password" 
                           value={userFormData.password}
                           onChange={e => setUserFormData({...userFormData, password: e.target.value})}
-                          className="glass-input w-full pl-9 pr-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="glass-input w-full pl-9 pr-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-white"
                           placeholder="••••••••"
                         />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 mb-1">Роль в системе</label>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1">Роль в системе</label>
                     <select 
                       required
                       value={userFormData.roleId}
                       onChange={e => setUserFormData({...userFormData, roleId: e.target.value})}
-                      className="glass-input w-full px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="glass-input w-full px-3 py-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-white"
                     >
                       <option value="">Выберите роль...</option>
                       {roles.map(r => (
@@ -509,7 +509,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                 <button 
                   type="button" 
                   onClick={() => setIsUserModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-slate-600 hover:bg-white/50 rounded-xl transition-colors font-medium"
+                  className="flex-1 px-4 py-2 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700/50 rounded-xl transition-colors font-medium"
                 >
                   Отмена
                 </button>
@@ -530,51 +530,51 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
       {/* --- ROLE EDITOR MODAL --- */}
       {isRoleModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
-          <div className="glass-panel bg-white/90 rounded-3xl w-full max-w-5xl shadow-2xl flex flex-col my-8 max-h-[90vh] border border-white/50">
-             <div className="p-6 border-b border-white/20 flex justify-between items-center bg-indigo-50/50">
-              <h2 className="text-xl font-extrabold text-indigo-900 flex items-center gap-2">
+          <div className="glass-panel bg-white/90 dark:bg-slate-800/90 rounded-3xl w-full max-w-5xl shadow-2xl flex flex-col my-8 max-h-[90vh] border border-white/50 dark:border-slate-700">
+             <div className="p-6 border-b border-white/20 dark:border-slate-700 flex justify-between items-center bg-indigo-50/50 dark:bg-indigo-900/20">
+              <h2 className="text-xl font-extrabold text-indigo-900 dark:text-indigo-300 flex items-center gap-2">
                   <Shield size={24} />
                   {editingRole ? 'Редактирование роли' : 'Создание роли'}
               </h2>
-              <button onClick={() => setIsRoleModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsRoleModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-200">
                 <X size={24} />
               </button>
             </div>
 
             <form onSubmit={handleRoleSave} className="flex-1 flex flex-col overflow-hidden">
-                <div className="p-6 bg-white/40 border-b border-white/20 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-6 bg-white/40 dark:bg-slate-700/30 border-b border-white/20 dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Название роли</label>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Название роли</label>
                         <input 
                             required
                             type="text" 
                             value={roleForm.name}
                             onChange={e => setRoleForm({...roleForm, name: e.target.value})}
-                            className="glass-input w-full px-3 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="glass-input w-full px-3 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
                             placeholder="Например: Бухгалтер"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-1">Описание</label>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Описание</label>
                         <input 
                             type="text" 
                             value={roleForm.description}
                             onChange={e => setRoleForm({...roleForm, description: e.target.value})}
-                            className="glass-input w-full px-3 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="glass-input w-full px-3 py-2.5 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"
                             placeholder="Краткое описание обязанностей"
                         />
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
-                    <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                         <Folder size={18} className="text-slate-500"/>
+                <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30 dark:bg-slate-900/30">
+                    <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                         <Folder size={18} className="text-slate-500 dark:text-gray-400"/>
                          Права доступа
                     </h3>
                     
-                    <div className="border border-white/40 rounded-2xl overflow-hidden bg-white/40 shadow-sm backdrop-blur-sm">
+                    <div className="border border-white/40 dark:border-slate-700 rounded-2xl overflow-hidden bg-white/40 dark:bg-slate-800/40 shadow-sm backdrop-blur-sm">
                         {/* Header Row */}
-                        <div className="flex items-center bg-slate-100/50 text-slate-600 font-bold text-xs uppercase tracking-wider border-b border-white/40">
+                        <div className="flex items-center bg-slate-100/50 dark:bg-slate-700/50 text-slate-600 dark:text-gray-300 font-bold text-xs uppercase tracking-wider border-b border-white/40 dark:border-slate-700">
                             <div className="flex-1 px-6 py-4">Раздел</div>
                             {ACTIONS.map(action => (
                                 <div key={action.id} className="w-[100px] text-center px-2 py-4">{action.label}</div>
@@ -583,17 +583,17 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                         </div>
 
                         {/* Hierarchical Rows */}
-                        <div className="divide-y divide-white/30">
+                        <div className="divide-y divide-white/30 dark:divide-slate-700">
                             {RESOURCE_TREE.map(section => {
                                 const isExpanded = expandedSections.has(section.id);
                                 return (
                                     <React.Fragment key={section.id}>
                                         {/* Section Header Row */}
                                         <div 
-                                            className="flex items-center bg-white/20 hover:bg-white/40 cursor-pointer transition-colors border-l-4 border-l-transparent hover:border-l-indigo-400"
+                                            className="flex items-center bg-white/20 dark:bg-slate-700/20 hover:bg-white/40 dark:hover:bg-slate-700/40 cursor-pointer transition-colors border-l-4 border-l-transparent hover:border-l-indigo-400"
                                             onClick={() => toggleSection(section.id)}
                                         >
-                                            <div className="flex-1 px-4 py-4 flex items-center gap-2 font-bold text-slate-800">
+                                            <div className="flex-1 px-4 py-4 flex items-center gap-2 font-bold text-slate-800 dark:text-white">
                                                 {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                                                 {section.label}
                                             </div>
@@ -608,28 +608,28 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                                             const isFull = resourcePerms.length === 4;
 
                                             return (
-                                                <div key={child.id} className="flex items-center hover:bg-indigo-50/30 transition-colors animate-in fade-in slide-in-from-top-1 bg-white/10">
-                                                    <div className="flex-1 px-4 py-3 pl-12 text-sm font-medium text-slate-700">
+                                                <div key={child.id} className="flex items-center hover:bg-indigo-50/30 dark:hover:bg-indigo-900/30 transition-colors animate-in fade-in slide-in-from-top-1 bg-white/10 dark:bg-slate-800/10">
+                                                    <div className="flex-1 px-4 py-3 pl-12 text-sm font-medium text-slate-700 dark:text-gray-300">
                                                         {child.label}
                                                     </div>
                                                     {ACTIONS.map(action => {
                                                         const isChecked = resourcePerms.includes(action.id);
                                                         return (
-                                                            <div key={action.id} className="w-[100px] flex justify-center py-3 border-l border-white/20">
+                                                            <div key={action.id} className="w-[100px] flex justify-center py-3 border-l border-white/20 dark:border-slate-700">
                                                                 <input 
                                                                     type="checkbox"
                                                                     checked={isChecked}
                                                                     onChange={() => togglePermission(child.id, action.id)}
-                                                                    className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-slate-300 cursor-pointer"
+                                                                    className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer bg-white dark:bg-slate-700"
                                                                 />
                                                             </div>
                                                         );
                                                     })}
-                                                    <div className="w-[60px] flex justify-center py-3 border-l border-white/20">
+                                                    <div className="w-[60px] flex justify-center py-3 border-l border-white/20 dark:border-slate-700">
                                                         <button 
                                                             type="button"
                                                             onClick={() => toggleRowPermissions(child.id)}
-                                                            className={`p-1.5 rounded-lg hover:bg-white/50 transition-colors ${isFull ? 'text-green-600 bg-green-50' : 'text-slate-300'}`}
+                                                            className={`p-1.5 rounded-lg hover:bg-white/50 dark:hover:bg-slate-700/50 transition-colors ${isFull ? 'text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-400' : 'text-slate-300 dark:text-gray-600'}`}
                                                             title={isFull ? 'Снять все' : 'Выбрать все'}
                                                         >
                                                             <Check size={18} />
@@ -645,11 +645,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                     </div>
                 </div>
 
-                <div className="p-6 border-t border-white/20 flex justify-end gap-3 bg-white/30">
+                <div className="p-6 border-t border-white/20 dark:border-slate-700 flex justify-end gap-3 bg-white/30 dark:bg-slate-800/30">
                     <button 
                         type="button" 
                         onClick={() => setIsRoleModalOpen(false)}
-                        className="px-6 py-2.5 bg-white/40 border border-white/50 text-slate-700 rounded-xl hover:bg-white/60 font-bold transition-colors"
+                        className="px-6 py-2.5 bg-white/40 dark:bg-slate-700/40 border border-white/50 dark:border-slate-600 text-slate-700 dark:text-gray-300 rounded-xl hover:bg-white/60 dark:hover:bg-slate-700/60 font-bold transition-colors"
                     >
                         Отмена
                     </button>

@@ -140,11 +140,11 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
   if (user.role !== UserRole.ADMIN) {
     return (
         <div className="flex flex-col items-center justify-center h-[50vh] text-center">
-            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+            <div className="w-16 h-16 bg-gray-200 dark:bg-slate-700 rounded-full flex items-center justify-center mb-4">
                 <DollarSign size={28} className="text-gray-400" />
             </div>
-            <h2 className="text-[20px] font-semibold text-black">Доступ ограничен</h2>
-            <p className="text-gray-500">Финансовый раздел доступен только руководителю.</p>
+            <h2 className="text-[20px] font-semibold text-black dark:text-white">Доступ ограничен</h2>
+            <p className="text-gray-500 dark:text-gray-400">Финансовый раздел доступен только руководителю.</p>
         </div>
     );
   }
@@ -725,11 +725,11 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       }
       for (let d = 1; d <= daysInMonth; d++) {
           const dateStr = formatDate(new Date(year, month, d));
-          let bgClass = "hover:bg-blue-50 text-slate-700";
+          let bgClass = "hover:bg-blue-50 text-slate-700 dark:text-slate-200 dark:hover:bg-slate-700";
           const isSelected = dateStr === tempRange.start || dateStr === tempRange.end;
           const isInRange = tempRange.start && tempRange.end && dateStr > tempRange.start && dateStr < tempRange.end;
           if (isSelected) bgClass = "bg-blue-600 text-white font-bold shadow-md transform scale-105 z-10";
-          else if (isInRange) bgClass = "bg-blue-100 text-blue-800";
+          else if (isInRange) bgClass = "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200";
 
           days.push(
               <button 
@@ -794,8 +794,8 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
     <div className="space-y-6 max-w-[1200px] mx-auto pb-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-           <h1 className="text-[34px] font-bold text-black tracking-tight leading-tight">Финансы</h1>
-           <p className="text-[17px] text-gray-500">Управление счетами и потоками</p>
+           <h1 className="text-[34px] font-bold text-black dark:text-white tracking-tight leading-tight">Финансы</h1>
+           <p className="text-[17px] text-gray-500 dark:text-gray-400">Управление счетами и потоками</p>
         </div>
         <div className="flex gap-3">
              <input 
@@ -807,7 +807,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
              />
              <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 bg-white text-gray-700 border border-gray-200 px-3 sm:px-5 py-2.5 rounded-full hover:bg-gray-50 transition-colors shadow-sm font-semibold text-[15px]"
+                className="flex items-center gap-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-slate-700 px-3 sm:px-5 py-2.5 rounded-full hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm font-semibold text-[15px]"
                 title="Импорт 1С"
              >
                 <Upload size={18} />
@@ -815,7 +815,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
              </button>
              <button 
                 onClick={openTxModal}
-                className="flex items-center gap-2 bg-black text-white px-3 sm:px-5 py-2.5 rounded-full hover:bg-gray-800 transition-colors shadow-sm font-semibold text-[15px]"
+                className="flex items-center gap-2 bg-black dark:bg-white text-white dark:text-black px-3 sm:px-5 py-2.5 rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors shadow-sm font-semibold text-[15px]"
                 title="Новая транзакция"
              >
                 <Plus size={18} />
@@ -826,11 +826,11 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
 
       {/* --- CRITICAL GAP WARNING --- */}
       {isHistoricalDataMissing && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm">
-              <FileWarning className="text-red-600 shrink-0 mt-0.5" size={24} />
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm">
+              <FileWarning className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" size={24} />
               <div>
-                  <h4 className="font-bold text-red-900 text-base">Критическое расхождение истории!</h4>
-                  <p className="text-sm text-red-800/90 mt-1 leading-relaxed">
+                  <h4 className="font-bold text-red-900 dark:text-red-200 text-base">Критическое расхождение истории!</h4>
+                  <p className="text-sm text-red-800/90 dark:text-red-300/90 mt-1 leading-relaxed">
                       Обнаружена ошибка: <b>Расход превышает Доход</b>, но на счетах положительный баланс.
                       <br/>
                       Это означает, что в системе отсутствует история накоплений за прошлые периоды. 
@@ -842,11 +842,11 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
 
       {/* --- GLOBAL WARNING FOR BANK UPDATES (Lesser Priority) --- */}
       {anyBankOutdated && !isHistoricalDataMissing && (
-          <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-              <AlertTriangle className="text-orange-600 shrink-0 mt-0.5" size={20} />
+          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 rounded-xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+              <AlertTriangle className="text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" size={20} />
               <div>
-                  <h4 className="font-bold text-orange-900 text-sm">Данные могут быть неточными</h4>
-                  <p className="text-sm text-orange-800/80 mt-1">
+                  <h4 className="font-bold text-orange-900 dark:text-orange-200 text-sm">Данные могут быть неточными</h4>
+                  <p className="text-sm text-orange-800/80 dark:text-orange-300/80 mt-1">
                       Для автоматической корректировки и точного вывода значений, пожалуйста, загрузите выписку 1С за весь текущий год.
                   </p>
               </div>
@@ -855,34 +855,34 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
 
       {/* --- SUMMARY CARDS --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white p-6 rounded-ios shadow-ios flex flex-col justify-between h-[140px]">
-              <div className="flex items-center gap-3 text-gray-500">
-                  <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Wallet size={20} /></div>
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-ios flex flex-col justify-between h-[140px]">
+              <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400"><Wallet size={20} /></div>
                   <span className="font-medium text-[15px]">Общий баланс</span>
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-black tracking-tight">{totalBalance.toLocaleString()} ₸</div>
+              <div className="text-2xl md:text-3xl font-bold text-black dark:text-white tracking-tight">{totalBalance.toLocaleString()} ₸</div>
           </div>
-          <div className="bg-white p-6 rounded-ios shadow-ios flex flex-col justify-between h-[140px]">
-              <div className="flex items-center gap-3 text-gray-500">
-                  <div className="p-2 bg-green-50 rounded-lg text-green-600"><TrendingUp size={20} /></div>
-                  <span className="font-medium text-[15px]">Доход <span className="text-xs font-normal text-gray-400">({dateFilter.label})</span></span>
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-ios flex flex-col justify-between h-[140px]">
+              <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                  <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg text-green-600 dark:text-green-400"><TrendingUp size={20} /></div>
+                  <span className="font-medium text-[15px]">Доход <span className="text-xs font-normal text-gray-400 dark:text-gray-500">({dateFilter.label})</span></span>
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-green-600 tracking-tight">+{periodIncome.toLocaleString()} ₸</div>
+              <div className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400 tracking-tight">+{periodIncome.toLocaleString()} ₸</div>
           </div>
-          <div className="bg-white p-6 rounded-ios shadow-ios flex flex-col justify-between h-[140px]">
-              <div className="flex items-center gap-3 text-gray-500">
-                  <div className="p-2 bg-red-50 rounded-lg text-red-600"><TrendingDown size={20} /></div>
-                  <span className="font-medium text-[15px]">Расход <span className="text-xs font-normal text-gray-400">({dateFilter.label})</span></span>
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-ios flex flex-col justify-between h-[140px]">
+              <div className="flex items-center gap-3 text-gray-500 dark:text-gray-400">
+                  <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400"><TrendingDown size={20} /></div>
+                  <span className="font-medium text-[15px]">Расход <span className="text-xs font-normal text-gray-400 dark:text-gray-500">({dateFilter.label})</span></span>
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-red-600 tracking-tight">-{periodExpense.toLocaleString()} ₸</div>
+              <div className="text-2xl md:text-3xl font-bold text-red-600 dark:text-red-400 tracking-tight">-{periodExpense.toLocaleString()} ₸</div>
           </div>
       </div>
 
       {/* --- ACCOUNTS SECTION --- */}
       <div className="space-y-3">
           <div className="flex justify-between items-center px-1">
-              <h2 className="text-[20px] font-bold text-black">Счета и Кассы</h2>
-              <button onClick={() => openAccountModal()} className="text-ios-blue text-sm font-semibold hover:opacity-70">
+              <h2 className="text-[20px] font-bold text-black dark:text-white">Счета и Кассы</h2>
+              <button onClick={() => openAccountModal()} className="text-ios-blue dark:text-blue-400 text-sm font-semibold hover:opacity-70">
                   + Добавить счет
               </button>
           </div>
@@ -894,8 +894,8 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   const isUpToDate = lastUpdate === todayIso;
                   
                   return (
-                    <div key={acc.id} className={`min-w-[280px] bg-white p-5 rounded-ios shadow-ios border flex flex-col justify-between h-[160px] relative overflow-hidden group transition-all ${!isUpToDate && acc.type === 'Bank' ? 'border-orange-200' : 'border-gray-100'}`}>
-                        <div className="absolute right-[-10px] top-[-10px] opacity-10 transform rotate-12 group-hover:scale-110 transition-transform pointer-events-none">
+                    <div key={acc.id} className={`min-w-[280px] bg-white dark:bg-slate-800 p-5 rounded-ios shadow-ios border flex flex-col justify-between h-[160px] relative overflow-hidden group transition-all ${!isUpToDate && acc.type === 'Bank' ? 'border-orange-200 dark:border-orange-800/30' : 'border-gray-100 dark:border-slate-700'}`}>
+                        <div className="absolute right-[-10px] top-[-10px] opacity-10 transform rotate-12 group-hover:scale-110 transition-transform pointer-events-none text-black dark:text-white">
                             {acc.type === 'Cash' ? <Wallet size={80} /> : acc.type === 'Bank' ? <Landmark size={80} /> : <CreditCard size={80} />}
                         </div>
                         
@@ -904,7 +904,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                              {acc.type === 'Cash' && (
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); initiateCashReconcile(acc); }}
-                                    className="p-1.5 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors mr-1"
+                                    className="p-1.5 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors mr-1"
                                     title="Сверка кассы за день"
                                 >
                                     <CheckSquare size={14} />
@@ -913,7 +913,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                              {/* Edit Button */}
                              <button 
                                 onClick={(e) => { e.stopPropagation(); openAccountModal(acc); }}
-                                className="p-1.5 bg-gray-100 text-gray-500 rounded-full hover:bg-blue-100 hover:text-blue-600 transition-colors"
+                                className="p-1.5 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                                 title="Редактировать"
                             >
                                 <Edit2 size={14} />
@@ -921,7 +921,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                             {/* Delete Button */}
                              <button 
                                 onClick={(e) => { e.stopPropagation(); initiateDeleteAccount(acc); }}
-                                className="p-1.5 bg-gray-100 text-gray-500 rounded-full hover:bg-red-100 hover:text-red-600 transition-colors"
+                                className="p-1.5 bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-gray-300 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                                 title="Удалить счет"
                             >
                                 <Trash2 size={14} />
@@ -930,48 +930,48 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
 
                         <div className="flex items-center gap-3">
                             <div className={`w-10 h-10 rounded-full flex items-center justify-center 
-                                ${acc.type === 'Cash' ? 'bg-green-100 text-green-600' : 
-                                  acc.type === 'Bank' ? 'bg-indigo-100 text-indigo-600' : 
-                                  'bg-purple-100 text-purple-600'}`}>
+                                ${acc.type === 'Cash' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 
+                                  acc.type === 'Bank' ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400' : 
+                                  'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'}`}>
                                     {acc.type === 'Cash' ? <DollarSign size={20} /> : acc.type === 'Bank' ? <Landmark size={20} /> : <CreditCard size={20} />}
                             </div>
                             <div>
-                                <div className="font-bold text-black text-[15px]">{acc.name}</div>
-                                <div className="text-xs text-gray-500 uppercase flex items-center gap-1">
+                                <div className="font-bold text-black dark:text-white text-[15px]">{acc.name}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 uppercase flex items-center gap-1">
                                     {acc.type === 'Cash' ? 'Наличные' : acc.type === 'Bank' ? 'Банк' : 'Подсчет'}
-                                    {parentAcc && <span className="text-[10px] bg-gray-100 px-1 rounded flex items-center"><CornerDownRight size={8} className="mr-0.5"/> {parentAcc.name}</span>}
+                                    {parentAcc && <span className="text-[10px] bg-gray-100 dark:bg-slate-700 px-1 rounded flex items-center"><CornerDownRight size={8} className="mr-0.5"/> {parentAcc.name}</span>}
                                 </div>
                             </div>
                         </div>
                         
                         <div>
-                            <div className="text-lg sm:text-xl md:text-2xl font-bold text-black">{acc.balance.toLocaleString()} ₸</div>
+                            <div className="text-lg sm:text-xl md:text-2xl font-bold text-black dark:text-white">{acc.balance.toLocaleString()} ₸</div>
                             {acc.accountNumber && (
-                                <div className="text-[10px] text-gray-400 font-mono mt-1 flex items-center gap-1">
+                                <div className="text-[10px] text-gray-400 dark:text-gray-500 font-mono mt-1 flex items-center gap-1">
                                     <Hash size={10} /> {acc.accountNumber}
                                 </div>
                             )}
                         </div>
 
                         {/* Status / Update Action */}
-                        <div className="pt-2 mt-auto border-t border-dashed border-gray-100">
+                        <div className="pt-2 mt-auto border-t border-dashed border-gray-100 dark:border-slate-700">
                             {acc.type === 'Bank' ? (
                                 !isUpToDate ? (
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                                        className="flex items-center gap-1.5 text-xs font-bold text-orange-600 bg-orange-50 px-2 py-1 rounded hover:bg-orange-100 transition-colors w-full justify-center animate-pulse"
+                                        className="flex items-center gap-1.5 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors w-full justify-center animate-pulse"
                                     >
                                         <FileUp size={12} />
                                         Требуется выписка (весь год)
                                     </button>
                                 ) : (
-                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded w-fit">
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded w-fit">
                                         <CheckCircle size={10} />
                                         Актуально (сегодня)
                                     </div>
                                 )
                             ) : (
-                                <div className="text-[10px] text-gray-400 italic">
+                                <div className="text-[10px] text-gray-400 dark:text-gray-500 italic">
                                     {acc.type === 'Cash' ? 'Сверка через кассу' : 'Синхронизируется автоматически'}
                                 </div>
                             )}
@@ -981,7 +981,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               })}
               
               {/* Add Button Card */}
-              <button onClick={() => openAccountModal()} className="min-w-[100px] flex flex-col items-center justify-center gap-2 rounded-ios border-2 border-dashed border-gray-300 text-gray-400 hover:border-ios-blue hover:text-ios-blue transition-colors h-[160px]">
+              <button onClick={() => openAccountModal()} className="min-w-[100px] flex flex-col items-center justify-center gap-2 rounded-ios border-2 border-dashed border-gray-300 dark:border-slate-600 text-gray-400 dark:text-gray-500 hover:border-ios-blue hover:text-ios-blue dark:hover:border-blue-400 dark:hover:text-blue-400 transition-colors h-[160px]">
                   <Plus size={24} />
                   <span className="text-sm font-medium">Новый</span>
               </button>
@@ -989,30 +989,30 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       </div>
 
       {/* --- TRANSACTIONS LIST --- */}
-      <div className="bg-white rounded-ios shadow-ios border border-gray-200 overflow-visible relative">
+      <div className="bg-white dark:bg-slate-800 rounded-ios shadow-ios border border-gray-200 dark:border-slate-700 overflow-visible relative">
           
           {/* Controls Bar */}
-          <div className="p-4 border-b border-gray-100 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+          <div className="p-4 border-b border-gray-100 dark:border-slate-700 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
               
               {/* Left Side: Title & Date */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full xl:w-auto">
-                 <h2 className="text-[17px] font-bold text-black whitespace-nowrap">История операций</h2>
+                 <h2 className="text-[17px] font-bold text-black dark:text-white whitespace-nowrap">История операций</h2>
                  
                  {/* Date Filter Dropdown */}
                  <div className="relative" ref={datePickerRef}>
                     <button 
                         onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-transparent hover:border-gray-200 rounded-full text-sm font-semibold text-gray-700 transition-all"
+                        className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-slate-700 hover:bg-gray-100 dark:hover:bg-slate-600 border border-transparent hover:border-gray-200 dark:hover:border-slate-500 rounded-full text-sm font-semibold text-gray-700 dark:text-gray-200 transition-all"
                     >
-                        <CalendarIcon size={16} className="text-gray-500"/>
+                        <CalendarIcon size={16} className="text-gray-500 dark:text-gray-400"/>
                         <span>{dateFilter.label}</span>
-                        <ChevronDown size={14} className={`text-gray-400 transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
+                        <ChevronDown size={14} className={`text-gray-400 dark:text-gray-500 transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     {isDatePickerOpen && (
-                        <div className="absolute top-full left-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 flex flex-col sm:flex-row w-[320px] sm:w-[540px] overflow-hidden animate-in fade-in slide-in-from-top-2">
+                        <div className="absolute top-full left-0 mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 flex flex-col sm:flex-row w-[320px] sm:w-[540px] overflow-hidden animate-in fade-in slide-in-from-top-2">
                             {/* Sidebar Presets */}
-                            <div className="w-full sm:w-1/3 bg-gray-50/80 border-b sm:border-b-0 sm:border-r border-gray-100 p-2 flex flex-col gap-1">
+                            <div className="w-full sm:w-1/3 bg-gray-50/80 dark:bg-slate-900/50 border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-slate-700 p-2 flex flex-col gap-1">
                                 <div className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Быстрый выбор</div>
                                 {[
                                     { id: 'month', label: 'За текущий месяц' },
@@ -1023,7 +1023,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                                     <button
                                         key={preset.id}
                                         onClick={() => handlePreset(preset.id as any)}
-                                        className={`text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${dateFilter.label === preset.label ? 'bg-white shadow-sm text-blue-600' : 'text-gray-600 hover:bg-gray-200/50'}`}
+                                        className={`text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${dateFilter.label === preset.label ? 'bg-white dark:bg-slate-800 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200/50 dark:hover:bg-slate-700/50'}`}
                                     >
                                         {preset.label}
                                     </button>
@@ -1033,9 +1033,9 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                             {/* Visual Calendar */}
                             <div className="w-full sm:w-2/3 p-4">
                                 <div className="flex items-center justify-between mb-4 px-1">
-                                    <button onClick={() => changeViewMonth(-1)} className="p-1 hover:bg-gray-100 rounded-full text-gray-500"><ChevronLeft size={20} /></button>
-                                    <span className="font-bold text-slate-800">{getMonthName(viewDate.getMonth())} {viewDate.getFullYear()}</span>
-                                    <button onClick={() => changeViewMonth(1)} className="p-1 hover:bg-gray-100 rounded-full text-gray-500"><ChevronRight size={20} /></button>
+                                    <button onClick={() => changeViewMonth(-1)} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full text-gray-500 dark:text-gray-400"><ChevronLeft size={20} /></button>
+                                    <span className="font-bold text-slate-800 dark:text-slate-200">{getMonthName(viewDate.getMonth())} {viewDate.getFullYear()}</span>
+                                    <button onClick={() => changeViewMonth(1)} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full text-gray-500 dark:text-gray-400"><ChevronRight size={20} /></button>
                                 </div>
 
                                 <div className="grid grid-cols-7 gap-1 text-center mb-2">
@@ -1047,15 +1047,15 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                                     {renderCalendar()}
                                 </div>
                                 
-                                <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
-                                    <div className="text-xs text-gray-500">
+                                <div className="mt-4 pt-3 border-t border-gray-100 dark:border-slate-700 flex justify-between items-center">
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">
                                         {tempRange.start ? `${tempRange.start} — ` : 'Выберите даты'}
                                         {tempRange.end ? tempRange.end : ''}
                                     </div>
                                     <button 
                                         onClick={applyCustomRange}
                                         disabled={!tempRange.start || !tempRange.end}
-                                        className="px-4 py-1.5 bg-black text-white text-xs font-bold rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                        className="px-4 py-1.5 bg-black dark:bg-white text-white dark:text-black text-xs font-bold rounded-lg hover:bg-gray-800 dark:hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                     >
                                         Применить
                                     </button>
@@ -1072,10 +1072,10 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                  {/* Delete Selected Action */}
                  {selectedTxIds.size > 0 && (
                      <div className="flex items-center gap-2 animate-in fade-in">
-                        <span className="text-xs font-bold text-gray-500">{selectedTxIds.size} выбрано</span>
+                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400">{selectedTxIds.size} выбрано</span>
                         <button 
                             onClick={handleDeleteSelected}
-                            className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg font-medium text-sm hover:bg-red-100 transition-colors"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg font-medium text-sm hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                         >
                             <Trash2 size={16} />
                             <span className="hidden sm:inline">Удалить</span>
@@ -1091,17 +1091,17 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Поиск..." 
-                        className="w-full sm:w-48 pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                        className="w-full sm:w-48 pl-9 pr-3 py-1.5 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-gray-900 dark:text-white"
                      />
                  </div>
 
                  {/* Type Switcher */}
-                 <div className="flex bg-gray-100 p-1 rounded-lg w-full sm:w-auto">
+                 <div className="flex bg-gray-100 dark:bg-slate-700 p-1 rounded-lg w-full sm:w-auto">
                     {(['All', 'Income', 'Expense'] as const).map(type => (
                         <button
                             key={type}
                             onClick={() => setFilterType(type)}
-                            className={`flex-1 sm:flex-none px-3 py-1 text-[13px] font-medium rounded-md transition-all ${filterType === type ? 'bg-white shadow-sm text-black' : 'text-gray-500 hover:text-gray-700'}`}
+                            className={`flex-1 sm:flex-none px-3 py-1 text-[13px] font-medium rounded-md transition-all ${filterType === type ? 'bg-white dark:bg-slate-600 shadow-sm text-black dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
                         >
                             {type === 'All' ? 'Все' : type === 'Income' ? 'Доходы' : 'Расходы'}
                         </button>
@@ -1112,7 +1112,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
           
           {/* SELECTION BANNER */}
           {isAllPageSelected && !isAllTotalSelected && (
-              <div className="bg-blue-50/80 border-b border-blue-100 p-2 text-center text-sm text-blue-800 animate-in fade-in slide-in-from-top-1">
+              <div className="bg-blue-50/80 dark:bg-blue-900/30 border-b border-blue-100 dark:border-blue-900/50 p-2 text-center text-sm text-blue-800 dark:text-blue-300 animate-in fade-in slide-in-from-top-1">
                   <span>Выбрано <b>{currentTransactions.length}</b> на этой странице.</span>
                   <button 
                     onClick={selectAllGlobally}
@@ -1123,7 +1123,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               </div>
           )}
           {isAllTotalSelected && totalItems > currentTransactions.length && (
-              <div className="bg-blue-50/80 border-b border-blue-100 p-2 text-center text-sm text-blue-800 animate-in fade-in slide-in-from-top-1">
+              <div className="bg-blue-50/80 dark:bg-blue-900/30 border-b border-blue-100 dark:border-blue-900/50 p-2 text-center text-sm text-blue-800 dark:text-blue-300 animate-in fade-in slide-in-from-top-1">
                   <span>Выбраны все <b>{totalItems}</b> транзакций.</span>
                   <button 
                     onClick={clearSelection}
@@ -1136,67 +1136,67 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
 
           <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                  <thead className="bg-gray-50 text-gray-500 font-medium">
+                  <thead className="bg-gray-50 dark:bg-slate-700/50 text-gray-500 dark:text-gray-400 font-medium">
                       <tr>
                           <th className="px-4 py-3 w-[40px] text-center">
                               {/* Master Checkbox: Selects ONLY CURRENT PAGE */}
                               <input 
                                 type="checkbox" 
-                                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                className="rounded border-gray-300 dark:border-slate-500 text-blue-600 focus:ring-blue-500 cursor-pointer dark:bg-slate-700"
                                 checked={isAllPageSelected}
                                 onChange={toggleSelectPage}
                               />
                           </th>
                           
-                          <th onClick={() => handleSort('date')} className="px-6 py-3 cursor-pointer hover:bg-gray-100 transition-colors group select-none">
+                          <th onClick={() => handleSort('date')} className="px-6 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors group select-none">
                               <div className="flex items-center gap-1">
                                   Дата
                                   {sortConfig?.key === 'date' ? (
-                                      sortConfig.direction === 'asc' ? <ChevronUp size={14} className="text-black"/> : <ChevronDown size={14} className="text-black"/>
+                                      sortConfig.direction === 'asc' ? <ChevronUp size={14} className="text-black dark:text-white"/> : <ChevronDown size={14} className="text-black dark:text-white"/>
                                   ) : (
                                       <ArrowUpDown size={14} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                                   )}
                               </div>
                           </th>
                           
-                          <th onClick={() => handleSort('category')} className="px-6 py-3 cursor-pointer hover:bg-gray-100 transition-colors group select-none">
+                          <th onClick={() => handleSort('category')} className="px-6 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors group select-none">
                               <div className="flex items-center gap-1">
                                   Категория / Описание
                                   {sortConfig?.key === 'category' ? (
-                                      sortConfig.direction === 'asc' ? <ChevronUp size={14} className="text-black"/> : <ChevronDown size={14} className="text-black"/>
+                                      sortConfig.direction === 'asc' ? <ChevronUp size={14} className="text-black dark:text-white"/> : <ChevronDown size={14} className="text-black dark:text-white"/>
                                   ) : (
                                       <ArrowUpDown size={14} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                                   )}
                               </div>
                           </th>
                           
-                          <th onClick={() => handleSort('account')} className="px-6 py-3 cursor-pointer hover:bg-gray-100 transition-colors group select-none">
+                          <th onClick={() => handleSort('account')} className="px-6 py-3 cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors group select-none">
                               <div className="flex items-center gap-1">
                                   Счет
                                   {sortConfig?.key === 'account' ? (
-                                      sortConfig.direction === 'asc' ? <ChevronUp size={14} className="text-black"/> : <ChevronDown size={14} className="text-black"/>
+                                      sortConfig.direction === 'asc' ? <ChevronUp size={14} className="text-black dark:text-white"/> : <ChevronDown size={14} className="text-black dark:text-white"/>
                                   ) : (
                                       <ArrowUpDown size={14} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                                   )}
                               </div>
                           </th>
                           
-                          <th onClick={() => handleSort('amount')} className="px-6 py-3 text-right cursor-pointer hover:bg-gray-100 transition-colors group select-none">
+                          <th onClick={() => handleSort('amount')} className="px-6 py-3 text-right cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors group select-none">
                               <div className="flex items-center justify-end gap-1">
                                   Сумма
                                   {sortConfig?.key === 'amount' ? (
-                                      sortConfig.direction === 'asc' ? <ChevronUp size={14} className="text-black"/> : <ChevronDown size={14} className="text-black"/>
+                                      sortConfig.direction === 'asc' ? <ChevronUp size={14} className="text-black dark:text-white"/> : <ChevronDown size={14} className="text-black dark:text-white"/>
                                   ) : (
                                       <ArrowUpDown size={14} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                                   )}
                               </div>
                           </th>
                           
-                          <th onClick={() => handleSort('type')} className="px-6 py-3 text-center cursor-pointer hover:bg-gray-100 transition-colors group select-none">
+                          <th onClick={() => handleSort('type')} className="px-6 py-3 text-center cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors group select-none">
                               <div className="flex items-center justify-center gap-1">
                                   Тип
                                   {sortConfig?.key === 'type' ? (
-                                      sortConfig.direction === 'asc' ? <ChevronUp size={14} className="text-black"/> : <ChevronDown size={14} className="text-black"/>
+                                      sortConfig.direction === 'asc' ? <ChevronUp size={14} className="text-black dark:text-white"/> : <ChevronDown size={14} className="text-black dark:text-white"/>
                                   ) : (
                                       <ArrowUpDown size={14} className="text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
                                   )}
@@ -1204,37 +1204,37 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                           </th>
                       </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                       {currentTransactions.length > 0 ? (
                           currentTransactions.map(tx => {
                             const account = accounts.find(a => a.id === tx.accountId);
                             const isSelected = selectedTxIds.has(tx.id);
                             return (
-                                <tr key={tx.id} className={`hover:bg-gray-50 transition-colors ${isSelected ? 'bg-blue-50/50' : ''}`}>
+                                <tr key={tx.id} className={`hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/20' : ''}`}>
                                     <td className="px-4 py-4 text-center">
                                         <input 
                                             type="checkbox" 
-                                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                            className="rounded border-gray-300 dark:border-slate-500 text-blue-600 focus:ring-blue-500 cursor-pointer dark:bg-slate-700"
                                             checked={isSelected}
                                             onChange={() => toggleSelectOne(tx.id)}
                                         />
                                     </td>
-                                    <td className="px-6 py-4 font-mono text-gray-600">{tx.date}</td>
+                                    <td className="px-6 py-4 font-mono text-gray-600 dark:text-gray-400">{tx.date}</td>
                                     <td className="px-6 py-4 max-w-[250px]">
-                                        <div className="font-semibold text-gray-900 flex items-center gap-2 truncate" title={tx.category}>
+                                        <div className="font-semibold text-gray-900 dark:text-gray-200 flex items-center gap-2 truncate" title={tx.category}>
                                             {tx.category}
-                                            {tx.is1C && <span className="bg-orange-100 text-orange-700 text-[10px] px-1.5 py-0.5 rounded border border-orange-200 font-bold shrink-0">1С</span>}
+                                            {tx.is1C && <span className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-[10px] px-1.5 py-0.5 rounded border border-orange-200 dark:border-orange-800 font-bold shrink-0">1С</span>}
                                         </div>
-                                        <div className="text-xs text-gray-500 truncate" title={tx.description}>{tx.description}</div>
+                                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate" title={tx.description}>{tx.description}</div>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-600 max-w-[150px] truncate" title={account ? account.name : 'Неизвестно'}>
+                                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400 max-w-[150px] truncate" title={account ? account.name : 'Неизвестно'}>
                                         {account ? account.name : 'Неизвестно'}
                                     </td>
-                                    <td className={`px-6 py-4 text-right font-bold text-[15px] ${tx.type === 'Income' ? 'text-green-600' : 'text-red-600'}`}>
+                                    <td className={`px-6 py-4 text-right font-bold text-[15px] ${tx.type === 'Income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                         {tx.type === 'Income' ? '+' : '-'}{tx.amount.toLocaleString()} ₸
                                     </td>
                                     <td className="px-6 py-4 text-center">
-                                        <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${tx.type === 'Income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                        <div className={`inline-flex items-center justify-center w-8 h-8 rounded-full ${tx.type === 'Income' ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'}`}>
                                             {tx.type === 'Income' ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
                                         </div>
                                     </td>
@@ -1243,7 +1243,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                         })
                       ) : (
                           <tr>
-                              <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                              <td colSpan={6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
                                   Нет операций за выбранный период
                               </td>
                           </tr>
@@ -1254,19 +1254,19 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
 
           {/* --- PAGINATION CONTROLS --- */}
           {totalItems > 0 && (
-              <div className="p-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50">
-                  <div className="text-xs text-gray-500 font-medium">
+              <div className="p-4 border-t border-gray-100 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50 dark:bg-slate-700/30">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                       Показано {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, totalItems)} из {totalItems}
                   </div>
                   
                   <div className="flex items-center gap-4">
                       {/* Items Per Page Select */}
                       <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Строк:</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Строк:</span>
                           <select 
                               value={itemsPerPage}
                               onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                              className="bg-white border border-gray-300 text-gray-700 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5"
+                              className="bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-200 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5"
                           >
                               {[10, 20, 30, 40, 50, 100, 1000].map(val => (
                                   <option key={val} value={val}>{val}</option>
@@ -1279,36 +1279,41 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                           <button 
                               onClick={() => handlePageChange(currentPage - 1)}
                               disabled={currentPage === 1}
-                              className="p-1.5 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                              className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-500 dark:text-gray-400 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                           >
                               <ChevronLeft size={18} />
                           </button>
                           
                           <div className="flex items-center gap-1">
-                              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                                  // Simple pagination logic to show around current page
-                                  let p = i + 1;
-                                  if (totalPages > 5) {
-                                      if (currentPage > 3) p = currentPage - 2 + i;
-                                      if (p > totalPages) p = totalPages - (4 - i);
+                              {(() => {
+                                  let startPage = Math.max(1, currentPage - 2);
+                                  let endPage = Math.min(totalPages, startPage + 4);
+                                  
+                                  if (endPage - startPage < 4) {
+                                      startPage = Math.max(1, endPage - 4);
                                   }
                                   
-                                  return (
+                                  const pages = [];
+                                  for (let i = startPage; i <= endPage; i++) {
+                                      pages.push(i);
+                                  }
+                                  
+                                  return pages.map(p => (
                                       <button
                                           key={p}
                                           onClick={() => handlePageChange(p)}
-                                          className={`w-7 h-7 rounded-md text-xs font-bold transition-colors ${currentPage === p ? 'bg-black text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200'}`}
+                                          className={`w-7 h-7 rounded-md text-xs font-bold transition-colors ${currentPage === p ? 'bg-black dark:bg-white text-white dark:text-black shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-slate-600'}`}
                                       >
                                           {p}
                                       </button>
-                                  );
-                              })}
+                                  ));
+                              })()}
                           </div>
 
                           <button 
                               onClick={() => handlePageChange(currentPage + 1)}
                               disabled={currentPage === totalPages}
-                              className="p-1.5 rounded-md hover:bg-gray-200 text-gray-500 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                              className="p-1.5 rounded-md hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-500 dark:text-gray-400 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                           >
                               <ChevronRight size={18} />
                           </button>
@@ -1321,12 +1326,12 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       {/* --- MODAL: NEW TRANSACTION --- */}
       {isTxModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col">
-            <div className={`p-6 border-b border-gray-100 flex justify-between items-center`}>
-              <h2 className={`text-xl font-bold flex items-center gap-2 text-gray-900`}>
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col">
+            <div className={`p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center`}>
+              <h2 className={`text-xl font-bold flex items-center gap-2 text-gray-900 dark:text-white`}>
                   Новая транзакция
               </h2>
-              <button onClick={() => setIsTxModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setIsTxModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                 <X size={24} />
               </button>
             </div>
@@ -1334,14 +1339,14 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
             <form onSubmit={handleTxSubmit} className="p-6 space-y-4">
               {/* ... existing form content ... */}
               {/* Type Switcher */}
-              <div className="flex bg-gray-100 p-1 rounded-xl">
+              <div className="flex bg-gray-100 dark:bg-slate-700 p-1 rounded-xl">
                 <button
                   type="button"
                   onClick={() => setTxType('Income')}
                   className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
                     txType === 'Income' 
-                      ? 'bg-white shadow-sm text-green-700' 
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-white dark:bg-slate-600 shadow-sm text-green-700 dark:text-green-400' 
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                   }`}
                 >
                   <ArrowDownLeft size={16} />
@@ -1352,8 +1357,8 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   onClick={() => setTxType('Expense')}
                   className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
                     txType === 'Expense' 
-                      ? 'bg-white shadow-sm text-red-700' 
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-white dark:bg-slate-600 shadow-sm text-red-700 dark:text-red-400' 
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                   }`}
                 >
                   <ArrowUpRight size={16} />
@@ -1362,29 +1367,29 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Сумма (₸)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Сумма (₸)</label>
                 <input 
                   required
                   autoFocus
                   type="number" 
                   value={txForm.amount}
                   onChange={e => setTxForm({...txForm, amount: e.target.value})}
-                  className={`w-full px-4 py-3 bg-white border rounded-lg focus:outline-none focus:ring-2 text-2xl font-bold text-gray-900 transition-colors ${
+                  className={`w-full px-4 py-3 bg-white dark:bg-slate-700 border rounded-lg focus:outline-none focus:ring-2 text-2xl font-bold text-gray-900 dark:text-white transition-colors ${
                       txType === 'Income' 
-                        ? 'border-gray-300 focus:ring-green-500' 
-                        : 'border-gray-300 focus:ring-red-500'
+                        ? 'border-gray-300 dark:border-slate-600 focus:ring-green-500' 
+                        : 'border-gray-300 dark:border-slate-600 focus:ring-red-500'
                   }`}
                   placeholder="0"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Счет / Касса</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Счет / Касса</label>
                 <select 
                   required
                   value={txForm.accountId}
                   onChange={e => setTxForm({...txForm, accountId: e.target.value})}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {accounts.map(acc => (
                       <option key={acc.id} value={acc.id}>{acc.name} ({acc.balance.toLocaleString()} ₸)</option>
@@ -1393,13 +1398,13 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Категория</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Категория</label>
                 <input 
                   required
                   type="text" 
                   value={txForm.category}
                   onChange={e => setTxForm({...txForm, category: e.target.value})}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder={txType === 'Income' ? "Оплата от клиента, Возврат..." : "Аренда, Зарплата, Закуп..."}
                   list="categories"
                 />
@@ -1414,24 +1419,24 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Описание / Комментарий</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Описание / Комментарий</label>
                 <textarea 
                   rows={2}
                   value={txForm.description}
                   onChange={e => setTxForm({...txForm, description: e.target.value})}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Детали операции..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Дата</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Дата</label>
                 <input 
                   required
                   type="date" 
                   value={txForm.date}
                   onChange={e => setTxForm({...txForm, date: e.target.value})}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -1439,7 +1444,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                 <button 
                   type="button" 
                   onClick={() => setIsTxModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   Отмена
                 </button>
@@ -1459,14 +1464,14 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       {/* --- MODAL: UNKNOWN ACCOUNT WARNING --- */}
       {isUnknownAccountModalOpen && pendingNewAccountDetails && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-              <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
-                  <div className="p-6 bg-red-50 border-b border-red-100 flex gap-4 items-start">
-                      <div className="p-2 bg-red-100 rounded-full text-red-600 shrink-0">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
+                  <div className="p-6 bg-red-50 dark:bg-red-900/30 border-b border-red-100 dark:border-red-900/50 flex gap-4 items-start">
+                      <div className="p-2 bg-red-100 dark:bg-red-900/50 rounded-full text-red-600 dark:text-red-400 shrink-0">
                           <AlertTriangle size={24} />
                       </div>
                       <div>
-                          <h3 className="text-lg font-bold text-red-900">Счет не найден</h3>
-                          <p className="text-sm text-red-700 mt-1">
+                          <h3 className="text-lg font-bold text-red-900 dark:text-red-300">Счет не найден</h3>
+                          <p className="text-sm text-red-700 dark:text-red-400 mt-1">
                               В файле выписки указан счет, которого еще нет в вашей системе.
                           </p>
                       </div>
@@ -1474,30 +1479,30 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   
                   <div className="p-6 space-y-4">
                       {/* ... existing modal content ... */}
-                      <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-sm">
+                      <div className="bg-gray-50 dark:bg-slate-700 p-4 rounded-xl border border-gray-200 dark:border-slate-600 text-sm">
                           <div className="mb-2 flex justify-between">
-                              <span className="text-gray-500 font-medium">Номер счета:</span> 
-                              <span className="font-mono font-bold text-gray-900">{pendingNewAccountDetails.number}</span>
+                              <span className="text-gray-500 dark:text-gray-400 font-medium">Номер счета:</span> 
+                              <span className="font-mono font-bold text-gray-900 dark:text-white">{pendingNewAccountDetails.number}</span>
                           </div>
                           <div className="mb-2 flex justify-between">
-                              <span className="text-gray-500 font-medium">Банк:</span> 
-                              <span className="font-bold text-gray-900 text-right max-w-[200px] truncate">{pendingNewAccountDetails.bankName}</span>
+                              <span className="text-gray-500 dark:text-gray-400 font-medium">Банк:</span> 
+                              <span className="font-bold text-gray-900 dark:text-white text-right max-w-[200px] truncate">{pendingNewAccountDetails.bankName}</span>
                           </div>
                           <div className="flex justify-between">
-                              <span className="text-gray-500 font-medium">Остаток в файле:</span> 
-                              <span className="font-bold text-gray-900">{pendingNewAccountDetails.balance.toLocaleString()} ₸</span>
+                              <span className="text-gray-500 dark:text-gray-400 font-medium">Остаток в файле:</span> 
+                              <span className="font-bold text-gray-900 dark:text-white">{pendingNewAccountDetails.balance.toLocaleString()} ₸</span>
                           </div>
                       </div>
 
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                           Чтобы продолжить импорт транзакций, необходимо сначала добавить этот счет в систему.
                       </p>
                   </div>
 
-                  <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                  <div className="p-4 bg-gray-50 dark:bg-slate-700/50 border-t border-gray-100 dark:border-slate-700 flex gap-3">
                       <button 
                           onClick={() => { setIsUnknownAccountModalOpen(false); setPendingImportTransactions(null); }}
-                          className="flex-1 px-4 py-2.5 text-gray-600 hover:bg-gray-200 rounded-xl transition-colors font-medium"
+                          className="flex-1 px-4 py-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl transition-colors font-medium"
                       >
                           Отмена
                       </button>
@@ -1515,28 +1520,28 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       {/* --- MODAL: DELETE TRANSACTIONS CONFIRMATION --- */}
       {isDeleteTxModalOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
                   <div className="p-6 text-center">
-                      <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
                           <Trash2 size={32} />
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">Удалить транзакции?</h3>
-                      <p className="text-sm text-gray-500 mb-4">
-                          Вы выбрали <span className="font-bold text-gray-800">{selectedTxIds.size}</span> операций.
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Удалить транзакции?</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                          Вы выбрали <span className="font-bold text-gray-800 dark:text-gray-200">{selectedTxIds.size}</span> операций.
                           <br/>
                           Это действие отменит влияние этих операций на баланс счетов.
                       </p>
-                      <div className="bg-red-50 p-3 rounded-lg border border-red-100 text-xs text-red-700 font-medium text-left flex items-start gap-2">
+                      <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-900/50 text-xs text-red-700 dark:text-red-300 font-medium text-left flex items-start gap-2">
                           <AlertTriangle size={14} className="shrink-0 mt-0.5" />
                           <div>
                               Действие необратимо. Удаленные транзакции нельзя будет восстановить.
                           </div>
                       </div>
                   </div>
-                  <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                  <div className="p-4 bg-gray-50 dark:bg-slate-700/50 border-t border-gray-100 dark:border-slate-700 flex gap-3">
                       <button 
                           onClick={() => setIsDeleteTxModalOpen(false)}
-                          className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-xl transition-colors font-medium"
+                          className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl transition-colors font-medium"
                       >
                           Отмена
                       </button>
@@ -1554,25 +1559,25 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       {/* --- MODAL: CASH RECONCILE --- */}
       {cashReconcileAccount && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                  <div className="p-6 border-b border-gray-100 bg-green-50 flex items-center justify-between">
-                      <h3 className="text-lg font-bold text-green-900 flex items-center gap-2">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                  <div className="p-6 border-b border-gray-100 dark:border-slate-700 bg-green-50 dark:bg-green-900/20 flex items-center justify-between">
+                      <h3 className="text-lg font-bold text-green-900 dark:text-green-300 flex items-center gap-2">
                           <Scale size={20} />
                           Сверка кассы
                       </h3>
-                      <button onClick={() => setCashReconcileAccount(null)} className="text-gray-400 hover:text-gray-600">
+                      <button onClick={() => setCashReconcileAccount(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                           <X size={20} />
                       </button>
                   </div>
                   
                   <form onSubmit={handleCashReconcileSubmit} className="p-6 space-y-4">
                       <div className="text-center mb-4">
-                          <div className="text-sm text-gray-500 mb-1">Расчетный остаток по системе</div>
-                          <div className="text-3xl font-bold text-gray-900">{cashReconcileAccount.balance.toLocaleString()} ₸</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Расчетный остаток по системе</div>
+                          <div className="text-3xl font-bold text-gray-900 dark:text-white">{cashReconcileAccount.balance.toLocaleString()} ₸</div>
                       </div>
 
                       <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Фактический остаток (в наличии)</label>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Фактический остаток (в наличии)</label>
                           <input 
                               autoFocus
                               type="number" 
@@ -1580,15 +1585,15 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                               value={cashActualBalance}
                               onChange={(e) => setCashActualBalance(e.target.value)}
                               placeholder="Введите сумму"
-                              className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 font-bold text-lg"
+                              className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 font-bold text-lg text-gray-900 dark:text-white"
                           />
                       </div>
 
                       {cashActualBalance && (
                           <div className={`p-3 rounded-lg border text-sm font-medium flex justify-between items-center ${
                               parseFloat(cashActualBalance) === cashReconcileAccount.balance 
-                              ? 'bg-green-100 border-green-200 text-green-800' 
-                              : 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                              ? 'bg-green-100 dark:bg-green-900/30 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300' 
+                              : 'bg-yellow-50 dark:bg-yellow-900/30 border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-300'
                           }`}>
                               <span>Разница:</span>
                               <span className="font-bold">
@@ -1613,27 +1618,27 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       {/* --- MODAL: DELETE ACCOUNT CONFIRMATION --- */}
       {deletingAccount && deleteStep > 0 && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-              <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
                   
                   {/* Step 1: Warning */}
                   {deleteStep === 1 && (
                       <>
                         <div className="p-6 text-center">
-                            <div className="w-16 h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <AlertTriangle size={32} />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Удалить счет?</h3>
-                            <p className="text-sm text-gray-500 mb-1">
-                                Вы собираетесь удалить счет <span className="font-bold text-gray-800">"{deletingAccount.name}"</span>.
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Удалить счет?</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
+                                Вы собираетесь удалить счет <span className="font-bold text-gray-800 dark:text-gray-200">"{deletingAccount.name}"</span>.
                             </p>
-                            <p className="text-sm text-gray-500">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
                                 Это действие требует подтверждения.
                             </p>
                         </div>
-                        <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                        <div className="p-4 bg-gray-50 dark:bg-slate-700/50 border-t border-gray-100 dark:border-slate-700 flex gap-3">
                             <button 
                                 onClick={() => { setDeletingAccount(null); setDeleteStep(0); }}
-                                className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-xl transition-colors font-medium"
+                                className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl transition-colors font-medium"
                             >
                                 Отмена
                             </button>
@@ -1650,26 +1655,26 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   {/* Step 2: Critical Danger */}
                   {deleteStep === 2 && (
                       <>
-                        <div className="p-6 text-center bg-red-50">
-                            <div className="w-16 h-16 bg-white text-red-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border-4 border-red-100">
+                        <div className="p-6 text-center bg-red-50 dark:bg-red-900/30">
+                            <div className="w-16 h-16 bg-white dark:bg-slate-800 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border-4 border-red-100 dark:border-red-900/50">
                                 <AlertOctagon size={32} />
                             </div>
-                            <h3 className="text-xl font-extrabold text-red-900 mb-2">ВНИМАНИЕ!</h3>
-                            <p className="text-sm text-red-800 mb-4 font-medium leading-relaxed">
+                            <h3 className="text-xl font-extrabold text-red-900 dark:text-red-300 mb-2">ВНИМАНИЕ!</h3>
+                            <p className="text-sm text-red-800 dark:text-red-300 mb-4 font-medium leading-relaxed">
                                 Если вы удалите этот счет, 
                                 <br/>
                                 <span className="text-base font-black underline decoration-red-400 decoration-2">ВСЕ {transactions.filter(t => t.accountId === deletingAccount.id).length} ТРАНЗАКЦИЙ</span>
                                 <br/>
                                 связанные с ним, будут удалены безвозвратно!
                             </p>
-                            <div className="text-xs text-red-600/80 bg-red-100/50 p-2 rounded-lg border border-red-200">
+                            <div className="text-xs text-red-600/80 dark:text-red-300/80 bg-red-100/50 dark:bg-red-900/50 p-2 rounded-lg border border-red-200 dark:border-red-900/50">
                                 Это действие нельзя отменить. Баланс будет пересчитан.
                             </div>
                         </div>
-                        <div className="p-4 bg-white border-t border-red-100 flex gap-3">
+                        <div className="p-4 bg-white dark:bg-slate-800 border-t border-red-100 dark:border-red-900/30 flex gap-3">
                             <button 
                                 onClick={() => { setDeletingAccount(null); setDeleteStep(0); }}
-                                className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors font-medium"
+                                className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
                             >
                                 Отмена
                             </button>
@@ -1686,15 +1691,15 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   {/* Step 3: Manual Confirmation */}
                   {deleteStep === 3 && (
                       <>
-                        <div className="p-6 bg-white">
+                        <div className="p-6 bg-white dark:bg-slate-800">
                             <div className="flex flex-col items-center text-center mb-4">
-                                <div className="w-12 h-12 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center mb-3">
+                                <div className="w-12 h-12 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400 rounded-full flex items-center justify-center mb-3">
                                     <ShieldAlert size={24} />
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-1">Финальная проверка</h3>
-                                <p className="text-sm text-gray-500">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Финальная проверка</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
                                     Чтобы подтвердить удаление, введите название счета <br/>
-                                    <span className="font-mono font-bold text-black bg-gray-100 px-1 rounded select-all">{deletingAccount.name}</span>
+                                    <span className="font-mono font-bold text-black dark:text-white bg-gray-100 dark:bg-slate-700 px-1 rounded select-all">{deletingAccount.name}</span>
                                 </p>
                             </div>
                             
@@ -1704,13 +1709,13 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                                 value={deleteConfirmationName}
                                 onChange={(e) => setDeleteConfirmationName(e.target.value)}
                                 placeholder="Введите название счета"
-                                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 transition-all font-medium text-center"
+                                className="w-full px-4 py-3 border-2 border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 dark:focus:ring-red-900/30 transition-all font-medium text-center"
                             />
                         </div>
-                        <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
+                        <div className="p-4 bg-gray-50 dark:bg-slate-700/50 border-t border-gray-100 dark:border-slate-700 flex gap-3">
                             <button 
                                 onClick={() => { setDeletingAccount(null); setDeleteStep(0); setDeleteConfirmationName(''); }}
-                                className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-xl transition-colors font-medium"
+                                className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl transition-colors font-medium"
                             >
                                 Отмена
                             </button>
@@ -1731,48 +1736,48 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       {/* --- MODAL: IMPORT RESULT --- */}
       {importResult.open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
              {/* Header */}
-             <div className="p-6 bg-blue-50 border-b border-blue-100 flex items-center justify-center flex-col text-center">
+             <div className="p-6 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/30 flex items-center justify-center flex-col text-center">
                  <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${importResult.added > 0 ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
                      <CheckCircle size={28} />
                  </div>
-                 <h2 className="text-xl font-bold text-gray-900">Импорт завершен</h2>
-                 <p className="text-sm text-gray-500 mt-1">Счет: <span className="font-semibold">{importResult.accountName}</span></p>
+                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">Импорт завершен</h2>
+                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Счет: <span className="font-semibold">{importResult.accountName}</span></p>
              </div>
              
              {/* Body */}
              <div className="p-6 space-y-4">
                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-center">
-                        <div className="text-xs text-gray-500 font-medium">Добавлено</div>
-                        <div className="text-lg font-bold text-green-600">+{importResult.added}</div>
+                    <div className="p-3 bg-gray-50 dark:bg-slate-700 rounded-xl border border-gray-100 dark:border-slate-600 text-center">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Добавлено</div>
+                        <div className="text-lg font-bold text-green-600 dark:text-green-400">+{importResult.added}</div>
                     </div>
-                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-center">
-                        <div className="text-xs text-gray-500 font-medium">Дубликаты</div>
-                        <div className="text-lg font-bold text-orange-600">{importResult.duplicates}</div>
+                    <div className="p-3 bg-gray-50 dark:bg-slate-700 rounded-xl border border-gray-100 dark:border-slate-600 text-center">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Дубликаты</div>
+                        <div className="text-lg font-bold text-orange-600 dark:text-orange-400">{importResult.duplicates}</div>
                     </div>
                  </div>
 
                  {/* Balance Check Logic */}
-                 <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 space-y-3">
-                     <h4 className="text-sm font-bold text-blue-900 flex items-center gap-2">
+                 <div className="bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 rounded-xl p-4 space-y-3">
+                     <h4 className="text-sm font-bold text-blue-900 dark:text-blue-200 flex items-center gap-2">
                          <Scale size={16} /> Сверка баланса по выписке
                      </h4>
                      
                      <div className="flex justify-between items-center text-sm">
-                         <span className="text-gray-600">Конечный остаток (Файл):</span>
-                         <span className="font-bold text-gray-900">
+                         <span className="text-gray-600 dark:text-gray-400">Конечный остаток (Файл):</span>
+                         <span className="font-bold text-gray-900 dark:text-white">
                              {importResult.fileFinalBalance !== undefined ? importResult.fileFinalBalance.toLocaleString() : 'Н/Д'} ₸
                          </span>
                      </div>
                      <div className="flex justify-between items-center text-sm">
-                         <span className="text-gray-600">Расчетный остаток (CRM):</span>
-                         <span className="font-bold text-gray-900">{importResult.projectedBalance.toLocaleString()} ₸</span>
+                         <span className="text-gray-600 dark:text-gray-400">Расчетный остаток (CRM):</span>
+                         <span className="font-bold text-gray-900 dark:text-white">{importResult.projectedBalance.toLocaleString()} ₸</span>
                      </div>
 
                      {importResult.fileFinalBalance !== undefined && importResult.fileFinalBalance !== importResult.projectedBalance && (
-                         <div className="bg-yellow-50 p-2 rounded-lg border border-yellow-200 text-xs text-yellow-800 mt-2">
+                         <div className="bg-yellow-50 dark:bg-yellow-900/30 p-2 rounded-lg border border-yellow-200 dark:border-yellow-800 text-xs text-yellow-800 dark:text-yellow-200 mt-2">
                              <div className="font-bold flex items-center gap-1 mb-1">
                                  <AlertTriangle size={12} /> Расхождение: {(importResult.fileFinalBalance - importResult.projectedBalance).toLocaleString()} ₸
                              </div>
@@ -1782,12 +1787,12 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                  </div>
                  
                  {importResult.added === 0 && importResult.duplicates === 0 && (
-                     <p className="text-center text-gray-500 text-sm">Нет данных для импорта.</p>
+                     <p className="text-center text-gray-500 dark:text-gray-400 text-sm">Нет данных для импорта.</p>
                  )}
              </div>
              
              {/* Footer */}
-             <div className="p-4 border-t border-gray-100 flex flex-col gap-2">
+             <div className="p-4 border-t border-gray-100 dark:border-slate-700 flex flex-col gap-2">
                  {(importResult.fileFinalBalance !== undefined && importResult.fileFinalBalance !== importResult.projectedBalance) ? (
                      <button 
                         onClick={applyImportCorrection}
@@ -1798,7 +1803,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                  ) : (
                     <button 
                         onClick={() => setImportResult({...importResult, open: false})}
-                        className="w-full py-3 bg-black text-white rounded-xl font-bold shadow-md hover:bg-gray-800 transition-colors"
+                        className="w-full py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold shadow-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
                     >
                         Отлично, закрыть
                     </button>
@@ -1811,15 +1816,15 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       {/* --- MODAL: NEW / EDIT ACCOUNT --- */}
       {isAccountModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-blue-50">
-              <h2 className="text-xl font-bold text-blue-900 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-blue-50 dark:bg-blue-900/20">
+              <h2 className="text-xl font-bold text-blue-900 dark:text-blue-200 flex items-center gap-2">
                   <Landmark size={24} />
                   {editingAccount ? 'Редактировать счет' : 'Новый счет'}
               </h2>
               <button 
                 onClick={() => { setIsAccountModalOpen(false); setPendingImportTransactions(null); }} 
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
               >
                 <X size={24} />
               </button>
@@ -1827,19 +1832,19 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
             
             <form onSubmit={handleAccountSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Название счета</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Название счета</label>
                 <input 
                   required
                   type="text" 
                   value={accForm.name}
                   onChange={e => setAccForm({...accForm, name: e.target.value})}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                   placeholder="Касса №2, Halyk Gold..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Тип счета</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Тип счета</label>
                 <div className="grid grid-cols-3 gap-2">
                     {[
                       { id: 'Cash', label: 'Касса' }, 
@@ -1850,7 +1855,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                             key={type.id}
                             type="button"
                             onClick={() => setAccForm({...accForm, type: type.id as AccountType, accountNumber: '', parentId: ''})}
-                            className={`py-2 px-1 rounded-lg border text-sm font-medium transition-colors ${accForm.type === type.id ? 'bg-blue-50 border-blue-500 text-blue-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                            className={`py-2 px-1 rounded-lg border text-sm font-medium transition-colors ${accForm.type === type.id ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300' : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'}`}
                         >
                             {type.label}
                         </button>
@@ -1860,14 +1865,14 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
 
               {(accForm.type === 'Bank' || accForm.type === 'SubAccount') && (
                   <div className="animate-in fade-in slide-in-from-top-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         {accForm.type === 'SubAccount' ? 'Номер карты / счета' : 'Номер счета (ИИК)'}
                     </label>
                     <input 
                       type="text" 
                       value={accForm.accountNumber}
                       onChange={e => setAccForm({...accForm, accountNumber: e.target.value})}
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm text-gray-900 dark:text-white"
                       placeholder={accForm.type === 'SubAccount' ? "0000 0000 0000 0000" : "KZ..."}
                     />
                   </div>
@@ -1875,12 +1880,12 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
 
               {accForm.type === 'SubAccount' && (
                   <div className="animate-in fade-in slide-in-from-top-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Родительский счет</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Родительский счет</label>
                     <select
                       required
                       value={accForm.parentId}
                       onChange={e => setAccForm({...accForm, parentId: e.target.value})}
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                         <option value="">Выберите главный счет</option>
                         {accounts.filter(a => a.type !== 'SubAccount' && a.id !== editingAccount?.id).map(a => (
@@ -1891,7 +1896,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     {editingAccount ? 'Текущий баланс' : 'Начальный остаток'}
                 </label>
                 <input 
@@ -1899,14 +1904,14 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   type="number" 
                   value={accForm.initialBalance}
                   onChange={e => setAccForm({...accForm, initialBalance: e.target.value})}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                   placeholder="0"
                 />
               </div>
 
               {/* Import specific warning inside the create modal too, just in case context is needed */}
               {pendingImportTransactions && (
-                  <div className="bg-blue-50 text-blue-800 p-3 rounded-lg text-sm border border-blue-200 flex gap-2">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-3 rounded-lg text-sm border border-blue-200 dark:border-blue-900/40 flex gap-2">
                       <FileText size={16} className="shrink-0 mt-0.5" />
                       <div>
                           <strong>Авто-импорт:</strong> При создании будет загружено {pendingImportTransactions.length} операций.
@@ -1918,7 +1923,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                 <button 
                   type="button" 
                   onClick={() => { setIsAccountModalOpen(false); setPendingImportTransactions(null); }}
-                  className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   Отмена
                 </button>

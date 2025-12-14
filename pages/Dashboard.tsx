@@ -75,7 +75,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
     
     return (
       <div className="space-y-6 max-w-5xl mx-auto">
-        <h1 className="text-[34px] font-bold text-black tracking-tight mb-2">Главная</h1>
+        <h1 className="text-[34px] font-bold text-black dark:text-white tracking-tight mb-2">Главная</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Main Widget */}
@@ -128,28 +128,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
 
             {/* Small Widgets */}
             <div className="grid grid-cols-2 gap-4">
-                 <div className="bg-white rounded-ios p-6 shadow-ios flex flex-col justify-between">
+                 <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios flex flex-col justify-between">
                     <div className="w-10 h-10 bg-ios-green/10 text-ios-green rounded-full flex items-center justify-center mb-2">
                         <CheckCircle size={20} />
                     </div>
                     <div>
-                        <div className="text-[32px] font-bold text-black">{completedToday}</div>
-                        <div className="text-[15px] text-gray-500 font-medium">Выполнено</div>
+                        <div className="text-[32px] font-bold text-black dark:text-white">{completedToday}</div>
+                        <div className="text-[15px] text-gray-500 dark:text-gray-400 font-medium">Выполнено</div>
                     </div>
                  </div>
-                 <div className="bg-white rounded-ios p-6 shadow-ios flex flex-col justify-between">
+                 <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios flex flex-col justify-between">
                     <div className="w-10 h-10 bg-ios-blue/10 text-ios-blue rounded-full flex items-center justify-center mb-2">
                         <TrendingUp size={20} />
                     </div>
                     <div>
-                        <div className="text-[32px] font-bold text-black">18.5k</div>
-                        <div className="text-[15px] text-gray-500 font-medium">Заработано</div>
+                        <div className="text-[32px] font-bold text-black dark:text-white">18.5k</div>
+                        <div className="text-[15px] text-gray-500 dark:text-gray-400 font-medium">Заработано</div>
                     </div>
                  </div>
-                 <div className="bg-white rounded-ios p-6 shadow-ios col-span-2 flex items-center justify-between">
+                 <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios col-span-2 flex items-center justify-between">
                     <div>
-                        <div className="text-[13px] text-gray-400 font-medium uppercase mb-1">Рейтинг</div>
-                        <div className="text-[28px] font-bold text-black">4.9 <span className="text-gray-300 text-[20px]">/ 5.0</span></div>
+                        <div className="text-[13px] text-gray-400 dark:text-gray-500 font-medium uppercase mb-1">Рейтинг</div>
+                        <div className="text-[28px] font-bold text-black dark:text-white">4.9 <span className="text-gray-300 text-[20px]">/ 5.0</span></div>
                     </div>
                     <div className="flex gap-1">
                         {[1,2,3,4,5].map(s => <div key={s} className="w-2 h-8 rounded-full bg-ios-yellow"></div>)}
@@ -159,25 +159,25 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
         </div>
 
         <div className="mt-8">
-            <h2 className="text-[22px] font-bold text-black mb-4">Ближайшие задачи</h2>
-            <div className="ios-list-group shadow-sm">
+            <h2 className="text-[22px] font-bold text-black dark:text-white mb-4">Ближайшие задачи</h2>
+            <div className="ios-list-group shadow-sm dark:bg-slate-800">
                 {myTasks.slice(0, 3).map(task => (
-                    <div key={task.id} className="ios-list-item justify-between group cursor-pointer hover:bg-gray-50 transition-colors">
+                    <div key={task.id} className="ios-list-item justify-between group cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
                         <div>
-                            <div className="font-semibold text-[17px] text-black mb-1">{task.title}</div>
-                            <div className="text-[15px] text-gray-500 flex items-center gap-1">
+                            <div className="font-semibold text-[17px] text-black dark:text-white mb-1">{task.title}</div>
+                            <div className="text-[15px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
                                 <MapPin size={14} /> {task.address}
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
                             <span className={`px-3 py-1 rounded-full text-[13px] font-medium ${
-                                task.status === TaskStatus.NEW ? 'bg-blue-100 text-blue-700' :
-                                task.status === TaskStatus.IN_PROGRESS ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-green-100 text-green-700'
+                                task.status === TaskStatus.NEW ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
+                                task.status === TaskStatus.IN_PROGRESS ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
+                                'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                             }`}>
                                 {task.status}
                             </span>
-                            <ChevronRight size={18} className="text-gray-300" />
+                            <ChevronRight size={18} className="text-gray-300 dark:text-gray-600" />
                         </div>
                     </div>
                 ))}
@@ -192,12 +192,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
     <div className="space-y-6 max-w-[1400px] mx-auto">
       <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-end mb-4">
         <div>
-          <h1 className="text-[34px] font-bold text-black tracking-tight leading-tight">Обзор</h1>
-          <p className="text-[17px] text-gray-500">Октябрь 2023</p>
+          <h1 className="text-[34px] font-bold text-black dark:text-white tracking-tight leading-tight">Обзор</h1>
+          <p className="text-[17px] text-gray-500 dark:text-gray-400">Октябрь 2023</p>
         </div>
         
-        <div className="bg-white rounded-full p-1 pl-4 pr-1 shadow-sm flex items-center gap-3">
-             <div className="text-[13px] font-semibold text-gray-500 uppercase tracking-wide">Статус:</div>
+        <div className="bg-white dark:bg-slate-800 rounded-full p-1 pl-4 pr-1 shadow-sm flex items-center gap-3">
+             <div className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Статус:</div>
              {isCheckedIn ? (
                 <button onClick={onCheckOut} className="bg-ios-red text-white px-4 py-1.5 rounded-full font-medium text-[15px] flex items-center gap-2 active:scale-95 transition-transform">
                     <Square size={12} fill="currentColor"/> Стоп ({todayEntry.checkIn})
@@ -218,24 +218,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
             { label: 'Долги по ТО', value: pendingService, icon: AlertCircle, color: 'text-ios-orange', bg: 'bg-ios-orange' },
             { label: 'Новые клиенты', value: '12', icon: ArrowUpRight, color: 'text-ios-indigo', bg: 'bg-ios-indigo' }
         ].map((stat, i) => (
-            <div key={i} className="bg-white p-5 rounded-ios shadow-ios hover:scale-[1.02] transition-transform">
+            <div key={i} className="bg-white dark:bg-slate-800 p-5 rounded-ios shadow-ios hover:scale-[1.02] transition-transform">
                 <div className="flex justify-between items-start mb-4">
                     <div className={`w-10 h-10 ${stat.bg}/10 ${stat.color} rounded-full flex items-center justify-center`}>
                         <stat.icon size={22} />
                     </div>
-                    <ChevronRight size={18} className="text-gray-300" />
+                    <ChevronRight size={18} className="text-gray-300 dark:text-gray-600" />
                 </div>
-                <div className="text-[13px] font-medium text-gray-500 uppercase tracking-wide mb-1">{stat.label}</div>
-                <div className="text-[28px] font-bold text-black leading-none">{stat.value}</div>
+                <div className="text-[13px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{stat.label}</div>
+                <div className="text-[28px] font-bold text-black dark:text-white leading-none">{stat.value}</div>
             </div>
         ))}
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-ios shadow-ios lg:col-span-2">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-ios lg:col-span-2">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-[20px] font-bold text-black">Динамика продаж</h3>
+            <h3 className="text-[20px] font-bold text-black dark:text-white">Динамика продаж</h3>
           </div>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -260,8 +260,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-ios shadow-ios flex flex-col">
-          <h3 className="text-[20px] font-bold text-black mb-6">Статус заявок</h3>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-ios flex flex-col">
+          <h3 className="text-[20px] font-bold text-black dark:text-white mb-6">Статус заявок</h3>
           <div className="h-[220px] w-full relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -292,8 +292,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
             </ResponsiveContainer>
              {/* Center Text */}
              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-3xl font-bold text-black">{activeTasks}</span>
-                <span className="text-xs text-gray-500 uppercase font-semibold">Активно</span>
+                <span className="text-3xl font-bold text-black dark:text-white">{activeTasks}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Активно</span>
             </div>
           </div>
           
@@ -302,9 +302,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="w-3 h-3 rounded-full" style={{backgroundColor: COLORS[index]}}></div>
-                    <span className="text-[15px] text-gray-700 font-medium">{entry.name}</span>
+                    <span className="text-[15px] text-gray-700 dark:text-gray-300 font-medium">{entry.name}</span>
                 </div>
-                <span className="text-[15px] font-bold text-black">{entry.value}</span>
+                <span className="text-[15px] font-bold text-black dark:text-white">{entry.value}</span>
               </div>
             ))}
           </div>

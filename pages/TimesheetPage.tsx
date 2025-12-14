@@ -249,34 +249,34 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
     };
 
     const getCellClass = (status?: AttendanceStatus, isWknd?: boolean) => {
-        let base = "border-r border-b border-gray-300 h-8 text-center text-sm cursor-pointer hover:bg-blue-100 transition-colors select-none";
-        if (isWknd) base += " bg-yellow-100";
+        let base = "border-r border-b border-gray-300 dark:border-slate-700 h-8 text-center text-sm cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors select-none text-gray-900 dark:text-gray-300";
+        if (isWknd) base += " bg-yellow-100 dark:bg-yellow-900/20";
         if (!status) return base;
         switch(status) {
-            case AttendanceStatus.SICK: return `${base} bg-yellow-200 text-yellow-800 font-bold`;
-            case AttendanceStatus.ABSENT: return `${base} bg-red-200 text-red-800 font-bold`;
-            case AttendanceStatus.LEAVE: return `${base} bg-blue-200 text-blue-800 font-bold`;
-            case AttendanceStatus.FIRED: return `${base} bg-gray-300 text-gray-700`;
+            case AttendanceStatus.SICK: return `${base} bg-yellow-200 text-yellow-800 dark:bg-yellow-900/60 dark:text-yellow-200 font-bold`;
+            case AttendanceStatus.ABSENT: return `${base} bg-red-200 text-red-800 dark:bg-red-900/60 dark:text-red-200 font-bold`;
+            case AttendanceStatus.LEAVE: return `${base} bg-blue-200 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 font-bold`;
+            case AttendanceStatus.FIRED: return `${base} bg-gray-300 text-gray-700 dark:bg-gray-700 dark:text-gray-400`;
             default: return base;
         }
     };
 
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
             <table className="w-full border-collapse min-w-max">
                 <thead>
                     <tr>
-                        <th className="border-b border-r border-gray-300 bg-blue-50 p-2 text-left min-w-[200px] z-10 sticky left-0 text-blue-900 font-bold">
+                        <th className="border-b border-r border-gray-300 dark:border-slate-700 bg-blue-50 dark:bg-slate-900/50 p-2 text-left min-w-[200px] z-10 sticky left-0 text-blue-900 dark:text-blue-200 font-bold">
                             {getHeaderDateLabel()}
                         </th>
                         {daysArray.map(day => (
-                            <th key={`h-${day}`} className={`border-b border-r border-gray-300 p-1 min-w-[30px] text-xs ${isWeekend(day) ? 'bg-yellow-200' : 'bg-blue-50'}`}>
-                                <div className="font-bold text-gray-700">{String(day).padStart(2, '0')}</div>
-                                <div className="font-normal text-gray-500 uppercase text-[10px]">{getDayLabel(day)}</div>
+                            <th key={`h-${day}`} className={`border-b border-r border-gray-300 dark:border-slate-700 p-1 min-w-[30px] text-xs ${isWeekend(day) ? 'bg-yellow-200 dark:bg-yellow-900/30' : 'bg-blue-50 dark:bg-slate-900/30'}`}>
+                                <div className="font-bold text-gray-700 dark:text-gray-300">{String(day).padStart(2, '0')}</div>
+                                <div className="font-normal text-gray-500 dark:text-gray-400 uppercase text-[10px]">{getDayLabel(day)}</div>
                             </th>
                         ))}
-                        <th className="border-b border-l border-gray-300 bg-green-50 p-2 min-w-[60px] text-xs font-bold text-green-900">
+                        <th className="border-b border-l border-gray-300 dark:border-slate-700 bg-green-50 dark:bg-green-900/20 p-2 min-w-[60px] text-xs font-bold text-green-900 dark:text-green-300">
                             Всего
                         </th>
                     </tr>
@@ -285,10 +285,10 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                     {visibleUsers.map(u => {
                         let userTotalHours = 0;
                         return (
-                            <tr key={u.id} className="hover:bg-gray-50">
-                                <td className="border-r border-b border-gray-300 p-2 bg-white sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                                    <div className="text-sm font-medium text-gray-900 truncate w-48">{u.name}</div>
-                                    <div className="text-[10px] text-gray-500 truncate w-48">{u.position}</div>
+                            <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
+                                <td className="border-r border-b border-gray-300 dark:border-slate-700 p-2 bg-white dark:bg-slate-800 sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                    <div className="text-sm font-medium text-gray-900 dark:text-white truncate w-48">{u.name}</div>
+                                    <div className="text-[10px] text-gray-500 dark:text-gray-400 truncate w-48">{u.position}</div>
                                 </td>
                                 {daysArray.map(day => {
                                     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
@@ -300,7 +300,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                                         </td>
                                     );
                                 })}
-                                <td className="border-b border-l border-gray-300 bg-green-50 text-center text-sm font-bold text-gray-800">
+                                <td className="border-b border-l border-gray-300 dark:border-slate-700 bg-green-50 dark:bg-green-900/20 text-center text-sm font-bold text-gray-800 dark:text-white">
                                     {userTotalHours}
                                 </td>
                             </tr>
@@ -309,11 +309,11 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                 </tbody>
             </table>
         </div>
-        <div className="p-3 bg-gray-50 border-t border-gray-200 text-xs text-gray-500 flex flex-wrap gap-4">
+        <div className="p-3 bg-gray-50 dark:bg-slate-700/50 border-t border-gray-200 dark:border-slate-700 text-xs text-gray-500 dark:text-gray-400 flex flex-wrap gap-4">
             <span className="flex items-center gap-1"><span className="font-bold">8</span> - Присутствие (часов)</span>
-            <span className="flex items-center gap-1"><span className="font-bold bg-yellow-200 px-1 rounded">Б</span> - Больничный</span>
-            <span className="flex items-center gap-1"><span className="font-bold bg-red-200 px-1 rounded">Н</span> - Прогул/Неявка</span>
-            <span className="flex items-center gap-1"><span className="font-bold bg-blue-200 px-1 rounded">О</span> - Отпуск/Отгул</span>
+            <span className="flex items-center gap-1"><span className="font-bold bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-200 px-1 rounded">Б</span> - Больничный</span>
+            <span className="flex items-center gap-1"><span className="font-bold bg-red-200 dark:bg-red-900/50 dark:text-red-200 px-1 rounded">Н</span> - Прогул/Неявка</span>
+            <span className="flex items-center gap-1"><span className="font-bold bg-blue-200 dark:bg-blue-900/50 dark:text-blue-200 px-1 rounded">О</span> - Отпуск/Отгул</span>
         </div>
       </div>
     );
@@ -321,11 +321,11 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
 
   const renderDayView = () => {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 text-gray-600 font-medium text-sm border-b border-gray-200">
+              <tr className="bg-gray-50 dark:bg-slate-900/50 text-gray-600 dark:text-gray-400 font-medium text-sm border-b border-gray-200 dark:border-slate-700">
                 <th className="px-6 py-4 w-1/3">Сотрудник</th>
                 <th className="px-6 py-4">Статус</th>
                 <th className="px-6 py-4">Приход</th>
@@ -333,15 +333,15 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                 <th className="px-6 py-4 text-center">Действия</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
               {visibleUsers.map(u => {
                 const entry = getEntryForUser(u.id, selectedDate);
                 const isEditing = editingEntry === u.id;
                 const canEdit = user.role === UserRole.ADMIN || user.role === UserRole.MANAGER || user.id === u.id;
-                let rowClass = "hover:bg-gray-50 transition-colors";
-                if (entry?.status === AttendanceStatus.ABSENT) rowClass += " bg-red-50 hover:bg-red-100";
-                if (entry?.status === AttendanceStatus.SICK) rowClass += " bg-yellow-50 hover:bg-yellow-100";
-                if (entry?.status === AttendanceStatus.FIRED) rowClass += " bg-gray-100 text-gray-400";
+                let rowClass = "hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors";
+                if (entry?.status === AttendanceStatus.ABSENT) rowClass += " bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30";
+                if (entry?.status === AttendanceStatus.SICK) rowClass += " bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30";
+                if (entry?.status === AttendanceStatus.FIRED) rowClass += " bg-gray-100 dark:bg-slate-900 text-gray-400";
 
                 return (
                   <tr key={u.id} className={rowClass}>
@@ -349,11 +349,11 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                       <div className="flex items-center gap-3">
                         <img src={u.avatar} alt={u.name} className={`w-10 h-10 rounded-full object-cover border-2 ${entry?.status === AttendanceStatus.PRESENT ? 'border-green-400' : 'border-transparent'}`} />
                         <div>
-                          <div className="font-semibold text-gray-900 flex items-center gap-2">
+                          <div className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                              {u.name}
                              {entry?.status === AttendanceStatus.FIRED && <span className="text-[10px] bg-gray-600 text-white px-1.5 py-0.5 rounded">УВОЛЕН</span>}
                           </div>
-                          <div className="text-xs text-gray-500">{u.position || u.role}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{u.position || u.role}</div>
                         </div>
                       </div>
                     </td>
@@ -362,7 +362,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                         <select 
                           value={entry?.status || ''} 
                           onChange={(e) => handleStatusChange(u.id, e.target.value as AttendanceStatus)}
-                          className="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                          className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                         >
                           <option value="">Не отмечен</option>
                           <option value={AttendanceStatus.PRESENT}>✅ Присутствовал</option>
@@ -374,13 +374,13 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                         </select>
                       ) : (
                         <span className={`px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1
-                          ${!entry ? 'bg-gray-100 text-gray-500' : 
-                            entry.status === AttendanceStatus.PRESENT ? 'bg-green-100 text-green-700' :
-                            entry.status === AttendanceStatus.LATE ? 'bg-orange-100 text-orange-700' :
-                            entry.status === AttendanceStatus.ABSENT ? 'bg-red-100 text-red-700' :
-                            entry.status === AttendanceStatus.SICK ? 'bg-yellow-100 text-yellow-700' :
-                            entry.status === AttendanceStatus.FIRED ? 'bg-gray-200 text-gray-600' :
-                            'bg-blue-100 text-blue-700'
+                          ${!entry ? 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400' : 
+                            entry.status === AttendanceStatus.PRESENT ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+                            entry.status === AttendanceStatus.LATE ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
+                            entry.status === AttendanceStatus.ABSENT ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
+                            entry.status === AttendanceStatus.SICK ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                            entry.status === AttendanceStatus.FIRED ? 'bg-gray-200 text-gray-600 dark:bg-slate-700 dark:text-gray-400' :
+                            'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                           }`}
                         >
                           {!entry ? 'Нет данных' : entry.status}
@@ -393,12 +393,12 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                           type="time" 
                           value={entry?.checkIn || ''}
                           onChange={(e) => handleTimeChange(u.id, 'checkIn', e.target.value)}
-                          className="p-1 border border-gray-300 rounded w-28 text-sm"
+                          className="p-1 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded w-28 text-sm"
                           disabled={!entry || (entry.status !== AttendanceStatus.PRESENT && entry.status !== AttendanceStatus.LATE)}
                         />
                       ) : (
                          <div className="flex items-center gap-2">
-                             <div className="text-sm font-mono text-gray-700">{entry?.checkIn || '-'}</div>
+                             <div className="text-sm font-mono text-gray-700 dark:text-gray-300">{entry?.checkIn || '-'}</div>
                              {entry?.location && <div className="text-blue-500"><MapPin size={14} /></div>}
                          </div>
                       )}
@@ -409,11 +409,11 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                           type="time" 
                           value={entry?.checkOut || ''}
                           onChange={(e) => handleTimeChange(u.id, 'checkOut', e.target.value)}
-                          className="p-1 border border-gray-300 rounded w-28 text-sm"
+                          className="p-1 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded w-28 text-sm"
                           disabled={!entry || (entry.status !== AttendanceStatus.PRESENT && entry.status !== AttendanceStatus.LATE)}
                         />
                       ) : (
-                         <div className="text-sm font-mono text-gray-700">{entry?.checkOut || '-'}</div>
+                         <div className="text-sm font-mono text-gray-700 dark:text-gray-300">{entry?.checkOut || '-'}</div>
                       )}
                     </td>
                     <td className="px-6 py-4 text-center">
@@ -423,7 +423,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                             <Save size={18} />
                           </button>
                         ) : (
-                          <button onClick={() => setEditingEntry(u.id)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                          <button onClick={() => setEditingEntry(u.id)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
                             <Edit2 size={18} />
                           </button>
                         )
@@ -455,9 +455,9 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                 )}
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
                 <table className="w-full text-left text-sm">
-                    <thead className="bg-gray-50 text-gray-700 font-medium">
+                    <thead className="bg-gray-50 dark:bg-slate-900/50 text-gray-700 dark:text-gray-400 font-medium">
                         <tr>
                             <th className="px-6 py-4">Сотрудник</th>
                             <th className="px-6 py-4 text-right">Оклад (мес.)</th>
@@ -470,7 +470,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                             )}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                         {visibleUsers.map(u => {
                             const currentMonth = new Date().getMonth();
                             const currentYear = new Date().getFullYear();
@@ -485,35 +485,35 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                             const toPay = earned - userAdvances;
 
                             return (
-                                <tr key={u.id} className="hover:bg-gray-50">
+                                <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover" />
                                             <div>
-                                                <div className="font-semibold text-gray-900">{u.name}</div>
-                                                <div className="text-xs text-gray-500">{u.position}</div>
+                                                <div className="font-semibold text-gray-900 dark:text-white">{u.name}</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400">{u.position}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-right font-medium text-gray-900">{u.salary.toLocaleString()} ₸</td>
-                                    <td className="px-6 py-4 text-center"><span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-bold">{workedDays} / {workDaysNorm}</span></td>
-                                    <td className="px-6 py-4 text-right text-green-600 font-medium">+{Math.round(earned).toLocaleString()} ₸</td>
-                                    <td className="px-6 py-4 text-right text-orange-600 font-medium">-{userAdvances.toLocaleString()} ₸</td>
-                                    <td className="px-6 py-4 text-right font-bold text-gray-900 text-lg">{Math.round(toPay).toLocaleString()} ₸</td>
+                                    <td className="px-6 py-4 text-right font-medium text-gray-900 dark:text-white">{u.salary.toLocaleString()} ₸</td>
+                                    <td className="px-6 py-4 text-center"><span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-1 rounded-full text-xs font-bold">{workedDays} / {workDaysNorm}</span></td>
+                                    <td className="px-6 py-4 text-right text-green-600 dark:text-green-400 font-medium">+{Math.round(earned).toLocaleString()} ₸</td>
+                                    <td className="px-6 py-4 text-right text-orange-600 dark:text-orange-400 font-medium">-{userAdvances.toLocaleString()} ₸</td>
+                                    <td className="px-6 py-4 text-right font-bold text-gray-900 dark:text-white text-lg">{Math.round(toPay).toLocaleString()} ₸</td>
                                     
                                     {(user.role === UserRole.ADMIN || user.role === UserRole.MANAGER) && (
                                       <td className="px-6 py-4 text-center">
                                         <div className="flex justify-center items-center gap-2">
                                           <button 
                                             onClick={() => openAdvanceModal(u.id)}
-                                            className="p-2 bg-orange-100 text-orange-600 rounded-lg hover:bg-orange-200 transition-colors"
+                                            className="p-2 bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 rounded-lg hover:bg-orange-200 transition-colors"
                                             title="Выдать аванс"
                                           >
                                             <Wallet size={16} />
                                           </button>
                                           <button 
                                             onClick={() => openEditUserModal(u)}
-                                            className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
+                                            className="p-2 bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 transition-colors"
                                             title="Редактировать сотрудника"
                                           >
                                             <Edit2 size={16} />
@@ -527,7 +527,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                     </tbody>
                 </table>
             </div>
-            <div className="text-xs text-gray-500 p-2 italic bg-yellow-50 border border-yellow-100 rounded-lg">
+            <div className="text-xs text-gray-500 dark:text-gray-400 p-2 italic bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-100 dark:border-yellow-900/30 rounded-lg">
                 * Расчет ведется исходя из нормы 22 рабочих дня в месяце. Начислено = (Оклад / 22) * Отработано.
             </div>
         </div>
@@ -538,21 +538,21 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
     <div className="space-y-6 max-w-full mx-auto relative">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-           <h1 className="text-2xl font-bold text-gray-900">Сотрудники и Табель</h1>
-           <p className="text-gray-500">Учет рабочего времени и заработной платы</p>
+           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Сотрудники и Табель</h1>
+           <p className="text-gray-500 dark:text-gray-400">Учет рабочего времени и заработной платы</p>
         </div>
       </div>
 
-      <div className="flex border-b border-gray-200 overflow-x-auto">
+      <div className="flex border-b border-gray-200 dark:border-slate-700 overflow-x-auto">
         <button 
           onClick={() => setActiveTab('timesheet')}
-          className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'timesheet' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'timesheet' ? 'border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
         >
           <div className="flex items-center gap-2"><List size={18} />Табель (График)</div>
         </button>
         <button 
           onClick={() => setActiveTab('employees')}
-          className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'employees' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          className={`px-6 py-3 font-medium text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'employees' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
         >
           <div className="flex items-center gap-2"><CreditCard size={18} />Сотрудники и Зарплата</div>
         </button>
@@ -561,18 +561,18 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
       {activeTab === 'timesheet' && (
           <>
             <div className="flex justify-end items-center gap-2 my-4">
-                <div className="flex bg-white rounded-lg p-1 border border-gray-200 shadow-sm mr-2">
-                    <button onClick={() => setViewMode('day')} className={`p-2 rounded-md transition-all ${viewMode === 'day' ? 'bg-blue-100 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}><List size={20} /></button>
-                    <button onClick={() => setViewMode('month')} className={`p-2 rounded-md transition-all ${viewMode === 'month' ? 'bg-blue-100 text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}><FileSpreadsheet size={20} /></button>
+                <div className="flex bg-white dark:bg-slate-800 rounded-lg p-1 border border-gray-200 dark:border-slate-700 shadow-sm mr-2">
+                    <button onClick={() => setViewMode('day')} className={`p-2 rounded-md transition-all ${viewMode === 'day' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}><List size={20} /></button>
+                    <button onClick={() => setViewMode('month')} className={`p-2 rounded-md transition-all ${viewMode === 'month' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}><FileSpreadsheet size={20} /></button>
                 </div>
-                <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-200 p-1">
-                    <button onClick={() => changeDate(-1)} className="p-2 hover:bg-gray-100 rounded-md text-gray-600"><ChevronLeft size={20} /></button>
-                    <div className="px-4 py-1 flex items-center gap-2 font-medium text-gray-800 min-w-[200px] justify-center"><CalendarIcon size={18} className="text-blue-500" /><span className="capitalize">{getHeaderDateLabel()}</span></div>
-                    <button onClick={() => changeDate(1)} className="p-2 hover:bg-gray-100 rounded-md text-gray-600"><ChevronRight size={20} /></button>
+                <div className="flex items-center bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-1">
+                    <button onClick={() => changeDate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md text-gray-600 dark:text-gray-300"><ChevronLeft size={20} /></button>
+                    <div className="px-4 py-1 flex items-center gap-2 font-medium text-gray-800 dark:text-white min-w-[200px] justify-center"><CalendarIcon size={18} className="text-blue-500" /><span className="capitalize">{getHeaderDateLabel()}</span></div>
+                    <button onClick={() => changeDate(1)} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md text-gray-600 dark:text-gray-300"><ChevronRight size={20} /></button>
                 </div>
             </div>
             {viewMode === 'day' ? renderDayView() : renderMonthGrid()}
-            <div className="bg-gray-50 border border-gray-200 p-4 flex justify-between items-center text-sm text-gray-500 rounded-lg">
+            <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-4 flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 rounded-lg">
                 <div className="flex gap-4">
                     <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-green-500"></div> На работе: {visibleUsers.filter(u => getEntryForUser(u.id, selectedDate)?.status === AttendanceStatus.PRESENT).length}</span>
                     <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-yellow-500"></div> Больничный: {visibleUsers.filter(u => getEntryForUser(u.id, selectedDate)?.status === AttendanceStatus.SICK).length}</span>
@@ -588,28 +588,28 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
       {/* --- USER MODAL (ADD & EDIT) --- */}
       {isUserModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-blue-50">
-              <h2 className="text-xl font-bold text-blue-900 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col border dark:border-slate-700">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-blue-50 dark:bg-blue-900/20">
+              <h2 className="text-xl font-bold text-blue-900 dark:text-blue-300 flex items-center gap-2">
                   <UserPlus size={24} />
                   {editingUser ? 'Редактировать сотрудника' : 'Новый сотрудник'}
               </h2>
-              <button onClick={() => setIsUserModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setIsUserModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                 <X size={24} />
               </button>
             </div>
             
             <form onSubmit={handleUserFormSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ФИО Сотрудника</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ФИО Сотрудника</label>
                 <div className="relative">
-                    <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                     <input 
                       required
                       type="text" 
                       value={userForm.name}
                       onChange={e => setUserForm({...userForm, name: e.target.value})}
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                       placeholder="Иванов Иван Иванович"
                     />
                 </div>
@@ -617,29 +617,29 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Должность</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Должность</label>
                     <div className="relative">
-                        <Briefcase size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <Briefcase size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                         <input 
                         required
                         type="text" 
                         value={userForm.position}
                         onChange={e => setUserForm({...userForm, position: e.target.value})}
-                        className="w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        className="w-full pl-9 pr-2 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 dark:text-white"
                         placeholder="Бригадир..."
                         />
                     </div>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Оклад (₸)</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Оклад (₸)</label>
                     <div className="relative">
-                        <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                         <input 
                         required
                         type="number" 
                         value={userForm.salary}
                         onChange={e => setUserForm({...userForm, salary: e.target.value})}
-                        className="w-full pl-9 pr-2 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        className="w-full pl-9 pr-2 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 dark:text-white"
                         placeholder="250000"
                         />
                     </div>
@@ -647,15 +647,15 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Телефон</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Телефон</label>
                 <div className="relative">
-                    <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                     <input 
                       required
                       type="tel" 
                       value={userForm.phone}
                       onChange={e => setUserForm({...userForm, phone: e.target.value})}
-                      className="w-full pl-9 pr-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                       placeholder="+7 700 000 00 00"
                     />
                 </div>
@@ -665,7 +665,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                 <button 
                   type="button" 
                   onClick={() => setIsUserModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   Отмена
                 </button>
@@ -685,25 +685,25 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
       {/* --- ADD ADVANCE MODAL --- */}
       {isAdvanceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-orange-50">
-              <h2 className="text-xl font-bold text-orange-900 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col border dark:border-slate-700">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-orange-50 dark:bg-orange-900/20">
+              <h2 className="text-xl font-bold text-orange-900 dark:text-orange-300 flex items-center gap-2">
                   <Wallet size={24} />
                   Выдача аванса
               </h2>
-              <button onClick={() => setIsAdvanceModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setIsAdvanceModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                 <X size={24} />
               </button>
             </div>
             
             <form onSubmit={handleAddAdvanceSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Сотрудник</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Сотрудник</label>
                 <select 
                   required
                   value={newAdvanceForm.userId}
                   onChange={e => setNewAdvanceForm({...newAdvanceForm, userId: e.target.value})}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white"
                 >
                   <option value="">Выберите сотрудника</option>
                   {visibleUsers.map(u => (
@@ -713,35 +713,35 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Сумма аванса (₸)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Сумма аванса (₸)</label>
                 <input 
                   required
                   type="number" 
                   value={newAdvanceForm.amount}
                   onChange={e => setNewAdvanceForm({...newAdvanceForm, amount: e.target.value})}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold text-lg"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold text-lg text-gray-900 dark:text-white"
                   placeholder="50000"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Дата выдачи</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Дата выдачи</label>
                 <input 
                   required
                   type="date" 
                   value={newAdvanceForm.date}
                   onChange={e => setNewAdvanceForm({...newAdvanceForm, date: e.target.value})}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Комментарий (необязательно)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Комментарий (необязательно)</label>
                 <input 
                   type="text" 
                   value={newAdvanceForm.comment}
                   onChange={e => setNewAdvanceForm({...newAdvanceForm, comment: e.target.value})}
-                  className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white"
                   placeholder="На бензин, семейные обстоятельства..."
                 />
               </div>
@@ -750,7 +750,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                 <button 
                   type="button" 
                   onClick={() => setIsAdvanceModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   Отмена
                 </button>

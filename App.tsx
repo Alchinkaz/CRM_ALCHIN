@@ -23,6 +23,22 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User>(users[0]); // Session state only
   const [clients, setClients] = useLocalStorage<Client[]>('crm_clients', CLIENTS);
   
+  // Theme State
+  const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('crm_theme', 'light');
+
+  // Apply Theme
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
+  
   // Lifted Data for Dashboard & Pages Sync
   const [tasks, setTasks] = useLocalStorage<Task[]>('crm_tasks', TASKS);
   const [sales, setSales] = useLocalStorage<Sale[]>('crm_sales', SALES);
@@ -158,8 +174,8 @@ const App: React.FC = () => {
       <div className="bg-red-100/50 p-4 rounded-full mb-4">
         <ShieldAlert size={48} className="text-red-600" />
       </div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-2">Доступ запрещен</h2>
-      <p className="text-gray-600 max-w-md">
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Доступ запрещен</h2>
+      <p className="text-gray-600 dark:text-gray-400 max-w-md">
         У вашей учетной записи ({currentUser.role}) недостаточно прав для просмотра этого раздела.
       </p>
       <button 
@@ -255,7 +271,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-100">
+    <div className="flex h-screen overflow-hidden bg-slate-100 dark:bg-slate-950 transition-colors duration-300">
       <Sidebar 
         role={currentUser.role} 
         currentRoute={currentHash.replace('#', '')} 
@@ -266,6 +282,8 @@ const App: React.FC = () => {
         <Header 
           user={currentUser} 
           users={users} 
+          isDarkMode={theme === 'dark'}
+          onToggleTheme={toggleTheme}
           onSwitchUser={(u) => {
             setCurrentUser(u);
             if (!isAccessAllowed(currentHash.replace('#', ''), u.role)) {
