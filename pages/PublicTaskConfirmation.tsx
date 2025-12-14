@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Task, User, TaskStatus } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { CheckCircle, MapPin, Calendar, Clock, Star, MessageSquare, AlertTriangle, Send, ExternalLink } from 'lucide-react';
+import { CheckCircle, MapPin, Calendar, Clock, Star, MessageSquare, AlertTriangle, Send, ExternalLink, ThumbsUp } from 'lucide-react';
 
 export const PublicTaskConfirmation: React.FC = () => {
   const [tasks, setTasks] = useLocalStorage<Task[]>('crm_tasks', []);
@@ -14,8 +14,6 @@ export const PublicTaskConfirmation: React.FC = () => {
   const [engineer, setEngineer] = useState<User | null>(null);
 
   // Form State
-  const [rating, setRating] = useState(0);
-  const [feedback, setFeedback] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
@@ -58,7 +56,6 @@ export const PublicTaskConfirmation: React.FC = () => {
 
     if (foundTask.clientConfirmation?.isConfirmed) {
         setSubmitted(true);
-        setRating(foundTask.clientConfirmation.rating);
     }
 
     setLoading(false);
@@ -66,20 +63,15 @@ export const PublicTaskConfirmation: React.FC = () => {
 
   const handleConfirm = () => {
       if (!task) return;
-      if (rating === 0) {
-          alert('Пожалуйста, поставьте оценку работе.');
-          return;
-      }
 
       const updatedTask: Task = {
           ...task,
           clientConfirmation: {
               isConfirmed: true,
               confirmedAt: new Date().toISOString(),
-              rating,
-              feedback
+              rating: 5, // Default max rating since client confirmed without issues
+              feedback: '' 
           },
-          // Optionally auto-complete if not already? Usually engineer marks complete first.
       };
 
       // Update LocalStorage
@@ -117,8 +109,8 @@ export const PublicTaskConfirmation: React.FC = () => {
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-500/30 mb-4">
                     <CheckCircle size={24} />
                 </div>
-                <h1 className="text-2xl font-bold text-slate-900">Подтверждение работ</h1>
-                <p className="text-slate-500 mt-1">Пожалуйста, оцените качество выполненных услуг</p>
+                <h1 className="text-2xl font-bold text-slate-900">Приемка работ</h1>
+                <p className="text-slate-500 mt-1">Подтвердите выполнение заявки</p>
             </div>
 
             {/* Success Message */}
@@ -213,45 +205,18 @@ export const PublicTaskConfirmation: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Feedback Form */}
+                    {/* Simple Confirmation Button */}
                     <div className="bg-white rounded-3xl shadow-sm p-6">
-                        <h3 className="font-bold text-slate-900 mb-4 text-lg">Оцените работу</h3>
-                        
-                        <div className="flex justify-center gap-3 mb-6">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <button
-                                    key={star}
-                                    onClick={() => setRating(star)}
-                                    className="transition-transform hover:scale-110 active:scale-95 focus:outline-none"
-                                >
-                                    <Star 
-                                        size={42} 
-                                        className={`${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'} transition-colors`} 
-                                        strokeWidth={1.5}
-                                    />
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="mb-6">
-                            <label className="block text-sm font-bold text-slate-700 mb-2">Комментарий (для внутреннего контроля)</label>
-                            <textarea 
-                                rows={3}
-                                value={feedback}
-                                onChange={(e) => setFeedback(e.target.value)}
-                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none text-slate-900"
-                                placeholder="Например: Мастер приехал вовремя, всё отлично."
-                            />
-                        </div>
-
                         <button 
                             onClick={handleConfirm}
-                            disabled={rating === 0}
-                            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-lg shadow-blue-500/30 hover:bg-blue-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg shadow-lg shadow-blue-500/30 hover:bg-blue-700 active:scale-95 transition-all flex items-center justify-center gap-2"
                         >
-                            <CheckCircle size={24} />
+                            <ThumbsUp size={24} />
                             Подтвердить выполнение
                         </button>
+                        <p className="text-center text-xs text-gray-400 mt-4">
+                            Нажимаю кнопку, вы подтверждаете, что работы выполнены в полном объеме и претензий не имеете.
+                        </p>
                     </div>
                 </>
             )}
