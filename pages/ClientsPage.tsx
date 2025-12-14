@@ -26,7 +26,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
     return (
       <div className="flex flex-col items-center justify-center h-[50vh] text-center p-8 text-gray-500 dark:text-gray-400">
         <Lock size={48} className="mb-4 opacity-50" />
-        <h2 className="text-xl font-bold mb-2 text-black dark:text-white">Доступ ограничен</h2>
+        <h2 className="text-xl font-bold mb-2 text-black dark:text-white dark:drop-shadow-md">Доступ ограничен</h2>
         <p>Инженеры не имеют доступа к базе клиентов.</p>
       </div>
     );
@@ -64,19 +64,19 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
     <div className="space-y-6 relative">
        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Клиентская база</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white dark:drop-shadow-md">Клиентская база</h1>
           <p className="text-gray-500 dark:text-gray-400">Управление контрагентами и объектами</p>
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm dark:shadow-blue-900/20"
         >
           <Plus size={18} />
           <span>Добавить клиента</span>
         </button>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden transition-colors">
         <div className="p-4 border-b border-gray-100 dark:border-slate-700 flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 w-4 h-4" />
@@ -85,13 +85,13 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Поиск по названию или телефону..." 
-                    className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 transition-colors"
                 />
             </div>
             <select 
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="px-4 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 dark:text-white"
+              className="px-4 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 dark:text-white transition-colors"
             >
                 <option value="ALL">Все типы</option>
                 <option value={ClientType.COMPANY}>Юр. лица (ТОО/ИП)</option>
@@ -102,7 +102,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
         
         <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-gray-600 dark:text-gray-300">
-                <thead className="bg-gray-50 dark:bg-slate-900/50 text-gray-700 dark:text-gray-400 font-medium">
+                <thead className="bg-gray-50 dark:bg-slate-700/50 text-gray-700 dark:text-gray-300 font-medium">
                     <tr>
                         <th className="px-6 py-4">Клиент</th>
                         <th className="px-6 py-4">Тип</th>
@@ -115,9 +115,9 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
                 <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
                     {filteredClients.length > 0 ? (
                       filteredClients.map(client => (
-                        <tr key={client.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                        <tr key={client.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition-colors">
                             <td className="px-6 py-4">
-                                <div className="font-semibold text-gray-900 dark:text-white">{client.name}</div>
+                                <div className="font-semibold text-gray-900 dark:text-white dark:drop-shadow-sm">{client.name}</div>
                             </td>
                             <td className="px-6 py-4">
                                 <span className="flex items-center gap-2">
@@ -133,7 +133,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
                                 {client.balance.toLocaleString()} ₸
                             </td>
                             <td className="px-6 py-4 text-center">
-                                <button className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">Детали</button>
+                                <button className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors">Детали</button>
                             </td>
                         </tr>
                       ))
@@ -152,10 +152,10 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
       {/* CREATE CLIENT MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col border dark:border-slate-700">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Новый клиент</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col border border-gray-100 dark:border-slate-700">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 rounded-t-2xl">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">Новый клиент</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                 <X size={24} />
               </button>
             </div>
@@ -168,7 +168,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
                   type="text" 
                   value={formData.name}
                   onChange={e => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="Например: ТОО Ромашка"
                 />
               </div>
@@ -183,7 +183,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
                       onClick={() => setFormData({...formData, type})}
                       className={`py-2 px-1 text-xs sm:text-sm rounded-lg border transition-colors ${
                         formData.type === type 
-                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300 font-medium' 
+                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300 font-medium shadow-sm' 
                           : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'
                       }`}
                     >
@@ -202,7 +202,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
                     type="tel" 
                     value={formData.phone}
                     onChange={e => setFormData({...formData, phone: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                     placeholder="+7 (7xx) xxx xx xx"
                   />
                 </div>
@@ -216,7 +216,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
                     rows={2}
                     value={formData.address}
                     onChange={e => setFormData({...formData, address: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                     placeholder="Город, Улица, Дом..."
                   />
                 </div>
@@ -232,7 +232,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md font-medium transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md dark:shadow-blue-900/30 font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   <Save size={18} />
                   Сохранить

@@ -267,13 +267,13 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
             <table className="w-full border-collapse min-w-max">
                 <thead>
                     <tr>
-                        <th className="border-b border-r border-gray-300 dark:border-slate-700 bg-blue-50 dark:bg-slate-900/50 p-2 text-left min-w-[200px] z-10 sticky left-0 text-blue-900 dark:text-blue-200 font-bold">
+                        <th className="border-b border-r border-gray-300 dark:border-slate-700 bg-blue-50 dark:bg-slate-700/50 p-2 text-left min-w-[200px] z-10 sticky left-0 text-blue-900 dark:text-white font-bold">
                             {getHeaderDateLabel()}
                         </th>
                         {daysArray.map(day => (
-                            <th key={`h-${day}`} className={`border-b border-r border-gray-300 dark:border-slate-700 p-1 min-w-[30px] text-xs ${isWeekend(day) ? 'bg-yellow-200 dark:bg-yellow-900/30' : 'bg-blue-50 dark:bg-slate-900/30'}`}>
-                                <div className="font-bold text-gray-700 dark:text-gray-300">{String(day).padStart(2, '0')}</div>
-                                <div className="font-normal text-gray-500 dark:text-gray-400 uppercase text-[10px]">{getDayLabel(day)}</div>
+                            <th key={`h-${day}`} className={`border-b border-r border-gray-300 dark:border-slate-700 p-1 min-w-[30px] text-xs ${isWeekend(day) ? 'bg-yellow-200 dark:bg-yellow-900/30' : 'bg-blue-50 dark:bg-slate-700/50'}`}>
+                                <div className="font-bold text-gray-700 dark:text-white">{String(day).padStart(2, '0')}</div>
+                                <div className="font-normal text-gray-500 dark:text-gray-300 uppercase text-[10px]">{getDayLabel(day)}</div>
                             </th>
                         ))}
                         <th className="border-b border-l border-gray-300 dark:border-slate-700 bg-green-50 dark:bg-green-900/20 p-2 min-w-[60px] text-xs font-bold text-green-900 dark:text-green-300">
@@ -325,7 +325,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-gray-50 dark:bg-slate-900/50 text-gray-600 dark:text-gray-400 font-medium text-sm border-b border-gray-200 dark:border-slate-700">
+              <tr className="bg-gray-50 dark:bg-slate-700/50 text-gray-600 dark:text-gray-200 font-medium text-sm border-b border-gray-200 dark:border-slate-700">
                 <th className="px-6 py-4 w-1/3">Сотрудник</th>
                 <th className="px-6 py-4">Статус</th>
                 <th className="px-6 py-4">Приход</th>
@@ -349,7 +349,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                       <div className="flex items-center gap-3">
                         <img src={u.avatar} alt={u.name} className={`w-10 h-10 rounded-full object-cover border-2 ${entry?.status === AttendanceStatus.PRESENT ? 'border-green-400' : 'border-transparent'}`} />
                         <div>
-                          <div className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <div className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 dark:drop-shadow-sm">
                              {u.name}
                              {entry?.status === AttendanceStatus.FIRED && <span className="text-[10px] bg-gray-600 text-white px-1.5 py-0.5 rounded">УВОЛЕН</span>}
                           </div>
@@ -447,7 +447,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                 {(user.role === UserRole.ADMIN || user.role === UserRole.MANAGER) && (
                     <button 
                         onClick={openAddUserModal}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium"
+                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium dark:shadow-blue-900/20"
                     >
                         <UserPlus size={18} />
                         <span>Добавить сотрудника</span>
@@ -457,7 +457,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
 
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
                 <table className="w-full text-left text-sm">
-                    <thead className="bg-gray-50 dark:bg-slate-900/50 text-gray-700 dark:text-gray-400 font-medium">
+                    <thead className="bg-gray-50 dark:bg-slate-700/50 text-gray-700 dark:text-gray-300 font-medium">
                         <tr>
                             <th className="px-6 py-4">Сотрудник</th>
                             <th className="px-6 py-4 text-right">Оклад (мес.)</th>
@@ -490,7 +490,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                                         <div className="flex items-center gap-3">
                                             <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full object-cover" />
                                             <div>
-                                                <div className="font-semibold text-gray-900 dark:text-white">{u.name}</div>
+                                                <div className="font-semibold text-gray-900 dark:text-white dark:drop-shadow-sm">{u.name}</div>
                                                 <div className="text-xs text-gray-500 dark:text-gray-400">{u.position}</div>
                                             </div>
                                         </div>
@@ -538,7 +538,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
     <div className="space-y-6 max-w-full mx-auto relative">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Сотрудники и Табель</h1>
+           <h1 className="text-2xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">Сотрудники и Табель</h1>
            <p className="text-gray-500 dark:text-gray-400">Учет рабочего времени и заработной платы</p>
         </div>
       </div>
@@ -589,8 +589,8 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
       {isUserModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col border dark:border-slate-700">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-blue-50 dark:bg-blue-900/20">
-              <h2 className="text-xl font-bold text-blue-900 dark:text-blue-300 flex items-center gap-2">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-blue-50 dark:bg-slate-800/50 rounded-t-2xl">
+              <h2 className="text-xl font-bold text-blue-900 dark:text-blue-300 flex items-center gap-2 dark:drop-shadow-sm">
                   <UserPlus size={24} />
                   {editingUser ? 'Редактировать сотрудника' : 'Новый сотрудник'}
               </h2>
@@ -609,7 +609,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                       type="text" 
                       value={userForm.name}
                       onChange={e => setUserForm({...userForm, name: e.target.value})}
-                      className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                      className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       placeholder="Иванов Иван Иванович"
                     />
                 </div>
@@ -625,7 +625,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                         type="text" 
                         value={userForm.position}
                         onChange={e => setUserForm({...userForm, position: e.target.value})}
-                        className="w-full pl-9 pr-2 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 dark:text-white"
+                        className="w-full pl-9 pr-2 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="Бригадир..."
                         />
                     </div>
@@ -639,7 +639,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                         type="number" 
                         value={userForm.salary}
                         onChange={e => setUserForm({...userForm, salary: e.target.value})}
-                        className="w-full pl-9 pr-2 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 dark:text-white"
+                        className="w-full pl-9 pr-2 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="250000"
                         />
                     </div>
@@ -655,7 +655,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                       type="tel" 
                       value={userForm.phone}
                       onChange={e => setUserForm({...userForm, phone: e.target.value})}
-                      className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                      className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       placeholder="+7 700 000 00 00"
                     />
                 </div>
@@ -671,7 +671,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md font-medium transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md dark:shadow-blue-900/30 font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   {editingUser ? <Save size={18} /> : <Plus size={18} />}
                   {editingUser ? 'Сохранить' : 'Создать'}
@@ -686,8 +686,8 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
       {isAdvanceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col border dark:border-slate-700">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-orange-50 dark:bg-orange-900/20">
-              <h2 className="text-xl font-bold text-orange-900 dark:text-orange-300 flex items-center gap-2">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-orange-50 dark:bg-slate-800/50 rounded-t-2xl">
+              <h2 className="text-xl font-bold text-orange-900 dark:text-orange-300 flex items-center gap-2 dark:drop-shadow-sm">
                   <Wallet size={24} />
                   Выдача аванса
               </h2>
@@ -719,7 +719,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                   type="number" 
                   value={newAdvanceForm.amount}
                   onChange={e => setNewAdvanceForm({...newAdvanceForm, amount: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold text-lg text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold text-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="50000"
                 />
               </div>
@@ -741,7 +741,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                   type="text" 
                   value={newAdvanceForm.comment}
                   onChange={e => setNewAdvanceForm({...newAdvanceForm, comment: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="На бензин, семейные обстоятельства..."
                 />
               </div>
@@ -756,7 +756,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 shadow-md font-medium transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 shadow-md dark:shadow-orange-900/30 font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   <Wallet size={18} />
                   Выдать

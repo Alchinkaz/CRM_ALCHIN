@@ -193,7 +193,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
       {/* Header & Filter */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Заявки на работы</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">Заявки на работы</h1>
           <p className="text-gray-500 dark:text-gray-400">Монтаж, ремонт и обслуживание</p>
         </div>
         
@@ -203,7 +203,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
               resetForm();
               setIsCreateModalOpen(true);
             }}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm dark:shadow-blue-900/20"
           >
             <Plus size={18} />
             <span>Создать заявку</span>
@@ -218,7 +218,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
             onClick={() => setFilter(status)}
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${
               filter === status 
-                ? 'bg-slate-800 dark:bg-white text-white dark:text-black border-slate-800 dark:border-white' 
+                ? 'bg-slate-800 dark:bg-white text-white dark:text-black border-slate-800 dark:border-white shadow-sm' 
                 : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700'
             }`}
           >
@@ -244,13 +244,13 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                 )}
               </div>
               
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">{task.title}</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 dark:drop-shadow-sm">{task.title}</h3>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-1">
                  <MapPin size={14} />
                  {task.address}
               </p>
               
-              <div className="bg-gray-50 dark:bg-slate-700/50 p-3 rounded-lg text-sm text-gray-700 dark:text-gray-300 mb-4 whitespace-pre-wrap">
+              <div className="bg-gray-50 dark:bg-slate-700/50 p-3 rounded-lg text-sm text-gray-700 dark:text-gray-200 mb-4 whitespace-pre-wrap border border-gray-100 dark:border-slate-600/50">
                 {task.description}
               </div>
 
@@ -266,11 +266,11 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
               </div>
             </div>
 
-            <div className="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/30 rounded-b-xl flex gap-3">
+            <div className="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80 rounded-b-xl flex gap-3">
               {user.role === UserRole.ENGINEER && task.status === TaskStatus.NEW && (
                 <button 
                   onClick={() => handleStatusChange(task.id, TaskStatus.IN_PROGRESS)}
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 text-sm"
+                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 text-sm shadow-sm"
                 >
                   Принять в работу
                 </button>
@@ -279,7 +279,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
               {user.role === UserRole.ENGINEER && task.status === TaskStatus.IN_PROGRESS && (
                 <button 
                   onClick={() => handleStatusChange(task.id, TaskStatus.COMPLETED)}
-                  className="flex-1 bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 text-sm flex items-center justify-center gap-2"
+                  className="flex-1 bg-green-600 text-white py-2 rounded-lg font-medium hover:bg-green-700 text-sm flex items-center justify-center gap-2 shadow-sm"
                 >
                   <CheckSquare size={16} />
                   Завершить работу
@@ -300,10 +300,10 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
       {/* --- CREATE TASK MODAL --- */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Новая заявка</h2>
-              <button onClick={() => setIsCreateModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh] border border-gray-100 dark:border-slate-700">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 rounded-t-2xl">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">Новая заявка</h2>
+              <button onClick={() => setIsCreateModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                 <X size={24} />
               </button>
             </div>
@@ -316,7 +316,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                   type="text" 
                   value={newTask.title}
                   onChange={e => setNewTask({...newTask, title: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="Например: Монтаж GPS на Камаз"
                 />
               </div>
@@ -335,7 +335,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                             setManualClientName('');
                         }
                       }}
-                      className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1"
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-colors"
                     >
                       {isManualClient ? <List size={12}/> : <UserPlus size={12}/>}
                       {isManualClient ? 'Выбрать из списка' : 'Ввести вручную'}
@@ -349,7 +349,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                       value={manualClientName}
                       onChange={e => setManualClientName(e.target.value)}
                       placeholder="Имя клиента..."
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                     />
                   ) : (
                     <select 
@@ -395,7 +395,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                   type="text" 
                   value={newTask.address}
                   onChange={e => setNewTask({...newTask, address: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder={isManualClient ? "Введите адрес..." : "Заполнится автоматически или введите..."}
                 />
               </div>
@@ -433,7 +433,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                   rows={3}
                   value={newTask.description}
                   onChange={e => setNewTask({...newTask, description: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="Что именно нужно сделать..."
                 />
               </div>
@@ -450,7 +450,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                 <button 
                   type="button"
                   onClick={handleSaveAndCreateAnother}
-                  className="px-4 py-2 bg-white dark:bg-slate-700 border border-blue-600 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 font-medium transition-colors flex items-center gap-2 justify-center"
+                  className="px-4 py-2 bg-white dark:bg-slate-700 border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/30 font-medium transition-colors flex items-center gap-2 justify-center"
                 >
                   <Plus size={18} />
                   <span>Сохранить +</span>
@@ -458,7 +458,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
 
                 <button 
                   type="submit" 
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md font-medium transition-colors"
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md dark:shadow-blue-900/30 font-medium transition-colors"
                 >
                   Создать
                 </button>
@@ -471,13 +471,13 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
       {/* --- REPORT & COMPLETE MODAL --- */}
       {isReportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-100 dark:border-slate-700">
              <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-green-50 dark:bg-green-900/20">
                 <h2 className="text-lg font-bold text-green-800 dark:text-green-300 flex items-center gap-2">
                     <CheckSquare size={20} />
                     Завершение работы
                 </h2>
-                <button onClick={() => setIsReportModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <button onClick={() => setIsReportModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                   <X size={24} />
                 </button>
              </div>
@@ -491,7 +491,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                         value={reportComment}
                         onChange={e => setReportComment(e.target.value)}
                         placeholder="Опишите, что было сделано, какие материалы использованы..."
-                        className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-white"
+                        className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                     />
                 </div>
 
@@ -507,7 +507,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                     <button 
                         onClick={handleCompleteTask}
                         disabled={!reportComment.trim()}
-                        className="w-full py-3 bg-green-600 text-white rounded-xl font-bold text-lg hover:bg-green-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="w-full py-3 bg-green-600 text-white rounded-xl font-bold text-lg hover:bg-green-700 shadow-md dark:shadow-green-900/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                         <Save size={20} />
                         Отправить отчет и закрыть
@@ -522,9 +522,9 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
       {isClientModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col border border-gray-100 dark:border-slate-700">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Новый клиент</h2>
-              <button onClick={() => setIsClientModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 rounded-t-2xl">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">Новый клиент</h2>
+              <button onClick={() => setIsClientModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                 <X size={24} />
               </button>
             </div>
@@ -538,7 +538,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                   type="text" 
                   value={newClientFormData.name}
                   onChange={e => setNewClientFormData({...newClientFormData, name: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="Например: ТОО Ромашка"
                 />
               </div>
@@ -553,7 +553,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                       onClick={() => setNewClientFormData({...newClientFormData, type})}
                       className={`py-2 px-1 text-xs sm:text-sm rounded-lg border transition-colors ${
                         newClientFormData.type === type 
-                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300 font-medium' 
+                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300 font-medium shadow-sm' 
                           : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'
                       }`}
                     >
@@ -572,7 +572,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                     type="tel" 
                     value={newClientFormData.phone}
                     onChange={e => setNewClientFormData({...newClientFormData, phone: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                     placeholder="+7 (7xx) xxx xx xx"
                   />
                 </div>
@@ -586,7 +586,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                     rows={2}
                     value={newClientFormData.address}
                     onChange={e => setNewClientFormData({...newClientFormData, address: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                     placeholder="Город, Улица, Дом..."
                   />
                 </div>
@@ -602,7 +602,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md font-medium transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md dark:shadow-blue-900/30 font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   <Save size={18} />
                   Создать
