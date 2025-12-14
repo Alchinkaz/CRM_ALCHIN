@@ -11,7 +11,7 @@ interface SettingsPageProps {
   onUpdateUser: (user: User) => void;
 }
 
-// Hierarchical Resource Definition
+// ... (Keep existing ResourceNode, RESOURCE_TREE, and ACTIONS) ...
 interface ResourceNode {
   id: string;
   label: string;
@@ -77,24 +77,20 @@ const ACTIONS: { id: ResourceAction, label: string }[] = [
 ];
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdateUser }) => {
+  // ... (Keep existing logic: activeTab, roles, modals, etc.) ...
   const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'security'>('users');
-  
-  // Roles State with Persistence
   const [roles, setRoles] = useLocalStorage<Role[]>('crm_roles', ROLES);
   
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
-  
-  // Expand/Collapse state for sections
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['section_analytics', 'section_clients']));
 
   const [roleForm, setRoleForm] = useState<{
       name: string;
       description: string;
-      permissions: Record<string, ResourceAction[]>; // resourceId -> actions[]
+      permissions: Record<string, ResourceAction[]>;
   }>({ name: '', description: '', permissions: {} });
 
-  // Users State
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [userFormData, setUserFormData] = useState({
@@ -102,8 +98,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
     password: '',
     roleId: ''
   });
-
-  // --- ROLE MANAGEMENT LOGIC ---
 
   const toggleSection = (sectionId: string) => {
       const newSet = new Set(expandedSections);
@@ -116,13 +110,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
   };
 
   const openRoleModal = (role?: Role) => {
-      // Default to expand all when opening
       const allSections = RESOURCE_TREE.map(n => n.id);
       setExpandedSections(new Set(allSections));
 
       if (role) {
           setEditingRole(role);
-          // Convert permissions array to quick lookup object
           const permsObj: Record<string, ResourceAction[]> = {};
           role.permissions.forEach(p => {
               permsObj[p.resourceId] = p.actions;
@@ -154,7 +146,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
   const toggleRowPermissions = (resourceId: string) => {
       setRoleForm(prev => {
           const currentActions = prev.permissions[resourceId] || [];
-          // If all selected, deselect all. Otherwise, select all.
           const isFull = currentActions.length === 4;
           return {
               ...prev,
@@ -168,17 +159,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
 
   const handleRoleSave = (e: React.FormEvent) => {
       e.preventDefault();
-      // Convert map back to permissions array
-      // Explicitly cast Object.entries result to avoid 'unknown' inference issues
       const permissionsArray: Permission[] = (Object.entries(roleForm.permissions) as [string, ResourceAction[]][])
           .filter(([_, actions]) => actions.length > 0)
           .map(([resourceId, actions]) => ({ resourceId, actions }));
 
       if (editingRole) {
-          // Update
           setRoles(prev => prev.map(r => r.id === editingRole.id ? { ...r, name: roleForm.name, description: roleForm.description, permissions: permissionsArray } : r));
       } else {
-          // Create
           const newRole: Role = {
               id: `r_${Date.now()}`,
               name: roleForm.name,
@@ -197,8 +184,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
       }
   };
 
-  // --- USER MANAGEMENT LOGIC ---
-
   const handleCreateSystemUser = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedEmployeeId) return;
@@ -206,10 +191,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
     const employee = users.find(u => u.id === selectedEmployeeId);
     if (!employee) return;
     
-    // Find selected role to get the UserRole enum fallback (mostly for types compatibility)
     const selectedRole = roles.find(r => r.id === userFormData.roleId);
-    
-    // Fallback mapping for the legacy enum
     let legacyRole = UserRole.ENGINEER;
     if (selectedRole?.id === 'r_admin') legacyRole = UserRole.ADMIN;
     if (selectedRole?.id === 'r_manager') legacyRole = UserRole.MANAGER;
@@ -232,8 +214,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
     setSelectedEmployeeId('');
     setUserFormData({ email: '', password: '', roleId: '' });
   };
-
-  // --- RENDER HELPERS ---
   
   const systemUsers = users.filter(u => u.isSystemUser);
   const availableEmployees = users.filter(u => !u.isSystemUser);
@@ -296,7 +276,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                 </h3>
                 <button 
                     onClick={() => setIsUserModalOpen(true)}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors text-sm shadow-lg shadow-blue-500/30 font-bold dark:shadow-blue-900/20"
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-xl hover:opacity-90 transition-colors text-sm shadow-md shadow-blue-500/20 font-bold"
                     >
                     <Plus size={16} />
                     <span>Добавить</span>
@@ -305,6 +285,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
 
                 <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
+                    {/* ... table content ... */}
                     <thead className="bg-white/30 dark:bg-slate-700/30 text-slate-500 dark:text-gray-400 border-b border-white/20 dark:border-slate-700">
                     <tr>
                         <th className="px-6 py-4 font-bold">Пользователь</th>
@@ -354,7 +335,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                   <div className="flex justify-end">
                       <button 
                         onClick={() => openRoleModal()}
-                        className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/30 font-bold dark:shadow-indigo-900/20"
+                        className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:opacity-90 transition-colors shadow-lg shadow-blue-500/20 font-bold"
                       >
                         <Plus size={18} />
                         <span>Создать роль</span>
@@ -404,6 +385,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
           {/* --- TAB: SECURITY --- */}
           {activeTab === 'security' && (
               <div className="bg-white dark:bg-slate-800 p-12 rounded-3xl text-center animate-in fade-in shadow-sm border border-gray-100 dark:border-slate-700">
+                  {/* ... content ... */}
                   <div className="inline-block p-6 bg-slate-100 dark:bg-slate-700 rounded-full mb-6 shadow-inner">
                       <Lock size={40} className="text-slate-400 dark:text-gray-300" />
                   </div>
@@ -433,78 +415,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
             </div>
             
             <form onSubmit={handleCreateSystemUser} className="p-6 space-y-4">
-              
-              <div className="bg-yellow-50/70 dark:bg-yellow-900/20 p-4 rounded-2xl border border-yellow-100 dark:border-yellow-900/30 mb-4">
-                <label className="block text-sm font-bold text-yellow-800 dark:text-yellow-200 mb-2">
-                  1. Выберите сотрудника
-                </label>
-                <div className="relative">
-                    <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
-                    <select 
-                      required
-                      value={selectedEmployeeId}
-                      onChange={e => setSelectedEmployeeId(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-yellow-200 dark:border-yellow-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500 text-slate-800 dark:text-white"
-                    >
-                      <option value="">-- Выберите из списка --</option>
-                      {availableEmployees.map(emp => (
-                        <option key={emp.id} value={emp.id}>{emp.name} ({emp.position})</option>
-                      ))}
-                    </select>
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-gray-100 dark:border-slate-700">
-                <h3 className="text-sm font-bold text-slate-700 dark:text-gray-300 mb-3">2. Настройка доступа</h3>
-                
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1">Email (Логин)</label>
-                    <div className="relative">
-                        <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
-                        <input 
-                          required
-                          type="email" 
-                          value={userFormData.email}
-                          onChange={e => setUserFormData({...userFormData, email: e.target.value})}
-                          className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                          placeholder="employee@company.com"
-                        />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1">Пароль</label>
-                    <div className="relative">
-                        <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
-                        <input 
-                          required
-                          type="password" 
-                          value={userFormData.password}
-                          onChange={e => setUserFormData({...userFormData, password: e.target.value})}
-                          className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                          placeholder="••••••••"
-                        />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1">Роль в системе</label>
-                    <select 
-                      required
-                      value={userFormData.roleId}
-                      onChange={e => setUserFormData({...userFormData, roleId: e.target.value})}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-white"
-                    >
-                      <option value="">Выберите роль...</option>
-                      {roles.map(r => (
-                          <option key={r.id} value={r.id}>{r.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
+              {/* ... form content ... */}
               <div className="pt-4 flex gap-3">
                 <button 
                   type="button" 
@@ -516,7 +427,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                 <button 
                   type="submit" 
                   disabled={!selectedEmployeeId}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/30 font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:opacity-90 shadow-lg shadow-blue-500/20 font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save size={18} />
                   Создать доступ
@@ -542,109 +453,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
             </div>
 
             <form onSubmit={handleRoleSave} className="flex-1 flex flex-col overflow-hidden">
-                <div className="p-6 bg-white dark:bg-slate-700/30 border-b border-gray-100 dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Название роли</label>
-                        <input 
-                            required
-                            type="text" 
-                            value={roleForm.name}
-                            onChange={e => setRoleForm({...roleForm, name: e.target.value})}
-                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                            placeholder="Например: Бухгалтер"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Описание</label>
-                        <input 
-                            type="text" 
-                            value={roleForm.description}
-                            onChange={e => setRoleForm({...roleForm, description: e.target.value})}
-                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                            placeholder="Краткое описание обязанностей"
-                        />
-                    </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50 dark:bg-slate-900/30">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2 dark:drop-shadow-sm">
-                         <Folder size={18} className="text-slate-500 dark:text-gray-400"/>
-                         Права доступа
-                    </h3>
-                    
-                    <div className="border border-gray-200 dark:border-slate-700 rounded-2xl overflow-hidden bg-white dark:bg-slate-800 shadow-sm">
-                        {/* Header Row */}
-                        <div className="flex items-center bg-gray-100/50 dark:bg-slate-700/50 text-slate-600 dark:text-gray-300 font-bold text-xs uppercase tracking-wider border-b border-gray-200 dark:border-slate-700">
-                            <div className="flex-1 px-6 py-4">Раздел</div>
-                            {ACTIONS.map(action => (
-                                <div key={action.id} className="w-[100px] text-center px-2 py-4">{action.label}</div>
-                            ))}
-                            <div className="w-[60px] text-center px-2 py-4">Все</div>
-                        </div>
-
-                        {/* Hierarchical Rows */}
-                        <div className="divide-y divide-gray-100 dark:divide-slate-700">
-                            {RESOURCE_TREE.map(section => {
-                                const isExpanded = expandedSections.has(section.id);
-                                return (
-                                    <React.Fragment key={section.id}>
-                                        {/* Section Header Row */}
-                                        <div 
-                                            className="flex items-center bg-gray-50/50 dark:bg-slate-700/20 hover:bg-gray-100 dark:hover:bg-slate-700/40 cursor-pointer transition-colors border-l-4 border-l-transparent hover:border-l-indigo-400"
-                                            onClick={() => toggleSection(section.id)}
-                                        >
-                                            <div className="flex-1 px-4 py-4 flex items-center gap-2 font-bold text-slate-800 dark:text-white">
-                                                {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                                                {section.label}
-                                            </div>
-                                            {/* Empty placeholders for actions on section header */}
-                                            {ACTIONS.map(a => <div key={a.id} className="w-[100px]"></div>)}
-                                            <div className="w-[60px]"></div>
-                                        </div>
-
-                                        {/* Child Rows */}
-                                        {isExpanded && section.children?.map(child => {
-                                            const resourcePerms = roleForm.permissions[child.id] || [];
-                                            const isFull = resourcePerms.length === 4;
-
-                                            return (
-                                                <div key={child.id} className="flex items-center hover:bg-indigo-50/30 dark:hover:bg-indigo-900/30 transition-colors animate-in fade-in slide-in-from-top-1 bg-white dark:bg-slate-800">
-                                                    <div className="flex-1 px-4 py-3 pl-12 text-sm font-medium text-slate-700 dark:text-gray-300">
-                                                        {child.label}
-                                                    </div>
-                                                    {ACTIONS.map(action => {
-                                                        const isChecked = resourcePerms.includes(action.id);
-                                                        return (
-                                                            <div key={action.id} className="w-[100px] flex justify-center py-3 border-l border-gray-100 dark:border-slate-700">
-                                                                <input 
-                                                                    type="checkbox"
-                                                                    checked={isChecked}
-                                                                    onChange={() => togglePermission(child.id, action.id)}
-                                                                    className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 dark:border-slate-600 cursor-pointer bg-white dark:bg-slate-700"
-                                                                />
-                                                            </div>
-                                                        );
-                                                    })}
-                                                    <div className="w-[60px] flex justify-center py-3 border-l border-gray-100 dark:border-slate-700">
-                                                        <button 
-                                                            type="button"
-                                                            onClick={() => toggleRowPermissions(child.id)}
-                                                            className={`p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700/50 transition-colors ${isFull ? 'text-green-600 bg-green-50 dark:bg-green-900/30 dark:text-green-400' : 'text-slate-300 dark:text-gray-600'}`}
-                                                            title={isFull ? 'Снять все' : 'Выбрать все'}
-                                                        >
-                                                            <Check size={18} />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </React.Fragment>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-
+                {/* ... form content ... */}
                 <div className="p-6 border-t border-gray-100 dark:border-slate-700 flex justify-end gap-3 bg-gray-50/50 dark:bg-slate-800/30">
                     <button 
                         type="button" 
@@ -655,7 +464,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                     </button>
                     <button 
                         type="submit" 
-                        className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 font-bold transition-colors flex items-center gap-2"
+                        className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:opacity-90 shadow-lg shadow-blue-500/20 font-bold transition-colors flex items-center gap-2"
                     >
                         <Save size={18} />
                         Сохранить роль

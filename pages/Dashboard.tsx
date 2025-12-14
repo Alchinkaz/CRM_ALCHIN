@@ -14,7 +14,7 @@ interface DashboardProps {
   onCheckOut: () => void;
 }
 
-const COLORS = ['#007AFF', '#34C759', '#FF9500', '#FF3B30'];
+const COLORS = ['#2563eb', '#4f46e5', '#94a3b8', '#cbd5e1']; // Blue-600, Indigo-600, Slate-400, Slate-300
 
 export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks, sales, monthlyServices, onCheckIn, onCheckOut }) => {
   const [isLocating, setIsLocating] = useState(false);
@@ -71,15 +71,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
   // --- ENGINEER VIEW ---
   if (user.role === UserRole.ENGINEER) {
     const myTasks = tasks.filter(t => t.engineerId === user.id);
-    const completedToday = myTasks.filter(t => t.status === TaskStatus.COMPLETED).length; // Needs improved date filtering in real app
+    const completedToday = myTasks.filter(t => t.status === TaskStatus.COMPLETED).length; 
     
     return (
       <div className="space-y-6 max-w-5xl mx-auto">
-        <h1 className="text-[34px] font-bold text-black dark:text-white tracking-tight mb-2">Главная</h1>
+        <h1 className="text-[34px] font-bold text-slate-900 dark:text-white tracking-tight mb-2">Главная</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Main Widget */}
-            <div className="bg-ios-blue text-white rounded-ios p-8 relative overflow-hidden shadow-ios-float flex flex-col justify-between h-[300px]">
+            <div className="bg-gradient-to-br from-blue-600 to-indigo-600 text-white rounded-ios p-8 relative overflow-hidden shadow-lg shadow-blue-500/30 flex flex-col justify-between h-[300px]">
                 <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/20 rounded-full blur-3xl"></div>
                 
                 <div className="relative z-10">
@@ -108,7 +108,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
                         {isCheckedIn ? (
                             <button 
                                 onClick={onCheckOut}
-                                className="bg-white text-ios-red px-6 py-3 rounded-full font-semibold text-[15px] shadow-sm active:scale-95 transition-transform"
+                                className="bg-white text-slate-900 px-6 py-3 rounded-full font-semibold text-[15px] shadow-sm active:scale-95 transition-transform"
                             >
                                 Завершить
                             </button>
@@ -116,7 +116,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
                             <button 
                                 onClick={handleGeoCheckIn}
                                 disabled={!!isWorkDone || isLocating}
-                                className="bg-white text-ios-blue px-6 py-3 rounded-full font-semibold text-[15px] shadow-sm active:scale-95 transition-transform disabled:opacity-50 flex items-center gap-2"
+                                className="bg-white text-blue-600 px-6 py-3 rounded-full font-semibold text-[15px] shadow-sm active:scale-95 transition-transform disabled:opacity-50 flex items-center gap-2"
                             >
                                 {isLocating && <Loader2 size={16} className="animate-spin" />}
                                 {isWorkDone ? 'Закрыто' : 'Начать'}
@@ -128,56 +128,56 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
 
             {/* Small Widgets */}
             <div className="grid grid-cols-2 gap-4">
-                 <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios flex flex-col justify-between">
-                    <div className="w-10 h-10 bg-ios-green/10 text-ios-green rounded-full flex items-center justify-center mb-2">
+                 <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between">
+                    <div className="w-10 h-10 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mb-2">
                         <CheckCircle size={20} />
                     </div>
                     <div>
-                        <div className="text-[32px] font-bold text-black dark:text-white">{completedToday}</div>
-                        <div className="text-[15px] text-gray-500 dark:text-gray-400 font-medium">Выполнено</div>
+                        <div className="text-[32px] font-bold text-slate-900 dark:text-white">{completedToday}</div>
+                        <div className="text-[15px] text-slate-500 dark:text-slate-400 font-medium">Выполнено</div>
                     </div>
                  </div>
-                 <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios flex flex-col justify-between">
-                    <div className="w-10 h-10 bg-ios-blue/10 text-ios-blue rounded-full flex items-center justify-center mb-2">
+                 <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between">
+                    <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mb-2">
                         <TrendingUp size={20} />
                     </div>
                     <div>
-                        <div className="text-[32px] font-bold text-black dark:text-white">18.5k</div>
-                        <div className="text-[15px] text-gray-500 dark:text-gray-400 font-medium">Заработано</div>
+                        <div className="text-[32px] font-bold text-slate-900 dark:text-white">18.5k</div>
+                        <div className="text-[15px] text-slate-500 dark:text-slate-400 font-medium">Заработано</div>
                     </div>
                  </div>
-                 <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios col-span-2 flex items-center justify-between">
+                 <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-sm border border-slate-100 dark:border-slate-700 col-span-2 flex items-center justify-between">
                     <div>
-                        <div className="text-[13px] text-gray-400 dark:text-gray-500 font-medium uppercase mb-1">Рейтинг</div>
-                        <div className="text-[28px] font-bold text-black dark:text-white">4.9 <span className="text-gray-300 text-[20px]">/ 5.0</span></div>
+                        <div className="text-[13px] text-slate-400 dark:text-slate-500 font-medium uppercase mb-1">Рейтинг</div>
+                        <div className="text-[28px] font-bold text-slate-900 dark:text-white">4.9 <span className="text-slate-300 text-[20px]">/ 5.0</span></div>
                     </div>
                     <div className="flex gap-1">
-                        {[1,2,3,4,5].map(s => <div key={s} className="w-2 h-8 rounded-full bg-ios-yellow"></div>)}
+                        {[1,2,3,4,5].map(s => <div key={s} className="w-2 h-8 rounded-full bg-yellow-400"></div>)}
                     </div>
                  </div>
             </div>
         </div>
 
         <div className="mt-8">
-            <h2 className="text-[22px] font-bold text-black dark:text-white mb-4">Ближайшие задачи</h2>
-            <div className="ios-list-group shadow-sm dark:bg-slate-800">
+            <h2 className="text-[22px] font-bold text-slate-900 dark:text-white mb-4">Ближайшие задачи</h2>
+            <div className="ios-list-group shadow-sm border border-slate-100 dark:border-slate-700 dark:bg-slate-800">
                 {myTasks.slice(0, 3).map(task => (
-                    <div key={task.id} className="ios-list-item justify-between group cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <div key={task.id} className="ios-list-item justify-between group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                         <div>
-                            <div className="font-semibold text-[17px] text-black dark:text-white mb-1">{task.title}</div>
-                            <div className="text-[15px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                            <div className="font-semibold text-[17px] text-slate-900 dark:text-white mb-1">{task.title}</div>
+                            <div className="text-[15px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
                                 <MapPin size={14} /> {task.address}
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
                             <span className={`px-3 py-1 rounded-full text-[13px] font-medium ${
-                                task.status === TaskStatus.NEW ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
-                                task.status === TaskStatus.IN_PROGRESS ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
-                                'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                                task.status === TaskStatus.NEW ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
+                                task.status === TaskStatus.IN_PROGRESS ? 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300' :
+                                'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                             }`}>
                                 {task.status}
                             </span>
-                            <ChevronRight size={18} className="text-gray-300 dark:text-gray-600" />
+                            <ChevronRight size={18} className="text-slate-300 dark:text-slate-600" />
                         </div>
                     </div>
                 ))}
@@ -192,18 +192,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
     <div className="space-y-6 max-w-[1400px] mx-auto">
       <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-end mb-4">
         <div>
-          <h1 className="text-[34px] font-bold text-black dark:text-white tracking-tight leading-tight">Обзор</h1>
-          <p className="text-[17px] text-gray-500 dark:text-gray-400">Октябрь 2023</p>
+          <h1 className="text-[34px] font-bold text-slate-900 dark:text-white tracking-tight leading-tight">Обзор</h1>
+          <p className="text-[17px] text-slate-500 dark:text-slate-400">Октябрь 2023</p>
         </div>
         
-        <div className="bg-white dark:bg-slate-800 rounded-full p-1 pl-4 pr-1 shadow-sm flex items-center gap-3">
-             <div className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Статус:</div>
+        <div className="bg-white dark:bg-slate-800 rounded-full p-1 pl-4 pr-1 shadow-sm flex items-center gap-3 border border-slate-100 dark:border-slate-700">
+             <div className="text-[13px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Статус:</div>
              {isCheckedIn ? (
-                <button onClick={onCheckOut} className="bg-ios-red text-white px-4 py-1.5 rounded-full font-medium text-[15px] flex items-center gap-2 active:scale-95 transition-transform">
+                <button onClick={onCheckOut} className="bg-slate-900 dark:bg-slate-700 text-white px-4 py-1.5 rounded-full font-medium text-[15px] flex items-center gap-2 active:scale-95 transition-transform">
                     <Square size={12} fill="currentColor"/> Стоп ({todayEntry.checkIn})
                 </button>
              ) : (
-                <button onClick={handleGeoCheckIn} className="bg-ios-blue text-white px-4 py-1.5 rounded-full font-medium text-[15px] flex items-center gap-2 active:scale-95 transition-transform" disabled={isLocating}>
+                <button onClick={handleGeoCheckIn} className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-1.5 rounded-full font-medium text-[15px] flex items-center gap-2 active:scale-95 transition-transform shadow-md shadow-blue-500/25" disabled={isLocating}>
                     {isLocating ? <Loader2 size={12} className="animate-spin"/> : <Play size={12} fill="currentColor"/>} Старт
                 </button>
              )}
@@ -213,29 +213,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-            { label: 'Продажи', value: totalSales.toLocaleString() + ' ₸', icon: Zap, color: 'text-ios-green', bg: 'bg-ios-green' },
-            { label: 'Заявки', value: activeTasks, icon: CheckCircle, color: 'text-ios-blue', bg: 'bg-ios-blue' },
-            { label: 'Долги по ТО', value: pendingService, icon: AlertCircle, color: 'text-ios-orange', bg: 'bg-ios-orange' },
-            { label: 'Новые клиенты', value: '12', icon: ArrowUpRight, color: 'text-ios-indigo', bg: 'bg-ios-indigo' }
+            { label: 'Продажи', value: totalSales.toLocaleString() + ' ₸', icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50' },
+            { label: 'Заявки', value: activeTasks, icon: CheckCircle, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+            { label: 'Долги по ТО', value: pendingService, icon: AlertCircle, color: 'text-slate-600', bg: 'bg-slate-100' },
+            { label: 'Новые клиенты', value: '12', icon: ArrowUpRight, color: 'text-blue-500', bg: 'bg-blue-50' }
         ].map((stat, i) => (
-            <div key={i} className="bg-white dark:bg-slate-800 p-5 rounded-ios shadow-ios hover:scale-[1.02] transition-transform">
+            <div key={i} className="bg-white dark:bg-slate-800 p-5 rounded-ios shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-transform">
                 <div className="flex justify-between items-start mb-4">
-                    <div className={`w-10 h-10 ${stat.bg}/10 ${stat.color} rounded-full flex items-center justify-center`}>
+                    <div className={`w-10 h-10 ${stat.bg} dark:bg-slate-700 ${stat.color} dark:text-white rounded-full flex items-center justify-center`}>
                         <stat.icon size={22} />
                     </div>
-                    <ChevronRight size={18} className="text-gray-300 dark:text-gray-600" />
+                    <ChevronRight size={18} className="text-slate-300 dark:text-slate-600" />
                 </div>
-                <div className="text-[13px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{stat.label}</div>
-                <div className="text-[28px] font-bold text-black dark:text-white leading-none">{stat.value}</div>
+                <div className="text-[13px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">{stat.label}</div>
+                <div className="text-[28px] font-bold text-slate-900 dark:text-white leading-none">{stat.value}</div>
             </div>
         ))}
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-ios lg:col-span-2">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-sm border border-slate-100 dark:border-slate-700 lg:col-span-2">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-[20px] font-bold text-black dark:text-white">Динамика продаж</h3>
+            <h3 className="text-[20px] font-bold text-slate-900 dark:text-white">Динамика продаж</h3>
           </div>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -254,14 +254,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
                       color: '#000'
                   }} 
                 />
-                <Bar dataKey="amount" fill="#007AFF" radius={[6, 6, 6, 6]} barSize={40} />
+                <Bar dataKey="amount" fill="url(#colorGradient)" radius={[6, 6, 6, 6]} barSize={40} />
+                <defs>
+                  <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2563eb" stopOpacity={1}/>
+                    <stop offset="100%" stopColor="#4f46e5" stopOpacity={1}/>
+                  </linearGradient>
+                </defs>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-ios flex flex-col">
-          <h3 className="text-[20px] font-bold text-black dark:text-white mb-6">Статус заявок</h3>
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col">
+          <h3 className="text-[20px] font-bold text-slate-900 dark:text-white mb-6">Статус заявок</h3>
           <div className="h-[220px] w-full relative">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -292,8 +298,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
             </ResponsiveContainer>
              {/* Center Text */}
              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-3xl font-bold text-black dark:text-white">{activeTasks}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Активно</span>
+                <span className="text-3xl font-bold text-slate-900 dark:text-white">{activeTasks}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 uppercase font-semibold">Активно</span>
             </div>
           </div>
           
@@ -301,10 +307,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
             {taskData.map((entry, index) => (
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full" style={{backgroundColor: COLORS[index]}}></div>
-                    <span className="text-[15px] text-gray-700 dark:text-gray-300 font-medium">{entry.name}</span>
+                    <div className="w-3 h-3 rounded-full" style={{backgroundColor: COLORS[index % COLORS.length]}}></div>
+                    <span className="text-[15px] text-slate-700 dark:text-slate-300 font-medium">{entry.name}</span>
                 </div>
-                <span className="text-[15px] font-bold text-black dark:text-white">{entry.value}</span>
+                <span className="text-[15px] font-bold text-slate-900 dark:text-white">{entry.value}</span>
               </div>
             ))}
           </div>
