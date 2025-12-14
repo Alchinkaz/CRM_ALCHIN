@@ -125,15 +125,10 @@ export const PublicTaskConfirmation: React.FC = () => {
             {submitted ? (
                 <div className="bg-white p-8 rounded-3xl shadow-sm text-center animate-in fade-in zoom-in duration-300">
                     <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Star size={40} fill="currentColor" />
+                        <CheckCircle size={40} fill="currentColor" className="text-white" />
                     </div>
                     <h2 className="text-2xl font-bold text-slate-900 mb-2">Спасибо!</h2>
-                    <p className="text-slate-500 mb-6">Ваш отзыв принят. Мы рады, что вы выбрали нас.</p>
-                    <div className="inline-flex gap-1 justify-center mb-8">
-                        {[1,2,3,4,5].map(star => (
-                            <Star key={star} size={24} className={`${star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`} />
-                        ))}
-                    </div>
+                    <p className="text-slate-500 mb-8">Работа подтверждена.</p>
 
                     {/* 2GIS CTA Block */}
                     <div className="bg-gray-50 border border-gray-200 rounded-2xl p-6 text-left relative overflow-hidden group">
@@ -146,7 +141,7 @@ export const PublicTaskConfirmation: React.FC = () => {
                                 Вам понравилось обслуживание? Будем очень благодарны, если вы поделитесь мнением на карте города.
                             </p>
                             <a 
-                                href="https://2gis.kz/aktau/firm/70000001081123283" 
+                                href="https://2gis.kz/aktau/firm/70000001081123283/tab/reviews/addreview" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center justify-center gap-2 w-full py-3.5 bg-[#2ECC71] hover:bg-[#27AE60] text-white rounded-xl font-bold transition-all shadow-lg shadow-green-500/20 active:scale-95"
