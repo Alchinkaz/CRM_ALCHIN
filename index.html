@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ServiceCRM Pro</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              primary: '#0f172a',
+              secondary: '#334155',
+              accent: '#3b82f6',
+              glass: 'rgba(255, 255, 255, 0.45)',
+              glassBorder: 'rgba(255, 255, 255, 0.5)',
+              'ios-blue': '#007AFF',
+              'ios-green': '#34C759',
+              'ios-red': '#FF3B30',
+              'ios-yellow': '#FFCC00',
+              'ios-orange': '#FF9500',
+              'ios-indigo': '#5856D6',
+              'ios-gray': '#8E8E93',
+            },
+            boxShadow: {
+              'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.05)',
+              'glow': '0 0 20px rgba(59, 130, 246, 0.5)',
+              'soft': '0 10px 40px -10px rgba(0,0,0,0.05)',
+              'ios': '0 4px 12px rgba(0, 0, 0, 0.06)',
+              'ios-float': '0 12px 24px rgba(0, 0, 0, 0.12)',
+            },
+            borderRadius: {
+              'ios': '20px',
+              'ios-sm': '14px',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Inter', sans-serif;
+        background-color: #f2f2f7; /* iOS System Gray 6 */
+        color: #1c1c1e;
+        min-height: 100vh;
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #c7c7cc; 
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #aeaeb2; 
+      }
+
+      /* Glass Utility */
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+      }
+      
+      .glass-card {
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+      
+      .glass-input {
+        background: rgba(255, 255, 255, 0.6);
+        border: 1px solid rgba(60, 60, 67, 0.1);
+        backdrop-filter: blur(10px);
+        transition: all 0.2s ease;
+      }
+      .glass-input:focus {
+        background: #ffffff;
+        border-color: #007AFF;
+        box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+      }
+      
+      /* iOS List Group Style */
+      .ios-list-group {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+      }
+      .ios-list-item {
+        padding: 16px;
+        border-bottom: 0.5px solid rgba(60, 60, 67, 0.1);
+        display: flex;
+        align-items: center;
+      }
+      .ios-list-item:last-child {
+        border-bottom: none;
+      }
+
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://esm.sh/lucide-react@^0.561.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "recharts": "https://esm.sh/recharts@^3.5.1"
+  }
+}
+</script>
+</head>
+  <body class="text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900">
+    <div id="root"></div>
+  </body>
+</html>
