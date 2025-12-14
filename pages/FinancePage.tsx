@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, UserRole, FinancialAccount, Transaction, AccountType } from '../types';
 import { ACCOUNTS, TRANSACTIONS } from '../mockData';
-import { Wallet, TrendingUp, TrendingDown, Plus, CreditCard, Landmark, DollarSign, Search, Filter, X, Save, ArrowDownLeft, ArrowUpRight, Calendar as CalendarIcon, ChevronDown, Check, ChevronLeft, ChevronRight, CornerDownRight, Hash, Edit2, Upload, AlertTriangle, FileText, Trash2, CheckCircle, CheckSquare, ArrowUpDown, ChevronUp, AlertOctagon, ShieldAlert, Scale, FileUp, RefreshCw, FileWarning } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, Plus, CreditCard, Landmark, DollarSign, Search, Filter, X, Save, ArrowDownLeft, ArrowUpRight, Calendar as CalendarIcon, ChevronDown, Check, ChevronLeft, ChevronRight, CornerDownRight, Hash, Edit2, Upload, AlertTriangle, FileText, Trash2, CheckCircle, CheckSquare, ArrowUpDown, ChevronUp, AlertOctagon, ShieldAlert, Scale, FileUp, RefreshCw, FileWarning, History, Calculator } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface FinancePageProps {
@@ -65,7 +65,8 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       duplicates: number;
       fileFinalBalance?: number; // From 1C file
       projectedBalance: number; // Current System Balance + Added Txs
-  }>({ open: false, accountName: '', accountId: '', added: 0, duplicates: 0, projectedBalance: 0 });
+      skippedBalanceUpdate: boolean; // Flag if we ignored file balance
+  }>({ open: false, accountName: '', accountId: '', added: 0, duplicates: 0, projectedBalance: 0, skippedBalanceUpdate: false });
 
   // --- NEW: CASH RECONCILIATION STATE ---
   const [cashReconcileAccount, setCashReconcileAccount] = useState<FinancialAccount | null>(null);
@@ -313,6 +314,21 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               const totalFound = newTransactions.length;
               if (totalFound === 0) { alert(`В файле не найдено транзакций для счета "${existingAccount.name}".`); return; }
 
+              // 1. Determine dates to protect balance
+              let fileMaxDateStr = '1970-01-01';
+              newTransactions.forEach(t => {
+                  if (t.date > fileMaxDateStr) fileMaxDateStr = t.date;
+              });
+
+              let systemMaxDateStr = '1970-01-01';
+              const accountTxs = transactions.filter(t => t.accountId === existingAccount.id);
+              accountTxs.forEach(t => {
+                  if (t.date > systemMaxDateStr) systemMaxDateStr = t.date;
+              });
+
+              // Logic: If file date is older than system date, do NOT update balance
+              const isFileOlder = fileMaxDateStr < systemMaxDateStr;
+
               const uniqueTransactions = newTransactions.filter(newTx => {
                   return !transactions.some(existingTx => 
                       existingTx.accountId === newTx.accountId &&
@@ -331,8 +347,19 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
 
               if (addedCount > 0) {
                   setTransactions(prev => [...uniqueTransactions, ...prev]);
-                  // Also update balance by the imported transactions delta (not correction)
-                  setAccounts(prev => prev.map(a => a.id === existingAccount.id ? { ...a, balance: newProjectedBalance } : a));
+                  
+                  // Update Balance Logic
+                  setAccounts(prev => prev.map(a => {
+                      if (a.id === existingAccount.id) {
+                          // Only update balance if file is current or newer than what we have
+                          if (!isFileOlder) {
+                              return { ...a, balance: newProjectedBalance };
+                          }
+                          // If file is older, keep current balance (just added history)
+                          return a; 
+                      }
+                      return a;
+                  }));
               }
               
               setImportResult({ 
@@ -341,8 +368,9 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   accountId: existingAccount.id,
                   added: addedCount, 
                   duplicates: duplicateCount,
-                  fileFinalBalance: accountInfo.finalBalance, // From file
-                  projectedBalance: newProjectedBalance // System calculated based on imports
+                  fileFinalBalance: accountInfo.finalBalance, 
+                  projectedBalance: isFileOlder ? existingAccount.balance : newProjectedBalance, // Show current if skipped
+                  skippedBalanceUpdate: isFileOlder // Flag for UI
               });
           } else {
               let bankName = 'Банковский счет';
@@ -519,10 +547,15 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
   const periodIncome = transactionsInPeriod.filter(t => t.type === 'Income').reduce((acc, t) => acc + t.amount, 0);
   const periodExpense = transactionsInPeriod.filter(t => t.type === 'Expense').reduce((acc, t) => acc + t.amount, 0);
 
-  // Global Check for Missing History
+  // --- GLOBAL INTEGRITY CHECK ---
   const allTimeIncome = transactions.filter(t => t.type === 'Income').reduce((acc, t) => acc + t.amount, 0);
   const allTimeExpense = transactions.filter(t => t.type === 'Expense').reduce((acc, t) => acc + t.amount, 0);
-  const isHistoricalDataMissing = (allTimeIncome < allTimeExpense) && (totalBalance > 1000);
+  
+  // Calculate what balance SHOULD be based on transactions
+  const calculatedNet = allTimeIncome - allTimeExpense;
+  const balanceDiscrepancy = totalBalance - calculatedNet;
+  // Use a small epsilon for floating point safety, or just check absolute difference > 1
+  const hasBalanceMismatch = Math.abs(balanceDiscrepancy) > 1;
 
   const typeFiltered = transactionsInPeriod.filter(t => filterType === 'All' || t.type === filterType);
   
@@ -633,9 +666,10 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   return {
                       ...acc,
                       name: accForm.name,
-                      type: accForm.type,
-                      balance: initialFormBalance,
-                      accountNumber: (accForm.type === 'Bank' || accForm.type === 'SubAccount') ? accForm.accountNumber : undefined,
+                      // RESTRICT: Keep original sensitive fields when editing
+                      type: acc.type,
+                      balance: acc.balance,
+                      accountNumber: acc.accountNumber,
                       parentId: accForm.type === 'SubAccount' ? accForm.parentId : undefined
                   };
               }
@@ -755,22 +789,31 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
         </div>
       </div>
 
-      {isHistoricalDataMissing && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm mb-4">
-              <FileWarning className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" size={24} />
+      {/* --- INTEGRITY WARNING --- */}
+      {hasBalanceMismatch && (
+          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 rounded-2xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm mb-4">
+              <div className="p-2 bg-orange-100 dark:bg-orange-900/40 rounded-full text-orange-600 dark:text-orange-400">
+                  <Calculator size={24} />
+              </div>
               <div>
-                  <h4 className="font-bold text-red-900 dark:text-red-200 text-base">Критическое расхождение истории!</h4>
-                  <p className="text-sm text-red-800/90 dark:text-red-300/90 mt-1 leading-relaxed">
-                      Обнаружена ошибка: <b>Расход превышает Доход</b>, но на счетах положительный баланс.
-                      <br/>
-                      Это означает, что в системе отсутствует история накоплений за прошлые периоды. 
-                      Для точного учета и корректных цифр вам необходимо загрузить выписки 1С <b>за все предыдущие года</b> (с момента открытия счета).
-                  </p>
+                  <h4 className="font-bold text-orange-900 dark:text-orange-200 text-base">Расхождение истории операций</h4>
+                  <div className="text-sm text-orange-800/90 dark:text-orange-300/90 mt-1 leading-relaxed">
+                      <p>Баланс счетов не сходится с историей транзакций.</p>
+                      <ul className="list-disc pl-4 mt-1 mb-2 space-y-0.5">
+                          <li>Текущий баланс: <b>{totalBalance.toLocaleString()} ₸</b></li>
+                          <li>Доходы - Расходы: <b>{calculatedNet.toLocaleString()} ₸</b></li>
+                          <li>Разница: <b className="text-red-600 dark:text-red-400">{Math.abs(balanceDiscrepancy).toLocaleString()} ₸</b></li>
+                      </ul>
+                      <p>
+                          Система имеет верный остаток (установлен вручную или импортом), но <b>история неполная</b>. 
+                          Для устранения расхождения необходимо добавить выписки за предыдущие периоды (начальные остатки).
+                      </p>
+                  </div>
               </div>
           </div>
       )}
 
-      {anyBankOutdated && (
+      {anyBankOutdated && !hasBalanceMismatch && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 mb-4 shadow-sm">
               <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600 dark:text-red-400">
                   <AlertTriangle size={24} />
@@ -1570,7 +1613,11 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                                   <span className="font-bold text-gray-900 dark:text-white">{importResult.projectedBalance.toLocaleString()} ₸</span>
                               </div>
                               
-                              {importResult.fileFinalBalance !== importResult.projectedBalance ? (
+                              {importResult.skippedBalanceUpdate ? (
+                                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-600 text-xs text-orange-600 dark:text-orange-400 font-bold flex items-center justify-center gap-1 bg-orange-50 dark:bg-orange-900/20 p-2 rounded-lg">
+                                      <History size={14} /> Баланс сохранен (Выписка за прошлый период)
+                                  </div>
+                              ) : importResult.fileFinalBalance !== importResult.projectedBalance ? (
                                   <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-600">
                                       <div className="text-xs text-red-500 dark:text-red-400 font-medium mb-2 flex items-center gap-1">
                                           <AlertTriangle size={12} /> Обнаружено расхождение!
@@ -1642,8 +1689,9 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                         <button
                             key={type.id}
                             type="button"
-                            onClick={() => setAccForm({...accForm, type: type.id as AccountType, accountNumber: '', parentId: ''})}
-                            className={`py-3 px-1 rounded-2xl border text-sm font-bold transition-colors ${accForm.type === type.id ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300' : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'}`}
+                            disabled={!!editingAccount} // DISABLE EDITING
+                            onClick={() => !editingAccount && setAccForm({...accForm, type: type.id as AccountType, accountNumber: '', parentId: ''})}
+                            className={`py-3 px-1 rounded-2xl border text-sm font-bold transition-colors ${accForm.type === type.id ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300' : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'} ${editingAccount ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {type.label}
                         </button>
@@ -1659,8 +1707,9 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                     <input 
                       type="text" 
                       value={accForm.accountNumber}
+                      disabled={!!editingAccount} // DISABLE EDITING
                       onChange={e => setAccForm({...accForm, accountNumber: e.target.value})}
-                      className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm text-gray-900 dark:text-white"
+                      className={`w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm text-gray-900 dark:text-white ${editingAccount ? 'bg-gray-100 dark:bg-slate-900 text-gray-500' : ''}`}
                       placeholder={accForm.type === 'SubAccount' ? "0000 0000 0000 0000" : "KZ..."}
                     />
                   </div>
@@ -1694,10 +1743,12 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   required
                   type="number" 
                   value={accForm.initialBalance}
+                  disabled={!!editingAccount} // DISABLE EDITING
                   onChange={e => setAccForm({...accForm, initialBalance: e.target.value})}
-                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                  className={`w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white ${editingAccount ? 'bg-gray-100 dark:bg-slate-900 text-gray-500' : ''}`}
                   placeholder="0"
                 />
+                {editingAccount && <p className="text-xs text-gray-400 mt-1 dark:text-gray-500">Баланс изменяется только через транзакции или сверку.</p>}
               </div>
 
               {pendingImportTransactions && (
