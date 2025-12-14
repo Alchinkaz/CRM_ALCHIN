@@ -69,7 +69,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:opacity-90 transition-all shadow-md shadow-blue-500/30"
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm dark:shadow-blue-900/20"
         >
           <Plus size={18} />
           <span>Добавить клиента</span>
@@ -183,8 +183,8 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
                       onClick={() => setFormData({...formData, type})}
                       className={`py-2 px-1 text-xs sm:text-sm rounded-lg border transition-colors ${
                         formData.type === type 
-                          ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-sm' 
-                          : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300 font-medium shadow-sm' 
+                          : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'
                       }`}
                     >
                       {type}
@@ -232,7 +232,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg shadow-md shadow-blue-500/30 font-medium transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md dark:shadow-blue-900/30 font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   <Save size={18} />
                   Сохранить
