@@ -13,8 +13,10 @@ import { DocumentationPage } from './pages/DocumentationPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TimesheetPage } from './pages/TimesheetPage';
 import { ServicePage } from './pages/ServicePage';
+import { PublicTaskConfirmation } from './pages/PublicTaskConfirmation'; // Import public page
 import { ShieldAlert } from 'lucide-react';
 import { useLocalStorage } from './hooks/useLocalStorage';
+import { ToastProvider } from './components/Toast';
 
 // Simple Hash Router Implementation
 const App: React.FC = () => {
@@ -61,6 +63,11 @@ const App: React.FC = () => {
   const navigate = (hash: string) => {
     window.location.hash = hash;
   };
+
+  // --- PUBLIC ROUTE HANDLING ---
+  if (currentHash.startsWith('#public-task')) {
+      return <PublicTaskConfirmation />;
+  }
 
   // --- Handlers ---
 
@@ -277,40 +284,42 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-100 dark:bg-slate-950 transition-colors duration-300">
-      <Sidebar 
-        role={currentUser.role} 
-        currentRoute={currentHash.replace('#', '')} 
-        onNavigate={navigate} 
-      />
-      
-      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
-        <Header 
-          user={currentUser} 
-          users={users} 
-          isDarkMode={theme === 'dark'}
-          onToggleTheme={toggleTheme}
-          onSwitchUser={(u) => {
-            setCurrentUser(u);
-            if (!isAccessAllowed(currentHash.replace('#', ''), u.role)) {
-              navigate('#dashboard');
-            }
-          }} 
+    <ToastProvider>
+      <div className="flex h-screen overflow-hidden bg-slate-100 dark:bg-slate-950 transition-colors duration-300">
+        <Sidebar 
+          role={currentUser.role} 
+          currentRoute={currentHash.replace('#', '')} 
+          onNavigate={navigate} 
         />
         
-        {/* Main content padding bottom added for mobile nav */}
-        <main className="flex-1 overflow-auto p-4 md:p-6 pb-24 md:pb-6 scroll-smooth">
-          {renderContent()}
-        </main>
-        
-        {/* Mobile Navigation */}
-        <BottomNav 
-           role={currentUser.role} 
-           currentRoute={currentHash.replace('#', '')} 
-           onNavigate={navigate} 
-        />
+        <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+          <Header 
+            user={currentUser} 
+            users={users} 
+            isDarkMode={theme === 'dark'}
+            onToggleTheme={toggleTheme}
+            onSwitchUser={(u) => {
+              setCurrentUser(u);
+              if (!isAccessAllowed(currentHash.replace('#', ''), u.role)) {
+                navigate('#dashboard');
+              }
+            }} 
+          />
+          
+          {/* Main content padding bottom added for mobile nav */}
+          <main className="flex-1 overflow-auto p-4 md:p-6 pb-24 md:pb-6 scroll-smooth">
+            {renderContent()}
+          </main>
+          
+          {/* Mobile Navigation */}
+          <BottomNav 
+            role={currentUser.role} 
+            currentRoute={currentHash.replace('#', '')} 
+            onNavigate={navigate} 
+          />
+        </div>
       </div>
-    </div>
+    </ToastProvider>
   );
 };
 

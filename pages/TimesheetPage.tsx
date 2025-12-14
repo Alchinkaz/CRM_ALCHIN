@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { User, UserRole, TimeEntry, AttendanceStatus, Advance } from '../types';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Edit2, AlertCircle, LayoutGrid, List, FileSpreadsheet, MapPin, Plus, X, UserPlus, Phone, Briefcase, User as UserIcon, Wallet, CreditCard, DollarSign } from 'lucide-react';
+import { useToast } from '../components/Toast';
 
 interface TimesheetPageProps {
   user: User;
@@ -19,6 +20,7 @@ interface TimesheetPageProps {
 type Tab = 'timesheet' | 'employees';
 
 export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, timesheetData, advances, onUpdateEntry, onDeleteEntry, onAddUser, onUpdateUser, onAddAdvance }) => {
+  const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState<Tab>('timesheet');
   // Enforce monthly view by removing viewMode state
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -107,6 +109,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
         salary: salaryValue
       };
       onUpdateUser(updatedUser);
+      addToast('Данные сотрудника обновлены', 'success');
     } else {
       // Create new
       const newUser: User = {
@@ -119,6 +122,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
           salary: salaryValue
       };
       onAddUser(newUser);
+      addToast('Сотрудник добавлен', 'success');
     }
     
     setIsUserModalOpen(false);
@@ -149,6 +153,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
     };
     onAddAdvance(advance);
     setIsAdvanceModalOpen(false);
+    addToast('Аванс выдан', 'success');
   };
 
   // --- Edit Handlers (Timesheet) ---

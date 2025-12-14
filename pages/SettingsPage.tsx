@@ -4,6 +4,7 @@ import { User, UserRole, Role, ResourceAction, Permission } from '../types';
 import { ROLES } from '../mockData';
 import { Shield, Key, UserCheck, Plus, X, Save, Lock, Mail, Users, User as UserIcon, UserPlus, Check, Trash2, Edit, ChevronDown, ChevronRight, Folder } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useToast } from '../components/Toast';
 
 interface SettingsPageProps {
   user: User;
@@ -77,6 +78,7 @@ const ACTIONS: { id: ResourceAction, label: string }[] = [
 ];
 
 export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdateUser }) => {
+  const { addToast } = useToast();
   const [activeTab, setActiveTab] = useState<'users' | 'roles' | 'security'>('users');
   
   // Roles State with Persistence
@@ -177,6 +179,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
       if (editingRole) {
           // Update
           setRoles(prev => prev.map(r => r.id === editingRole.id ? { ...r, name: roleForm.name, description: roleForm.description, permissions: permissionsArray } : r));
+          addToast('Роль успешно обновлена', 'success');
       } else {
           // Create
           const newRole: Role = {
@@ -187,6 +190,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
               permissions: permissionsArray
           };
           setRoles(prev => [...prev, newRole]);
+          addToast('Новая роль создана', 'success');
       }
       setIsRoleModalOpen(false);
   };
@@ -194,6 +198,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
   const deleteRole = (roleId: string) => {
       if (confirm('Вы уверены, что хотите удалить эту роль?')) {
         setRoles(prev => prev.filter(r => r.id !== roleId));
+        addToast('Роль удалена', 'success');
       }
   };
 
@@ -226,6 +231,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
     onUpdateUser(updatedUser);
     setIsUserModalOpen(false);
     resetUserForm();
+    addToast('Доступ для пользователя создан', 'success');
   };
 
   const resetUserForm = () => {

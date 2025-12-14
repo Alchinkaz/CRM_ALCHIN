@@ -103,10 +103,38 @@ export interface Client {
   balance: number;
 }
 
+// --- TASK COMMUNICATION TYPES ---
+
+export interface TaskComment {
+  id: string;
+  userId: string;
+  userName: string; // Denormalized for display if user deleted
+  userAvatar?: string;
+  text: string;
+  createdAt: string; // ISO String
+}
+
+export interface TaskHistory {
+  id: string;
+  userId: string;
+  userName: string;
+  action: string; // e.g., "Изменил статус", "Назначил исполнителя"
+  details?: string; // e.g., "Новая -> В работе"
+  createdAt: string;
+}
+
+export interface ClientConfirmation {
+  isConfirmed: boolean;
+  confirmedAt: string;
+  rating: number; // 1-5
+  feedback?: string;
+}
+
 export interface Task {
   id: string;
   title: string;
   clientName: string;
+  clientId?: string; // Link to real client
   address: string;
   deadline: string;
   status: TaskStatus;
@@ -116,6 +144,14 @@ export interface Task {
   // New fields for Recurring Tasks
   isRecurring?: boolean; 
   maintenanceObjectId?: string;
+  // Communication
+  comments?: TaskComment[];
+  history?: TaskHistory[];
+  // Proof of Work
+  attachments?: string[]; // Array of Base64 strings (photos)
+  // Public Access
+  publicToken?: string; // Random string for public link
+  clientConfirmation?: ClientConfirmation;
 }
 
 export interface Sale {
@@ -147,6 +183,15 @@ export interface MonthlyService {
   amount: number;
   status: 'Done' | 'Pending';
   month: string;
+}
+
+// --- INVENTORY TYPES ---
+export interface InventoryItem {
+  id: string;
+  category: 'GPS' | 'SIM' | 'Consumable' | 'Tool';
+  model: string; 
+  quantity: number;
+  ownerId: 'warehouse' | string; // 'warehouse' or User ID
 }
 
 export interface GpsTracker {

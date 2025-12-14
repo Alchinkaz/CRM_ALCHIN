@@ -4,12 +4,14 @@ import { User, UserRole, FinancialAccount, Transaction, AccountType } from '../t
 import { ACCOUNTS, TRANSACTIONS } from '../mockData';
 import { Wallet, TrendingUp, TrendingDown, Plus, CreditCard, Landmark, DollarSign, Search, Filter, X, Save, ArrowDownLeft, ArrowUpRight, Calendar as CalendarIcon, ChevronDown, Check, ChevronLeft, ChevronRight, CornerDownRight, Hash, Edit2, Upload, AlertTriangle, FileText, Trash2, CheckCircle, CheckSquare, ArrowUpDown, ChevronUp, AlertOctagon, ShieldAlert, Scale, FileUp, RefreshCw, FileWarning, History, Calculator } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useToast } from '../components/Toast';
 
 interface FinancePageProps {
   user: User;
 }
 
 export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
+  const { addToast } = useToast();
   // Use Local Storage Hook for Persistence
   const [accounts, setAccounts] = useLocalStorage<FinancialAccount[]>('crm_finance_accounts', ACCOUNTS as FinancialAccount[]);
   const [transactions, setTransactions] = useLocalStorage<Transaction[]>('crm_finance_transactions', TRANSACTIONS);
@@ -182,6 +184,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       setDeletingAccount(null);
       setDeleteStep(0);
       setDeleteConfirmationName('');
+      addToast('Счет удален', 'success');
   };
 
   // Bulk Delete Transactions - ENTRY
@@ -220,6 +223,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       setTransactions(prev => prev.filter(t => !selectedTxIds.has(t.id)));
       setSelectedTxIds(new Set());
       setIsDeleteTxModalOpen(false);
+      addToast(`Удалено ${txsToDelete.length} операций`, 'success');
   };
 
   // Toggle Selection
@@ -246,6 +250,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       setAccounts(prev => prev.map(a => a.id === cashReconcileAccount.id ? { ...a, balance: actual } : a));
       
       setCashReconcileAccount(null);
+      addToast('Остаток обновлен', 'success');
   };
 
   // --- 1C Import Reconciliation Logic ---
@@ -257,6 +262,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       
       // Close modal
       setImportResult({...importResult, open: false});
+      addToast('Баланс скорректирован', 'success');
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -269,7 +275,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
             parse1CFile(text);
           } catch (error) {
             console.error("1C Parse Error", error);
-            alert("Ошибка при чтении файла. Убедитесь, что это корректный файл выписки 1С (txt).");
+            addToast("Ошибка при чтении файла. Убедитесь, что это корректный файл выписки 1С (txt).", 'error');
           }
       };
       reader.readAsText(file); 
@@ -312,7 +318,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
           if (existingAccount) {
               const { newTransactions } = getTransactionsFromDocs(documents, existingAccount.id, accountInfo.number);
               const totalFound = newTransactions.length;
-              if (totalFound === 0) { alert(`В файле не найдено транзакций для счета "${existingAccount.name}".`); return; }
+              if (totalFound === 0) { addToast(`В файле не найдено транзакций для счета "${existingAccount.name}".`, 'warning'); return; }
 
               // 1. Determine dates to protect balance
               let fileMaxDateStr = '1970-01-01';
@@ -383,7 +389,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               setPendingNewAccountDetails({ number: accountInfo.number, balance: accountInfo.initialBalance || 0, bankName: bankName });
               setIsUnknownAccountModalOpen(true);
           }
-      } else { alert('Не удалось определить номер счета в файле выписки. Проверьте формат файла.'); }
+      } else { addToast('Не удалось определить номер счета в файле выписки. Проверьте формат файла.', 'error'); }
   };
 
   const proceedToCreateAccount = () => {
@@ -630,6 +636,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       }));
       setIsTxModalOpen(false);
       setTxForm({ amount: '', category: '', accountId: '', description: '', date: formatDate(new Date()) });
+      addToast('Транзакция добавлена', 'success');
   };
 
   const openAccountModal = (account?: FinancialAccount) => {
@@ -675,6 +682,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               }
               return acc;
           }));
+          addToast('Счет обновлен', 'success');
       } else {
           const targetAccountId = `acc${Date.now()}`;
           let finalBalance = initialFormBalance;
@@ -701,6 +709,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               setTransactions(prev => [...transactionsToAdd, ...prev]);
           }
           setPendingImportTransactions(null);
+          addToast('Новый счет создан', 'success');
       }
       setIsAccountModalOpen(false);
   };
@@ -957,8 +966,9 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       </div>
 
       {/* --- TRANSACTIONS LIST --- */}
+      {/* ... (Existing transaction list structure is maintained, just alert replacement logic is in function body if any) ... */}
       <div className="bg-white dark:bg-slate-800 rounded-ios shadow-ios border border-gray-200 dark:border-slate-700 overflow-visible relative">
-          
+          {/* ... (Header and table content - same as before) ... */}
           <div className="p-4 border-b border-gray-100 dark:border-slate-700 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
               
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full xl:w-auto">
@@ -976,6 +986,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
 
                     {isDatePickerOpen && (
                         <div className="absolute top-full left-0 mt-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 flex flex-col sm:flex-row w-[320px] sm:w-[540px] overflow-hidden animate-in fade-in slide-in-from-top-2">
+                            {/* ... (Calendar Picker Logic) ... */}
                             <div className="w-full sm:w-1/3 bg-gray-50/80 dark:bg-slate-900/50 border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-slate-700 p-2 flex flex-col gap-1">
                                 <div className="px-3 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Быстрый выбор</div>
                                 {[

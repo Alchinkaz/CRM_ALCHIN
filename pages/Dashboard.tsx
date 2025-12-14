@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { User, UserRole, TaskStatus, TimeEntry, AttendanceStatus, Task, Sale, MonthlyService, Advance } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, AlertCircle, CheckCircle, Wallet, Users as UsersIcon, Clock, Play, Square, MapPin, Loader2, Zap, ArrowUpRight, ChevronRight, Calendar as CalendarIcon, Briefcase, Calculator, Banknote } from 'lucide-react';
+import { useToast } from '../components/Toast';
 
 interface DashboardProps {
   user: User;
@@ -18,6 +19,7 @@ interface DashboardProps {
 const COLORS = ['#007AFF', '#34C759', '#FF9500', '#FF3B30'];
 
 export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advances = [], tasks, sales, monthlyServices, onCheckIn, onCheckOut }) => {
+  const { addToast } = useToast();
   const [isLocating, setIsLocating] = useState(false);
 
   const totalSales = sales.reduce((acc, sale) => acc + sale.amount, 0);
@@ -53,20 +55,26 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
                 const { latitude, longitude } = position.coords;
                 onCheckIn({ lat: latitude, lng: longitude });
                 setIsLocating(false);
+                addToast("Смена открыта с геолокацией", "success");
             },
             (error) => {
                 console.error("GPS Error:", error.message);
-                alert(`Не удалось определить местоположение: ${error.message}. Проверьте разрешения браузера.`);
+                addToast(`Геолокация недоступна: ${error.message}`, "warning");
                 onCheckIn(); 
                 setIsLocating(false);
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
     } else {
-        alert("Ваш браузер не поддерживает геолокацию");
+        addToast("Ваш браузер не поддерживает геолокацию", "error");
         onCheckIn();
         setIsLocating(false);
     }
+  };
+
+  const handleCheckOutWrapper = () => {
+      onCheckOut();
+      addToast("Смена завершена", "info");
   };
 
   // --- ENGINEER VIEW ---
@@ -233,7 +241,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
 
                         {isCheckedIn ? (
                             <button 
-                                onClick={onCheckOut}
+                                onClick={handleCheckOutWrapper}
                                 className="bg-white text-ios-red px-6 py-3 rounded-full font-semibold text-[15px] shadow-sm active:scale-95 transition-transform"
                             >
                                 Завершить
@@ -363,7 +371,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
         <div className="bg-white dark:bg-slate-800 rounded-full p-1 pl-4 pr-1 shadow-sm flex items-center gap-3">
              <div className="text-[13px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Статус:</div>
              {isCheckedIn ? (
-                <button onClick={onCheckOut} className="bg-ios-red text-white px-4 py-1.5 rounded-full font-medium text-[15px] flex items-center gap-2 active:scale-95 transition-transform">
+                <button onClick={handleCheckOutWrapper} className="bg-ios-red text-white px-4 py-1.5 rounded-full font-medium text-[15px] flex items-center gap-2 active:scale-95 transition-transform">
                     <Square size={12} fill="currentColor"/> Стоп ({todayEntry.checkIn})
                 </button>
              ) : (

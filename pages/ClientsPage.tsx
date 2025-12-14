@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { User, ClientType, Client, UserRole } from '../types';
 import { Search, Plus, Building2, User as UserIcon, Building, X, Save, MapPin, Phone, Lock } from 'lucide-react';
+import { useToast } from '../components/Toast';
 
 interface ClientsPageProps {
   user: User;
@@ -10,6 +11,7 @@ interface ClientsPageProps {
 }
 
 export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddClient }) => {
+  const { addToast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
@@ -51,6 +53,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, onAddCl
       phone: '',
       address: ''
     });
+    addToast('Клиент успешно добавлен', 'success');
   };
 
   const filteredClients = clients.filter(client => {

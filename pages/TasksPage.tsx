@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
-import { User, UserRole, Task, TaskStatus, Client, ClientType } from '../types';
-import { MapPin, Calendar, Clock, Filter, Plus, Camera, CheckSquare, Users as UsersIcon, X, Save, Upload, UserPlus, List, Phone, Building, Building2, User as UserIcon, ChevronDown, Repeat, Edit2, RotateCcw } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { User, UserRole, Task, TaskStatus, Client, ClientType, TaskHistory, TaskComment } from '../types';
+import { MapPin, Calendar, Clock, Plus, Camera, CheckSquare, Users as UsersIcon, X, Save, Upload, UserPlus, List, Phone, User as UserIcon, ChevronDown, Repeat, Edit2, RotateCcw, MessageSquare, History, Send, Info, ExternalLink, Image as ImageIcon, Trash2, Maximize2, Share2, Star } from 'lucide-react';
+import { useToast } from '../components/Toast';
 
 interface TasksPageProps {
   user: User;
@@ -12,7 +13,40 @@ interface TasksPageProps {
   onAddClient?: (client: Client) => void;
 }
 
+// --- UTILITY: Compress Image to prevent LocalStorage quota exceeded ---
+const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target?.result as string;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 1024; // Reasonable size for report
+                const scaleSize = MAX_WIDTH / img.width;
+                // Only scale down if image is larger than MAX_WIDTH
+                if (scaleSize < 1) {
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                } else {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                }
+                
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+                // Compress to JPEG with 0.6 quality
+                resolve(canvas.toDataURL('image/jpeg', 0.6));
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
+};
+
 export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, tasks, onUpdateTasks, onAddClient }) => {
+  const { addToast } = useToast();
   const [filter, setFilter] = useState<TaskStatus | 'ALL'>('ALL');
 
   // Modals state
@@ -22,6 +56,10 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
 
   // Edit Mode State
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'history'>('details');
+
+  // Photo Preview State
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Form state for new/edit task
   const [isManualClient, setIsManualClient] = useState(true); // Default to true
@@ -37,6 +75,10 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
     engineerId: ''
   });
 
+  // Comment Input
+  const [commentText, setCommentText] = useState('');
+  const commentsEndRef = useRef<HTMLDivElement>(null);
+
   // Client Creation Modal State
   const [isClientModalOpen, setIsClientModalOpen] = useState(false);
   const [newClientFormData, setNewClientFormData] = useState({
@@ -48,6 +90,16 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
 
   // Form state for report
   const [reportComment, setReportComment] = useState('');
+  const [reportImages, setReportImages] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
+
+  // Scroll to bottom of comments
+  useEffect(() => {
+      if (activeTab === 'comments' && commentsEndRef.current) {
+          commentsEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+  }, [activeTab, isCreateModalOpen, tasks]);
 
   const filteredTasks = tasks.filter(task => {
     // 1. Status Filter
@@ -84,33 +136,95 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
     return true;
   });
 
+  const getEngineerInfo = (id?: string) => {
+      if (!id) return null;
+      return users.find(u => u.id === id);
+  };
+
+  const createHistoryEntry = (action: string, details?: string): TaskHistory => ({
+      id: `h_${Date.now()}`,
+      userId: user.id,
+      userName: user.name,
+      action,
+      details,
+      createdAt: new Date().toISOString()
+  });
+
+  // --- NEW: SHARE LINK HANDLER ---
+  const copyPublicLink = (task: Task) => {
+      const token = task.publicToken || 'default';
+      const url = `${window.location.origin}/#public-task?id=${task.id}&token=${token}`;
+      navigator.clipboard.writeText(url);
+      addToast('Ссылка скопирована в буфер обмена', 'success');
+  };
+
   const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
     if (newStatus === TaskStatus.COMPLETED) {
       // Open report modal instead of immediate completion
       setActiveTaskForReport(taskId);
+      setReportComment('');
+      setReportImages([]); // Reset images
       setIsReportModalOpen(true);
     } else {
       // If taking a task (NEW -> IN_PROGRESS) and it was unassigned, assign it to current user
       const updatedTasks = tasks.map(t => {
           if (t.id === taskId) {
-              const updates: Partial<Task> = { status: newStatus };
+              const oldStatusLabel = getStatusLabel(t.status);
+              const newStatusLabel = getStatusLabel(newStatus);
+              
+              const updates: Partial<Task> = { 
+                  status: newStatus,
+                  history: [...(t.history || []), createHistoryEntry('Изменил статус', `${oldStatusLabel} -> ${newStatusLabel}`)]
+              };
+
               if (newStatus === TaskStatus.IN_PROGRESS && !t.engineerId && user.role === UserRole.ENGINEER) {
                   updates.engineerId = user.id;
+                  updates.history?.push(createHistoryEntry('Принял задачу', 'Назначил себя исполнителем'));
               }
               return { ...t, ...updates };
           }
           return t;
       });
       onUpdateTasks(updatedTasks);
+      addToast(`Статус обновлен на "${getStatusLabel(newStatus)}"`, 'success');
     }
+  };
+
+  // --- HANDLER: FILE UPLOAD (COMPRESSION) ---
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+          setIsCompressing(true);
+          const newImages: string[] = [];
+          
+          try {
+              for (let i = 0; i < e.target.files.length; i++) {
+                  const file = e.target.files[i];
+                  const compressedBase64 = await compressImage(file);
+                  newImages.push(compressedBase64);
+              }
+              setReportImages(prev => [...prev, ...newImages]);
+          } catch (error) {
+              console.error("Compression error:", error);
+              addToast("Ошибка при обработке фото", "error");
+          } finally {
+              setIsCompressing(false);
+              // Clear input to allow re-selecting same file if needed
+              if (fileInputRef.current) fileInputRef.current.value = '';
+          }
+      }
+  };
+
+  const removeReportImage = (index: number) => {
+      setReportImages(prev => prev.filter((_, i) => i !== index));
   };
 
   // --- HANDLER: OPEN EDIT TASK (For Admin/Manager) ---
   const handleEditTask = (task: Task) => {
       setEditingTaskId(task.id);
+      setActiveTab('details');
       setNewTask({
           title: task.title,
-          clientId: tasks.find(t => t.id === task.id)?.clientId || '', // Note: we assume logic handles lookup, or rely on manual name
+          clientId: tasks.find(t => t.id === task.id)?.clientId || '', 
           address: task.address,
           deadline: task.deadline,
           priority: task.priority,
@@ -163,6 +277,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
         phone: '',
         address: ''
     });
+    addToast('Клиент успешно создан', 'success');
   };
 
   const createTaskLogic = (shouldKeepOpen: boolean) => {
@@ -179,6 +294,18 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
         // UPDATE EXISTING TASK
         const updatedTasks = tasks.map(t => {
             if (t.id === editingTaskId) {
+                const changes: TaskHistory[] = [];
+                if (t.engineerId !== newTask.engineerId) {
+                    const engName = users.find(u => u.id === newTask.engineerId)?.name || 'Никто';
+                    changes.push(createHistoryEntry('Изменил исполнителя', `Новый: ${engName}`));
+                }
+                if (t.priority !== newTask.priority) {
+                    changes.push(createHistoryEntry('Изменил приоритет', `${t.priority} -> ${newTask.priority}`));
+                }
+                if (t.deadline !== newTask.deadline) {
+                    changes.push(createHistoryEntry('Перенес срок', `${t.deadline} -> ${newTask.deadline}`));
+                }
+
                 return {
                     ...t,
                     title: newTask.title,
@@ -187,12 +314,14 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                     deadline: newTask.deadline,
                     priority: newTask.priority,
                     description: newTask.description,
-                    engineerId: newTask.engineerId || undefined
+                    engineerId: newTask.engineerId || undefined,
+                    history: [...(t.history || []), ...changes]
                 };
             }
             return t;
         });
         onUpdateTasks(updatedTasks);
+        addToast('Заявка обновлена', 'success');
         setIsCreateModalOpen(false);
         resetForm();
     } else {
@@ -206,9 +335,14 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
             status: TaskStatus.NEW,
             priority: newTask.priority,
             description: newTask.description,
-            engineerId: newTask.engineerId || undefined
+            engineerId: newTask.engineerId || undefined,
+            history: [createHistoryEntry('Создал заявку')],
+            comments: [],
+            // Generate public token automatically
+            publicToken: Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10)
         };
         onUpdateTasks([createdTask, ...tasks]);
+        addToast('Заявка создана', 'success');
 
         if (shouldKeepOpen) {
             setNewTask(prev => ({ ...prev, title: '', description: '' }));
@@ -235,6 +369,28 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
     }
   };
 
+  const handlePostComment = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!commentText.trim() || !editingTaskId) return;
+
+      const newComment: TaskComment = {
+          id: `cm_${Date.now()}`,
+          userId: user.id,
+          userName: user.name,
+          userAvatar: user.avatar,
+          text: commentText,
+          createdAt: new Date().toISOString()
+      };
+
+      const updatedTasks = tasks.map(t => 
+          t.id === editingTaskId 
+              ? { ...t, comments: [...(t.comments || []), newComment] } 
+              : t
+      );
+      onUpdateTasks(updatedTasks);
+      setCommentText('');
+  };
+
   const resetForm = () => {
     setNewTask({
       title: '',
@@ -248,6 +404,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
     setIsManualClient(true); // Reset to Manual by default
     setManualClientName('');
     setEditingTaskId(null);
+    setActiveTab('details');
   };
 
   const handleCompleteTask = () => {
@@ -257,7 +414,13 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
     const currentTask = tasks.find(t => t.id === activeTaskForReport);
     let newTaskList = tasks.map(t => 
       t.id === activeTaskForReport 
-        ? { ...t, status: TaskStatus.COMPLETED, description: `${t.description} \n\n[ОТЧЕТ ИНЖЕНЕРА]: ${reportComment}` } 
+        ? { 
+            ...t, 
+            status: TaskStatus.COMPLETED, 
+            description: `${t.description} \n\n[ОТЧЕТ ИНЖЕНЕРА]: ${reportComment}`,
+            history: [...(t.history || []), createHistoryEntry('Завершил работу', `Сдал отчет. Фото: ${reportImages.length}`)],
+            attachments: reportImages // SAVE PHOTOS HERE
+          } 
         : t
     );
 
@@ -281,18 +444,24 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                 deadline: nextDeadlineStr,
                 status: TaskStatus.NEW,
                 description: currentTask.description.split('\n\n[ОТЧЕТ ИНЖЕНЕРА]')[0], // Reset desc, remove report
-                engineerId: currentTask.engineerId // Keep engineer
+                engineerId: currentTask.engineerId, // Keep engineer
+                history: [createHistoryEntry('Авто-создание (ТО)', 'Ежемесячная генерация')],
+                comments: [],
+                attachments: [], // Reset attachments for new task
+                publicToken: Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10) // New token
             };
             newTaskList = [nextRecurringTask, ...newTaskList];
-            // Optional: alert(`Создана заявка на ТО на ${nextDeadlineStr}`);
+            addToast(`Создана заявка на ТО на ${nextDeadlineStr}`, 'info');
         }
     }
     
     onUpdateTasks(newTaskList);
+    addToast('Работа завершена!', 'success');
     
     setIsReportModalOpen(false);
     setActiveTaskForReport(null);
     setReportComment('');
+    setReportImages([]);
   };
 
   const getStatusColor = (status: TaskStatus) => {
@@ -314,30 +483,35 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
     }
   };
 
+  // Helper to get active task object when editing
+  const currentEditingTask = editingTaskId ? tasks.find(t => t.id === editingTaskId) : null;
+
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-6 relative h-full flex flex-col">
       {/* Header & Filter */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">Заявки на работы</h1>
           <p className="text-gray-500 dark:text-gray-400">Монтаж, ремонт и обслуживание</p>
         </div>
         
-        {user.role !== UserRole.ENGINEER && (
-          <button 
-            onClick={() => {
-              resetForm();
-              setIsCreateModalOpen(true);
-            }}
-            className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:opacity-90 transition-all shadow-md shadow-blue-500/30"
-          >
-            <Plus size={18} />
-            <span>Создать заявку</span>
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+            {user.role !== UserRole.ENGINEER && (
+            <button 
+                onClick={() => {
+                resetForm();
+                setIsCreateModalOpen(true);
+                }}
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:opacity-90 transition-all shadow-md shadow-blue-500/30"
+            >
+                <Plus size={18} />
+                <span className="hidden sm:inline">Создать заявку</span>
+            </button>
+            )}
+        </div>
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-2">
+      <div className="flex gap-2 overflow-x-auto pb-2 shrink-0">
         {(['ALL', TaskStatus.NEW, TaskStatus.IN_PROGRESS, TaskStatus.COMPLETED] as const).map(status => (
           <button
             key={status}
@@ -353,295 +527,524 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
         ))}
       </div>
 
-      {/* Task Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filteredTasks.map(task => (
-          <div key={task.id} className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border hover:shadow-md transition-shadow flex flex-col h-full ${task.isRecurring ? 'border-l-4 border-l-orange-400 dark:border-l-orange-500' : 'border-gray-200 dark:border-slate-700'}`}>
-            <div className="p-5 flex-1">
-              <div className="flex justify-between items-start mb-3">
-                <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${getStatusColor(task.status)}`}>
-                  {getStatusLabel(task.status)}
-                </span>
-                <div className="flex gap-2">
-                    {/* EDIT BUTTON FOR ADMIN/MANAGER */}
-                    {user.role !== UserRole.ENGINEER && (
+      {/* --- TASKS LIST --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-20">
+            {filteredTasks.map(task => {
+            const assignedEngineer = getEngineerInfo(task.engineerId);
+            return (
+            <div key={task.id} className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border hover:shadow-md transition-shadow flex flex-col h-full ${task.isRecurring ? 'border-l-4 border-l-orange-400 dark:border-l-orange-500' : 'border-gray-200 dark:border-slate-700'}`}>
+                <div className="p-5 flex-1">
+                <div className="flex justify-between items-start mb-3">
+                    <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${getStatusColor(task.status)}`}>
+                    {getStatusLabel(task.status)}
+                    </span>
+                    <div className="flex gap-2">
+                        {/* ATTACHMENT INDICATOR */}
+                        {task.attachments && task.attachments.length > 0 && (
+                            <span className="text-gray-400 flex items-center" title={`${task.attachments.length} фото`}>
+                                <ImageIcon size={16} />
+                            </span>
+                        )}
                         <button 
                             onClick={() => handleEditTask(task)}
                             className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                            title="Редактировать заявку"
+                            title={user.role === UserRole.ENGINEER ? "Просмотр деталей" : "Редактировать заявку"}
                         >
-                            <Edit2 size={16} />
+                            {user.role === UserRole.ENGINEER ? <Info size={16} /> : <Edit2 size={16} />}
                         </button>
-                    )}
-                    
-                    {task.isRecurring && (
-                        <span className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 px-2 py-1 rounded flex items-center gap-1" title="Ежемесячное ТО">
-                            <Repeat size={12} /> ТО
+                        
+                        {task.isRecurring && (
+                            <span className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 px-2 py-1 rounded flex items-center gap-1" title="Ежемесячное ТО">
+                                <Repeat size={12} /> ТО
+                            </span>
+                        )}
+                        {task.priority === 'High' && (
+                        <span className="text-xs font-bold text-red-500 dark:text-red-400 flex items-center gap-1 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
+                            <Clock size={12} />
+                            Срочно
                         </span>
-                    )}
-                    {task.priority === 'High' && (
-                    <span className="text-xs font-bold text-red-500 dark:text-red-400 flex items-center gap-1 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
-                        <Clock size={12} />
-                        Срочно
-                    </span>
-                    )}
-                </div>
-              </div>
-              
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 dark:drop-shadow-sm">{task.title}</h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 flex items-center gap-1">
-                 <MapPin size={14} />
-                 {task.address}
-              </p>
-              
-              <div className="bg-gray-50 dark:bg-slate-700/50 p-3 rounded-lg text-sm text-gray-700 dark:text-gray-200 mb-4 whitespace-pre-wrap border border-gray-100 dark:border-slate-600/50">
-                {task.description}
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-auto">
-                <div className="flex items-center gap-1">
-                  <UsersIcon size={14} />
-                  <span className="truncate max-w-[120px]" title={task.clientName}>{task.clientName}</span>
-                </div>
-                <div className="flex items-center gap-1 font-medium">
-                  <Calendar size={14} />
-                  <span className={task.isRecurring ? 'text-orange-600 dark:text-orange-400' : ''}>{task.deadline}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80 rounded-b-xl flex gap-3">
-              {/* ENGINEER ACTIONS */}
-              {user.role === UserRole.ENGINEER && task.status === TaskStatus.NEW && (
-                <button 
-                  onClick={() => handleStatusChange(task.id, TaskStatus.IN_PROGRESS)}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2 rounded-lg font-medium hover:opacity-90 text-sm shadow-md shadow-blue-500/20"
-                >
-                  Принять в работу
-                </button>
-              )}
-              
-              {user.role === UserRole.ENGINEER && task.status === TaskStatus.IN_PROGRESS && (
-                <button 
-                  onClick={() => handleStatusChange(task.id, TaskStatus.COMPLETED)}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2 rounded-lg font-medium hover:opacity-90 text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-500/20"
-                >
-                  <CheckSquare size={16} />
-                  Завершить работу
-                </button>
-              )}
-
-              {/* ADMIN ACTIONS ON COMPLETED TASKS */}
-              {task.status === TaskStatus.COMPLETED && (
-                <div className="w-full flex items-center gap-2">
-                    <div className="flex-1 text-center text-green-600 dark:text-green-400 font-medium text-sm py-2 flex items-center justify-center gap-2">
-                        <CheckSquare size={16} />
-                        Выполнено
+                        )}
                     </div>
-                    {user.role !== UserRole.ENGINEER && (
-                        <button 
-                            onClick={() => handleStatusChange(task.id, TaskStatus.IN_PROGRESS)}
-                            className="p-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-colors"
-                            title="Вернуть в работу (Доделать)"
-                        >
-                            <RotateCcw size={16} />
-                        </button>
-                    )}
                 </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+                
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 dark:drop-shadow-sm cursor-pointer hover:text-blue-600 transition-colors" onClick={() => handleEditTask(task)}>{task.title}</h3>
+                
+                {/* --- ADDRESS LINK TO 2GIS --- */}
+                <a
+                    href={`https://2gis.kz/search/${encodeURIComponent(task.address)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={(e) => e.stopPropagation()} // Prevent opening edit modal
+                    className="text-sm text-blue-600 dark:text-blue-400 mb-4 flex items-center gap-1 hover:underline w-fit"
+                    title="Открыть в 2GIS"
+                >
+                    <MapPin size={14} />
+                    {task.address}
+                    <ExternalLink size={10} className="opacity-50" />
+                </a>
+                
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-3 rounded-lg text-sm text-gray-700 dark:text-gray-200 mb-4 whitespace-pre-wrap border border-gray-100 dark:border-slate-600/50 line-clamp-3">
+                    {task.description}
+                </div>
 
-      {/* --- CREATE / EDIT TASK MODAL --- */}
+                {/* Executor Section */}
+                <div className="mb-4 pt-3 border-t border-gray-100 dark:border-slate-700/50">
+                    <div className="flex items-center gap-3">
+                        {assignedEngineer ? (
+                            <>
+                                <img src={assignedEngineer.avatar} alt={assignedEngineer.name} className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-slate-600" />
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+                                        {task.status === TaskStatus.COMPLETED ? 'Выполнил' : 'Исполнитель'}
+                                    </span>
+                                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 leading-tight">
+                                        {assignedEngineer.name}
+                                    </span>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center border border-dashed border-gray-400 dark:border-slate-500">
+                                    <UserIcon size={16} className="text-gray-400 dark:text-gray-500" />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+                                        Исполнитель
+                                    </span>
+                                    <span className="text-sm font-semibold text-orange-500 dark:text-orange-400 leading-tight">
+                                        Не назначен
+                                    </span>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* --- CLIENT CONFIRMATION STATUS --- */}
+                {task.clientConfirmation?.isConfirmed && (
+                    <div className="mb-3 px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center justify-between">
+                        <span className="text-xs font-bold text-green-700 dark:text-green-300 flex items-center gap-1">
+                            <CheckSquare size={14} /> Подтверждено клиентом
+                        </span>
+                        <div className="flex gap-0.5">
+                            {[1,2,3,4,5].map(star => (
+                                <Star key={star} size={10} className={`${star <= (task.clientConfirmation?.rating || 0) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-auto">
+                    <div className="flex items-center gap-1">
+                    <UsersIcon size={14} />
+                    <span className="truncate max-w-[120px]" title={task.clientName}>{task.clientName}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        {/* Comment Count Badge */}
+                        {(task.comments?.length || 0) > 0 && (
+                            <div className="flex items-center gap-1 font-medium text-blue-600 dark:text-blue-400">
+                                <MessageSquare size={14} />
+                                {task.comments?.length}
+                            </div>
+                        )}
+                        <div className="flex items-center gap-1 font-medium">
+                            <Calendar size={14} />
+                            <span className={task.isRecurring ? 'text-orange-600 dark:text-orange-400' : ''}>{task.deadline}</span>
+                        </div>
+                    </div>
+                </div>
+                </div>
+
+                <div className="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80 rounded-b-xl flex gap-3">
+                {/* ENGINEER ACTIONS */}
+                {user.role === UserRole.ENGINEER && task.status === TaskStatus.NEW && (
+                    <button 
+                    onClick={() => handleStatusChange(task.id, TaskStatus.IN_PROGRESS)}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2 rounded-lg font-medium hover:opacity-90 text-sm shadow-md shadow-blue-500/20"
+                    >
+                    Принять в работу
+                    </button>
+                )}
+                
+                {user.role === UserRole.ENGINEER && task.status === TaskStatus.IN_PROGRESS && (
+                    <button 
+                    onClick={() => handleStatusChange(task.id, TaskStatus.COMPLETED)}
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2 rounded-lg font-medium hover:opacity-90 text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-500/20"
+                    >
+                    <CheckSquare size={16} />
+                    Завершить работу
+                    </button>
+                )}
+
+                {/* ADMIN ACTIONS ON COMPLETED TASKS */}
+                {task.status === TaskStatus.COMPLETED && (
+                    <div className="w-full flex items-center gap-2">
+                        <div className="flex-1 text-center text-green-600 dark:text-green-400 font-medium text-sm py-2 flex items-center justify-center gap-2">
+                            <CheckSquare size={16} />
+                            Выполнено
+                        </div>
+                        {user.role !== UserRole.ENGINEER && (
+                            <button 
+                                onClick={() => handleStatusChange(task.id, TaskStatus.IN_PROGRESS)}
+                                className="p-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-colors"
+                                title="Вернуть в работу (Доделать)"
+                            >
+                                <RotateCcw size={16} />
+                            </button>
+                        )}
+                        {/* SHARE BUTTON FOR CLIENT CONFIRMATION */}
+                        <button 
+                            onClick={() => copyPublicLink(task)}
+                            className="p-2 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg hover:bg-blue-100 transition-colors"
+                            title="Скопировать ссылку для клиента"
+                        >
+                            <Share2 size={16} />
+                        </button>
+                    </div>
+                )}
+                </div>
+            </div>
+            )})}
+        </div>
+
+      {/* ... CREATE / EDIT TASK MODAL (REDESIGNED) ... */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh] border border-gray-100 dark:border-slate-700">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 rounded-t-2xl">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">
-                  {editingTaskId ? 'Редактировать заявку' : 'Новая заявка'}
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh] border border-gray-100 dark:border-slate-700 overflow-hidden">
+            {/* Header, Tabs, Form Content ... (Existing Code) */}
+            {/* Keeping code concise by reusing existing modal structure */}
+            <div className="p-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm flex items-center gap-2">
+                  {editingTaskId ? <Edit2 size={20}/> : <Plus size={20}/>}
+                  {editingTaskId ? 'Карточка заявки' : 'Новая заявка'}
               </h2>
               <button onClick={() => setIsCreateModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                 <X size={24} />
               </button>
             </div>
-            
-            <form onSubmit={handleFormSubmit} className="p-6 overflow-y-auto space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Название задачи</label>
-                <input 
-                  required
-                  type="text" 
-                  value={newTask.title}
-                  onChange={e => setNewTask({...newTask, title: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                  placeholder="Например: Монтаж GPS на Камаз"
-                />
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 sm:col-span-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300">Клиент</label>
+            {/* TABS */}
+            {editingTaskId && (
+                <div className="flex border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                     <button 
-                      type="button" 
-                      onClick={() => {
-                        setIsManualClient(!isManualClient);
-                        if (!isManualClient) {
-                            // Switching TO manual
-                            setNewTask(prev => ({ ...prev, clientId: '', address: '' }));
-                            setManualClientName('');
-                        }
-                      }}
-                      className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-colors font-bold"
+                        onClick={() => setActiveTab('details')}
+                        className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeTab === 'details' ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
                     >
-                      {isManualClient ? <List size={12}/> : <UserPlus size={12}/>}
-                      {isManualClient ? 'Выбрать из списка' : 'Ввести вручную'}
+                        <List size={16} /> Детали
                     </button>
-                  </div>
-                  
-                  {isManualClient ? (
+                    <button 
+                        onClick={() => setActiveTab('comments')}
+                        className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeTab === 'comments' ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+                    >
+                        <MessageSquare size={16} /> Чат ({currentEditingTask?.comments?.length || 0})
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('history')}
+                        className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors flex items-center justify-center gap-2 ${activeTab === 'history' ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}`}
+                    >
+                        <History size={16} /> История
+                    </button>
+                </div>
+            )}
+            
+            <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-slate-900/50">
+            {activeTab === 'details' && (
+                <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
+                
+                {/* SHARE LINK IN MODAL */}
+                {editingTaskId && currentEditingTask && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-3 rounded-xl flex items-center justify-between">
+                        <div className="text-sm text-blue-800 dark:text-blue-300 font-medium flex items-center gap-2">
+                            <Share2 size={16} /> Ссылка для клиента
+                        </div>
+                        <button 
+                            type="button"
+                            onClick={() => copyPublicLink(currentEditingTask)}
+                            className="text-xs bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400 px-3 py-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors font-bold"
+                        >
+                            Скопировать
+                        </button>
+                    </div>
+                )}
+
+                {/* Inputs ... (Same as before) */}
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Название задачи</label>
                     <input 
-                      required
-                      type="text" 
-                      value={manualClientName}
-                      onChange={e => setManualClientName(e.target.value)}
-                      placeholder="Имя клиента..."
-                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
+                    required
+                    disabled={user.role === UserRole.ENGINEER}
+                    type="text" 
+                    value={newTask.title}
+                    onChange={e => setNewTask({...newTask, title: e.target.value})}
+                    className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400 disabled:opacity-70 disabled:bg-gray-100 dark:disabled:bg-slate-800"
+                    placeholder="Например: Монтаж GPS на Камаз"
                     />
-                  ) : (
+                </div>
+
+                {/* ... (Rest of form elements: Client, Address, etc. - Identical to previous) ... */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2 sm:col-span-1">
+                    <div className="flex justify-between items-center mb-1">
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300">Клиент</label>
+                        {user.role !== UserRole.ENGINEER && (
+                            <button 
+                            type="button" 
+                            onClick={() => {
+                                setIsManualClient(!isManualClient);
+                                if (!isManualClient) {
+                                    setNewTask(prev => ({ ...prev, clientId: '', address: '' }));
+                                    setManualClientName('');
+                                }
+                            }}
+                            className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-colors font-bold"
+                            >
+                            {isManualClient ? <List size={12}/> : <UserPlus size={12}/>}
+                            {isManualClient ? 'Выбрать из списка' : 'Ввести вручную'}
+                            </button>
+                        )}
+                    </div>
+                    {isManualClient ? (
+                        <input 
+                        required
+                        disabled={user.role === UserRole.ENGINEER}
+                        type="text" 
+                        value={manualClientName}
+                        onChange={e => setManualClientName(e.target.value)}
+                        placeholder="Имя клиента..."
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400 disabled:opacity-70"
+                        />
+                    ) : (
+                        <div className="relative">
+                            <select 
+                            required={!isManualClient}
+                            disabled={user.role === UserRole.ENGINEER}
+                            value={newTask.clientId}
+                            onChange={e => {
+                                const val = e.target.value;
+                                if (val === 'NEW') {
+                                    setIsClientModalOpen(true);
+                                } else {
+                                    const client = clients.find(c => c.id === val);
+                                    setNewTask({...newTask, clientId: val, address: client?.address || ''});
+                                }
+                            }}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-70"
+                            >
+                            <option value="">Выберите клиента</option>
+                            {user.role !== UserRole.ENGINEER && <option value="NEW" className="font-bold text-blue-600 dark:text-blue-400">+ Создать нового клиента</option>}
+                            <optgroup label="Существующие клиенты">
+                                {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                            </optgroup>
+                            </select>
+                            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
+                        </div>
+                    )}
+                    </div>
+                    <div className="col-span-2 sm:col-span-1">
+                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Приоритет</label>
                     <div className="relative">
                         <select 
-                        required={!isManualClient}
-                        value={newTask.clientId}
-                        onChange={e => {
-                            const val = e.target.value;
-                            if (val === 'NEW') {
-                                setIsClientModalOpen(true);
-                            } else {
-                                const client = clients.find(c => c.id === val);
-                                setNewTask({...newTask, clientId: val, address: client?.address || ''});
-                            }
-                        }}
-                        className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
+                            disabled={user.role === UserRole.ENGINEER}
+                            value={newTask.priority}
+                            onChange={e => setNewTask({...newTask, priority: e.target.value as any})}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-70"
                         >
-                        <option value="">Выберите клиента</option>
-                        <option value="NEW" className="font-bold text-blue-600 dark:text-blue-400">+ Создать нового клиента</option>
-                        <optgroup label="Существующие клиенты">
-                            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </optgroup>
+                            <option value="Low">Низкий</option>
+                            <option value="Medium">Средний</option>
+                            <option value="High">Высокий</option>
                         </select>
                         <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
                     </div>
-                  )}
+                    </div>
                 </div>
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Приоритет</label>
-                  <div className="relative">
-                    <select 
-                        value={newTask.priority}
-                        onChange={e => setNewTask({...newTask, priority: e.target.value as any})}
-                        className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
-                    >
-                        <option value="Low">Низкий</option>
-                        <option value="Medium">Средний</option>
-                        <option value="High">Высокий</option>
-                    </select>
-                    <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
-                  </div>
-                </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Адрес объекта</label>
-                <input 
-                  required
-                  type="text" 
-                  value={newTask.address}
-                  onChange={e => setNewTask({...newTask, address: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                  placeholder={isManualClient ? "Введите адрес..." : "Заполнится автоматически или введите..."}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Срок (Дедлайн)</label>
-                  <input 
+                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Адрес объекта</label>
+                    <input 
                     required
-                    type="date" 
-                    value={newTask.deadline}
-                    onChange={e => setNewTask({...newTask, deadline: e.target.value})}
-                    className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white"
-                  />
+                    disabled={user.role === UserRole.ENGINEER}
+                    type="text" 
+                    value={newTask.address}
+                    onChange={e => setNewTask({...newTask, address: e.target.value})}
+                    className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400 disabled:opacity-70"
+                    />
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Срок (Дедлайн)</label>
+                    <input 
+                        required
+                        disabled={user.role === UserRole.ENGINEER}
+                        type="date" 
+                        value={newTask.deadline}
+                        onChange={e => setNewTask({...newTask, deadline: e.target.value})}
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white disabled:opacity-70"
+                    />
+                    </div>
+                    <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Исполнитель</label>
+                    <div className="relative">
+                        <select 
+                            disabled={user.role === UserRole.ENGINEER}
+                            value={newTask.engineerId}
+                            onChange={e => setNewTask({...newTask, engineerId: e.target.value})}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-70"
+                        >
+                            <option value="">Не назначен</option>
+                            {users.filter(u => u.role === UserRole.ENGINEER).map(u => (
+                                <option key={u.id} value={u.id}>{u.name}</option>
+                            ))}
+                        </select>
+                        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
+                    </div>
+                    </div>
+                </div>
+
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Исполнитель</label>
-                  <div className="relative">
-                    <select 
-                        value={newTask.engineerId}
-                        onChange={e => setNewTask({...newTask, engineerId: e.target.value})}
-                        className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
-                    >
-                        <option value="">Не назначен</option>
-                        {users.filter(u => u.role === UserRole.ENGINEER).map(u => (
-                            <option key={u.id} value={u.id}>{u.name}</option>
-                        ))}
-                    </select>
-                    <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
-                  </div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Описание работ</label>
+                    <textarea 
+                    required
+                    disabled={user.role === UserRole.ENGINEER}
+                    rows={4}
+                    value={newTask.description}
+                    onChange={e => setNewTask({...newTask, description: e.target.value})}
+                    className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400 disabled:opacity-70"
+                    placeholder="Что именно нужно сделать..."
+                    />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Описание работ</label>
-                <textarea 
-                  required
-                  rows={3}
-                  value={newTask.description}
-                  onChange={e => setNewTask({...newTask, description: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                  placeholder="Что именно нужно сделать..."
-                />
-              </div>
-
-              <div className="pt-4 flex flex-col sm:flex-row justify-end gap-3 border-t border-gray-100 dark:border-slate-700 mt-4">
-                <button 
-                  type="button" 
-                  onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
-                >
-                  Отмена
-                </button>
-                
-                {!editingTaskId && (
-                    <button 
-                    type="button"
-                    onClick={handleSaveAndCreateAnother}
-                    className="px-4 py-3 bg-white dark:bg-slate-700 border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/30 font-bold transition-colors flex items-center gap-2 justify-center"
-                    >
-                    <Plus size={18} />
-                    <span>Сохранить +</span>
-                    </button>
+                {/* --- ATTACHMENTS GALLERY IN DETAILS VIEW --- */}
+                {editingTaskId && currentEditingTask?.attachments && currentEditingTask.attachments.length > 0 && (
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-2">Фотоотчет</label>
+                        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                            {currentEditingTask.attachments.map((img, idx) => (
+                                <div 
+                                    key={idx} 
+                                    className="aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 cursor-pointer relative group"
+                                    onClick={() => setPreviewImage(img)}
+                                >
+                                    <img src={img} alt="Attachment" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                        <Maximize2 className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md" size={20} />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 )}
 
-                <button 
-                  type="submit" 
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-blue-500/20 font-bold transition-colors"
-                >
-                  {editingTaskId ? 'Сохранить изменения' : 'Создать'}
-                </button>
-              </div>
-            </form>
+                {user.role !== UserRole.ENGINEER && (
+                    <div className="pt-4 flex flex-col sm:flex-row justify-end gap-3 border-t border-gray-100 dark:border-slate-700 mt-4">
+                        {!editingTaskId && (
+                            <button 
+                            type="button"
+                            onClick={handleSaveAndCreateAnother}
+                            className="px-4 py-3 bg-white dark:bg-slate-700 border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/30 font-bold transition-colors flex items-center gap-2 justify-center"
+                            >
+                            <Plus size={18} />
+                            <span>Сохранить +</span>
+                            </button>
+                        )}
+
+                        <button 
+                        type="submit" 
+                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-blue-500/20 font-bold transition-colors"
+                        >
+                        {editingTaskId ? 'Сохранить изменения' : 'Создать'}
+                        </button>
+                    </div>
+                )}
+                </form>
+            )}
+
+            {/* TAB CONTENT: COMMENTS (CHAT) & HISTORY - Reused from previous step logic */}
+            {activeTab === 'comments' && currentEditingTask && (
+                <div className="flex flex-col h-full">
+                    {/* ... (Comments rendering logic same as before) ... */}
+                    <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+                        {(currentEditingTask.comments && currentEditingTask.comments.length > 0) ? (
+                            currentEditingTask.comments.map(comment => (
+                                <div key={comment.id} className={`flex gap-3 ${comment.userId === user.id ? 'flex-row-reverse' : ''}`}>
+                                    <div className="shrink-0 w-8 h-8 rounded-full overflow-hidden bg-gray-200 dark:bg-slate-700">
+                                        {comment.userAvatar ? (
+                                            <img src={comment.userAvatar} alt={comment.userName} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-500"><UserIcon size={16}/></div>
+                                        )}
+                                    </div>
+                                    <div className={`max-w-[80%] space-y-1`}>
+                                        <div className={`text-xs text-gray-500 dark:text-gray-400 ${comment.userId === user.id ? 'text-right' : ''}`}>
+                                            <span className="font-bold">{comment.userName}</span> • {new Date(comment.createdAt).toLocaleString()}
+                                        </div>
+                                        <div className={`p-3 rounded-2xl text-sm ${comment.userId === user.id ? 'bg-blue-600 text-white rounded-tr-sm' : 'bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-800 dark:text-white rounded-tl-sm'}`}>
+                                            {comment.text}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-48 text-gray-400">
+                                <MessageSquare size={48} className="mb-2 opacity-50" />
+                                <p>Нет комментариев</p>
+                            </div>
+                        )}
+                        <div ref={commentsEndRef} />
+                    </div>
+                    <form onSubmit={handlePostComment} className="p-3 bg-white dark:bg-slate-800 border-t border-gray-100 dark:border-slate-700 flex gap-2">
+                        <input 
+                            type="text" 
+                            value={commentText}
+                            onChange={e => setCommentText(e.target.value)}
+                            placeholder="Написать комментарий..."
+                            className="flex-1 px-4 py-2 bg-gray-100 dark:bg-slate-700 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 dark:text-white"
+                        />
+                        <button 
+                            type="submit"
+                            disabled={!commentText.trim()}
+                            className="p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <Send size={20} />
+                        </button>
+                    </form>
+                </div>
+            )}
+
+            {activeTab === 'history' && currentEditingTask && (
+                <div className="p-6">
+                    <div className="relative border-l-2 border-gray-200 dark:border-slate-700 ml-3 space-y-6">
+                        {(currentEditingTask.history || []).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map(item => (
+                            <div key={item.id} className="relative pl-6">
+                                <div className="absolute -left-[9px] top-0 w-4 h-4 bg-gray-200 dark:bg-slate-600 rounded-full border-2 border-white dark:border-slate-800"></div>
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                    <span className="font-bold text-blue-600 dark:text-blue-400">{item.userName}</span> {item.action}
+                                </div>
+                                {item.details && (
+                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 bg-white dark:bg-slate-800 p-2 rounded border border-gray-100 dark:border-slate-700 inline-block">
+                                        {item.details}
+                                    </div>
+                                )}
+                                <div className="text-[10px] text-gray-400 mt-1">
+                                    {new Date(item.createdAt).toLocaleString()}
+                                </div>
+                            </div>
+                        ))}
+                        {(!currentEditingTask.history || currentEditingTask.history.length === 0) && (
+                             <div className="pl-6 text-gray-400 text-sm italic">История пуста</div>
+                        )}
+                    </div>
+                </div>
+            )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* --- REPORT & COMPLETE MODAL --- */}
+      {/* --- REPORT & COMPLETE MODAL (WITH PHOTO UPLOAD) --- */}
       {isReportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-100 dark:border-slate-700">
+           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-gray-100 dark:border-slate-700 max-h-[90vh] flex flex-col">
              <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-green-50 dark:bg-green-900/20">
                 <h2 className="text-lg font-bold text-green-800 dark:text-green-300 flex items-center gap-2">
                     <CheckSquare size={20} />
@@ -652,7 +1055,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                 </button>
              </div>
              
-             <div className="p-6 space-y-4">
+             <div className="p-6 space-y-4 overflow-y-auto flex-1">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Отчет о проделанной работе</label>
                     <textarea 
@@ -666,17 +1069,55 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Фотоотчет</label>
-                    <div className="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg p-6 flex flex-col items-center justify-center text-gray-400 hover:border-green-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors cursor-pointer">
-                        <Camera size={32} className="mb-2" />
-                        <span className="text-sm">Нажмите, чтобы добавить фото</span>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Фотоотчет (Обязательно)</label>
+                    
+                    <input 
+                        type="file" 
+                        multiple 
+                        accept="image/*"
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={handleFileSelect}
+                        capture="environment" // Hint mobile browsers to use camera
+                    />
+
+                    {/* PHOTO PREVIEW GRID */}
+                    {reportImages.length > 0 && (
+                        <div className="grid grid-cols-3 gap-2 mb-3 animate-in fade-in">
+                            {reportImages.map((img, idx) => (
+                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-slate-600 group">
+                                    <img src={img} alt="Preview" className="w-full h-full object-cover" />
+                                    <button 
+                                        onClick={() => removeReportImage(idx)}
+                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <div 
+                        onClick={() => !isCompressing && fileInputRef.current?.click()}
+                        className={`border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-6 flex flex-col items-center justify-center text-gray-400 hover:border-green-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all cursor-pointer active:scale-95 ${isCompressing ? 'opacity-50 cursor-wait' : ''}`}
+                    >
+                        {isCompressing ? (
+                            <span className="animate-pulse">Обработка фото...</span>
+                        ) : (
+                            <>
+                                <Camera size={32} className="mb-2" />
+                                <span className="text-sm font-medium">Нажмите, чтобы добавить фото</span>
+                                <span className="text-xs opacity-70 mt-1">До 10 фото</span>
+                            </>
+                        )}
                     </div>
                 </div>
                 
                 <div className="pt-2">
                     <button 
                         onClick={handleCompleteTask}
-                        disabled={!reportComment.trim()}
+                        disabled={!reportComment.trim() || isCompressing}
                         className="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-lg hover:opacity-90 shadow-md shadow-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                         <Save size={20} />
@@ -686,6 +1127,19 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
              </div>
            </div>
         </div>
+      )}
+
+      {/* --- IMAGE LIGHTBOX --- */}
+      {previewImage && (
+          <div 
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 cursor-pointer"
+            onClick={() => setPreviewImage(null)}
+          >
+              <img src={previewImage} className="max-w-full max-h-full rounded shadow-2xl" alt="Full view" />
+              <button className="absolute top-4 right-4 text-white hover:text-gray-300">
+                  <X size={32} />
+              </button>
+          </div>
       )}
 
       {/* --- CREATE CLIENT MODAL (SHARED) --- */}
@@ -700,6 +1154,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
             </div>
             
             <form onSubmit={handleCreateClient} className="p-6 space-y-4">
+              {/* ... (Client Form Fields - Identical to previous) ... */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Название / ФИО</label>
                 <input 
