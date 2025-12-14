@@ -240,45 +240,18 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       if (!cashReconcileAccount || !cashActualBalance) return;
 
       const actual = parseFloat(cashActualBalance);
-      const diff = actual - cashReconcileAccount.balance;
-
-      if (Math.abs(diff) > 0) {
-          const correctionTx: Transaction = {
-              id: `fix_${Date.now()}`,
-              date: formatDate(new Date()),
-              amount: Math.abs(diff),
-              type: diff > 0 ? 'Income' : 'Expense',
-              category: 'Корректировка баланса',
-              accountId: cashReconcileAccount.id,
-              description: `Сверка кассы: ${diff > 0 ? 'Излишек' : 'Недостача'}`,
-              is1C: false
-          };
-          setTransactions(prev => [correctionTx, ...prev]);
-          setAccounts(prev => prev.map(a => a.id === cashReconcileAccount.id ? { ...a, balance: actual } : a));
-      }
-
+      
+      // Only update the balance without adding a correction transaction
+      setAccounts(prev => prev.map(a => a.id === cashReconcileAccount.id ? { ...a, balance: actual } : a));
+      
       setCashReconcileAccount(null);
   };
 
   // --- 1C Import Reconciliation Logic ---
   const applyImportCorrection = () => {
       if (!importResult.fileFinalBalance && importResult.fileFinalBalance !== 0) return;
-      if (importResult.fileFinalBalance === importResult.projectedBalance) return;
-
-      const diff = importResult.fileFinalBalance - importResult.projectedBalance;
       
-      const correctionTx: Transaction = {
-          id: `imp_fix_${Date.now()}`,
-          date: formatDate(new Date()),
-          amount: Math.abs(diff),
-          type: diff > 0 ? 'Income' : 'Expense',
-          category: 'Корректировка по выписке',
-          accountId: importResult.accountId,
-          description: `Авто-корректировка при импорте. Выписка: ${importResult.fileFinalBalance}, Расчетный: ${importResult.projectedBalance}`,
-          is1C: true
-      };
-
-      setTransactions(prev => [correctionTx, ...prev]);
+      // Only update the balance to match the 1C file final balance
       setAccounts(prev => prev.map(a => a.id === importResult.accountId ? { ...a, balance: importResult.fileFinalBalance! } : a));
       
       // Close modal
@@ -290,8 +263,13 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (event) => {
-          const text = event.target?.result as string;
-          parse1CFile(text);
+          try {
+            const text = event.target?.result as string;
+            parse1CFile(text);
+          } catch (error) {
+            console.error("1C Parse Error", error);
+            alert("Ошибка при чтении файла. Убедитесь, что это корректный файл выписки 1С (txt).");
+          }
       };
       reader.readAsText(file); 
       e.target.value = '';
@@ -314,7 +292,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
           else if (upperLine.startsWith('КОНЕЦДОКУМЕНТА')) { documents.push(currentDoc); currentDoc = {}; currentSection = ''; continue; }
 
           const [rawKey, ...values] = trimmed.split('=');
-          const key = rawKey.trim().toUpperCase(); 
+          const key = rawKey?.trim().toUpperCase(); 
           const value = values.join('=').trim(); 
 
           if (currentSection === 'account') {
@@ -353,6 +331,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
 
               if (addedCount > 0) {
                   setTransactions(prev => [...uniqueTransactions, ...prev]);
+                  // Also update balance by the imported transactions delta (not correction)
                   setAccounts(prev => prev.map(a => a.id === existingAccount.id ? { ...a, balance: newProjectedBalance } : a));
               }
               
@@ -363,7 +342,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   added: addedCount, 
                   duplicates: duplicateCount,
                   fileFinalBalance: accountInfo.finalBalance, // From file
-                  projectedBalance: newProjectedBalance // System calculated
+                  projectedBalance: newProjectedBalance // System calculated based on imports
               });
           } else {
               let bankName = 'Банковский счет';
@@ -376,7 +355,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               setPendingNewAccountDetails({ number: accountInfo.number, balance: accountInfo.initialBalance || 0, bankName: bankName });
               setIsUnknownAccountModalOpen(true);
           }
-      } else { alert('Не удалось определить номер счета в файле выписки.'); }
+      } else { alert('Не удалось определить номер счета в файле выписки. Проверьте формат файла.'); }
   };
 
   const proceedToCreateAccount = () => {
@@ -729,11 +708,18 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       return accTxs[0].date;
   };
 
+  // STRICT check for today
   const anyBankOutdated = accounts.some(acc => {
       if (acc.type !== 'Bank') return false;
       const last = getAccountLastUpdate(acc.id);
       return last !== todayIso;
   });
+
+  const outdatedAccountsCount = accounts.filter(acc => {
+      if (acc.type !== 'Bank') return false;
+      const last = getAccountLastUpdate(acc.id);
+      return last !== todayIso;
+  }).length;
 
   return (
     <div className="space-y-6 max-w-[1200px] mx-auto pb-10">
@@ -752,7 +738,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
              />
              <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-slate-700 px-3 sm:px-5 py-2.5 rounded-full hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm font-semibold text-[15px]"
+                className="flex items-center gap-2 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-slate-700 px-3 sm:px-5 py-2.5 rounded-2xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors shadow-sm font-semibold text-[15px]"
                 title="Импорт 1С"
              >
                 <Upload size={18} />
@@ -760,7 +746,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
              </button>
              <button 
                 onClick={openTxModal}
-                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 sm:px-5 py-2.5 rounded-full hover:opacity-90 transition-all shadow-md shadow-blue-500/30 font-semibold text-[15px]"
+                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-3 sm:px-5 py-2.5 rounded-2xl hover:opacity-90 transition-all shadow-md shadow-blue-500/30 font-semibold text-[15px]"
                 title="Новая транзакция"
              >
                 <Plus size={18} />
@@ -770,7 +756,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
       </div>
 
       {isHistoricalDataMissing && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 shadow-sm mb-4">
               <FileWarning className="text-red-600 dark:text-red-400 shrink-0 mt-0.5" size={24} />
               <div>
                   <h4 className="font-bold text-red-900 dark:text-red-200 text-base">Критическое расхождение истории!</h4>
@@ -784,13 +770,17 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
           </div>
       )}
 
-      {anyBankOutdated && !isHistoricalDataMissing && (
-          <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 rounded-xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
-              <AlertTriangle className="text-orange-600 dark:text-orange-400 shrink-0 mt-0.5" size={20} />
+      {anyBankOutdated && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-2xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 mb-4 shadow-sm">
+              <div className="p-2 bg-red-100 dark:bg-red-900/40 rounded-full text-red-600 dark:text-red-400">
+                  <AlertTriangle size={24} />
+              </div>
               <div>
-                  <h4 className="font-bold text-orange-900 dark:text-orange-200 text-sm">Данные могут быть неточными</h4>
-                  <p className="text-sm text-orange-800/80 dark:text-orange-300/80 mt-1">
-                      Для автоматической корректировки и точного вывода значений, пожалуйста, загрузите выписку 1С за весь текущий год.
+                  <h4 className="font-bold text-red-900 dark:text-red-200 text-base">Актуализируйте выписки!</h4>
+                  <p className="text-sm text-red-800/80 dark:text-red-300/80 mt-1">
+                      Для корректного отображения остатков необходимо загрузить выписку 1С за <b>сегодняшний день</b> ({todayIso}).
+                      <br/>
+                      Устаревшие счета: <strong>{outdatedAccountsCount}</strong>. Система ожидает подтверждения операций за текущую дату.
                   </p>
               </div>
           </div>
@@ -834,7 +824,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   const isUpToDate = lastUpdate === todayIso;
                   
                   return (
-                    <div key={acc.id} className={`min-w-[280px] bg-white dark:bg-slate-800 p-5 rounded-ios shadow-ios border flex flex-col justify-between h-[160px] relative overflow-hidden group transition-all ${!isUpToDate && acc.type === 'Bank' ? 'border-orange-200 dark:border-orange-800/30' : 'border-gray-100 dark:border-slate-700'}`}>
+                    <div key={acc.id} className={`min-w-[280px] bg-white dark:bg-slate-800 p-5 rounded-ios shadow-ios border flex flex-col justify-between h-[160px] relative overflow-hidden group transition-all ${!isUpToDate && acc.type === 'Bank' ? 'border-red-200 dark:border-red-800/50 shadow-red-100 dark:shadow-none' : 'border-gray-100 dark:border-slate-700'}`}>
                         <div className="absolute right-[-10px] top-[-10px] opacity-10 transform rotate-12 group-hover:scale-110 transition-transform pointer-events-none text-black dark:text-white">
                             {acc.type === 'Cash' ? <Wallet size={80} /> : acc.type === 'Bank' ? <Landmark size={80} /> : <CreditCard size={80} />}
                         </div>
@@ -895,15 +885,15 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                                 !isUpToDate ? (
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                                        className="flex items-center gap-1.5 text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 px-2 py-1 rounded hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors w-full justify-center animate-pulse"
+                                        className="flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors w-full justify-center animate-pulse shadow-sm"
                                     >
                                         <FileUp size={12} />
-                                        Требуется выписка (весь год)
+                                        Требуется выписка за СЕГОДНЯ
                                     </button>
                                 ) : (
                                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded w-fit">
                                         <CheckCircle size={10} />
-                                        Актуально (сегодня)
+                                        Выписка актуальна
                                     </div>
                                 )
                             ) : (
@@ -934,7 +924,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                  <div className="relative" ref={datePickerRef}>
                     <button 
                         onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-slate-700 hover:bg-gray-100 dark:hover:bg-slate-600 border border-transparent hover:border-gray-200 dark:hover:border-slate-500 rounded-full text-sm font-semibold text-gray-700 dark:text-gray-200 transition-all"
+                        className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-slate-700 hover:bg-gray-100 dark:hover:bg-slate-600 border border-transparent hover:border-gray-200 dark:hover:border-slate-500 rounded-2xl text-sm font-semibold text-gray-700 dark:text-gray-200 transition-all"
                     >
                         <CalendarIcon size={16} className="text-gray-500 dark:text-gray-400"/>
                         <span>{dateFilter.label}</span>
@@ -1018,16 +1008,16 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Поиск..." 
-                        className="w-full sm:w-48 pl-9 pr-3 py-1.5 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-gray-900 dark:text-white"
+                        className="w-full sm:w-48 pl-9 pr-3 py-1.5 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-gray-900 dark:text-white"
                      />
                  </div>
 
-                 <div className="flex bg-gray-100 dark:bg-slate-700 p-1 rounded-lg w-full sm:w-auto">
+                 <div className="flex bg-gray-100 dark:bg-slate-700 p-1 rounded-2xl w-full sm:w-auto">
                     {(['All', 'Income', 'Expense'] as const).map(type => (
                         <button
                             key={type}
                             onClick={() => setFilterType(type)}
-                            className={`flex-1 sm:flex-none px-3 py-1 text-[13px] font-medium rounded-md transition-all ${filterType === type ? 'bg-white dark:bg-slate-600 shadow-sm text-black dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                            className={`flex-1 sm:flex-none px-3 py-1 text-[13px] font-medium rounded-xl transition-all ${filterType === type ? 'bg-white dark:bg-slate-600 shadow-sm text-black dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
                         >
                             {type === 'All' ? 'Все' : type === 'Income' ? 'Доходы' : 'Расходы'}
                         </button>
@@ -1178,20 +1168,24 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   </div>
                   
                   <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 relative">
                           <span className="text-xs text-gray-500 dark:text-gray-400">Строк:</span>
-                          <select 
-                              value={itemsPerPage}
-                              onChange={(e) => setItemsPerPage(Number(e.target.value))}
-                              className="bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-200 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5"
-                          >
-                              {[10, 20, 30, 40, 50, 100, 1000].map(val => (
-                                  <option key={val} value={val}>{val}</option>
-                              ))}
-                          </select>
+                          <div className="relative">
+                            <select 
+                                value={itemsPerPage}
+                                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                                className="bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-200 text-xs rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-1.5 pr-6 appearance-none cursor-pointer"
+                            >
+                                {[10, 20, 30, 40, 50, 100, 1000].map(val => (
+                                    <option key={val} value={val}>{val}</option>
+                                ))}
+                            </select>
+                            <ChevronDown size={12} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                          </div>
                       </div>
 
                       <div className="flex items-center gap-1">
+                          {/* Pagination Buttons */}
                           <button 
                               onClick={() => handlePageChange(currentPage - 1)}
                               disabled={currentPage === 1}
@@ -1231,11 +1225,11 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
             </div>
             
             <form onSubmit={handleTxSubmit} className="p-6 space-y-4">
-              <div className="flex bg-gray-100 dark:bg-slate-700 p-1 rounded-xl">
+              <div className="flex bg-gray-100 dark:bg-slate-700 p-1 rounded-2xl">
                 <button
                   type="button"
                   onClick={() => setTxType('Income')}
-                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+                  className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
                     txType === 'Income' 
                       ? 'bg-white dark:bg-slate-600 shadow-sm text-green-700 dark:text-green-400' 
                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
@@ -1247,7 +1241,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                 <button
                   type="button"
                   onClick={() => setTxType('Expense')}
-                  className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+                  className={`flex-1 py-2 text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${
                     txType === 'Expense' 
                       ? 'bg-white dark:bg-slate-600 shadow-sm text-red-700 dark:text-red-400' 
                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
@@ -1266,7 +1260,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   type="number" 
                   value={txForm.amount}
                   onChange={e => setTxForm({...txForm, amount: e.target.value})}
-                  className={`w-full px-4 py-3 bg-white dark:bg-slate-700 border rounded-lg focus:outline-none focus:ring-2 text-2xl font-bold text-gray-900 dark:text-white transition-colors ${
+                  className={`w-full px-4 py-3 bg-white dark:bg-slate-700 border rounded-2xl focus:outline-none focus:ring-2 text-2xl font-bold text-gray-900 dark:text-white transition-colors ${
                       txType === 'Income' 
                         ? 'border-gray-300 dark:border-slate-600 focus:ring-green-500' 
                         : 'border-gray-300 dark:border-slate-600 focus:ring-red-500'
@@ -1277,16 +1271,19 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Счет / Касса</label>
-                <select 
-                  required
-                  value={txForm.accountId}
-                  onChange={e => setTxForm({...txForm, accountId: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {accounts.map(acc => (
-                      <option key={acc.id} value={acc.id}>{acc.name} ({acc.balance.toLocaleString()} ₸)</option>
-                  ))}
-                </select>
+                <div className="relative">
+                    <select 
+                    required
+                    value={txForm.accountId}
+                    onChange={e => setTxForm({...txForm, accountId: e.target.value})}
+                    className="w-full pl-4 pr-10 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+                    >
+                    {accounts.map(acc => (
+                        <option key={acc.id} value={acc.id}>{acc.name} ({acc.balance.toLocaleString()} ₸)</option>
+                    ))}
+                    </select>
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
               </div>
 
               <div>
@@ -1296,7 +1293,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   type="text" 
                   value={txForm.category}
                   onChange={e => setTxForm({...txForm, category: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder={txType === 'Income' ? "Оплата от клиента, Возврат..." : "Аренда, Зарплата, Закуп..."}
                   list="categories"
                 />
@@ -1316,7 +1313,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   rows={2}
                   value={txForm.description}
                   onChange={e => setTxForm({...txForm, description: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Детали операции..."
                 />
               </div>
@@ -1328,7 +1325,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   type="date" 
                   value={txForm.date}
                   onChange={e => setTxForm({...txForm, date: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -1336,13 +1333,13 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                 <button 
                   type="button" 
                   onClick={() => setIsTxModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                  className="flex-1 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
                 >
                   Отмена
                 </button>
                 <button 
                   type="submit" 
-                  className={`flex-1 px-4 py-2 text-white rounded-lg shadow-md font-medium transition-colors flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90`}
+                  className={`flex-1 px-4 py-3 text-white rounded-2xl shadow-md font-bold transition-colors flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:opacity-90`}
                 >
                   <Save size={18} />
                   Сохранить
@@ -1353,94 +1350,58 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
         </div>
       )}
 
-      {/* --- MODAL: UNKNOWN ACCOUNT WARNING --- */}
+      {/* --- UNKNOWN ACCOUNT MODAL (FOR 1C) --- */}
       {isUnknownAccountModalOpen && pendingNewAccountDetails && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
-                  <div className="p-6 bg-red-50 dark:bg-red-900/30 border-b border-red-100 dark:border-red-900/50 flex gap-4 items-start">
-                      <div className="p-2 bg-red-100 dark:bg-red-900/50 rounded-full text-red-600 dark:text-red-400 shrink-0">
-                          <AlertTriangle size={24} />
-                      </div>
-                      <div>
-                          <h3 className="text-lg font-bold text-red-900 dark:text-red-300">Счет не найден</h3>
-                          <p className="text-sm text-red-700 dark:text-red-400 mt-1">
-                              В файле выписки указан счет, которого еще нет в вашей системе.
-                          </p>
-                      </div>
-                  </div>
-                  
-                  <div className="p-6 space-y-4">
-                      <div className="bg-gray-50 dark:bg-slate-700 p-4 rounded-xl border border-gray-200 dark:border-slate-600 text-sm">
-                          <div className="mb-2 flex justify-between">
-                              <span className="text-gray-500 dark:text-gray-400 font-medium">Номер счета:</span> 
-                              <span className="font-mono font-bold text-gray-900 dark:text-white">{pendingNewAccountDetails.number}</span>
-                          </div>
-                          <div className="mb-2 flex justify-between">
-                              <span className="text-gray-500 dark:text-gray-400 font-medium">Банк:</span> 
-                              <span className="font-bold text-gray-900 dark:text-white text-right max-w-[200px] truncate">{pendingNewAccountDetails.bankName}</span>
-                          </div>
-                          <div className="flex justify-between">
-                              <span className="text-gray-500 dark:text-gray-400 font-medium">Остаток в файле:</span> 
-                              <span className="font-bold text-gray-900 dark:text-white">{pendingNewAccountDetails.balance.toLocaleString()} ₸</span>
-                          </div>
-                      </div>
-
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Чтобы продолжить импорт транзакций, необходимо сначала добавить этот счет в систему.
-                      </p>
-                  </div>
-
-                  <div className="p-4 bg-gray-50 dark:bg-slate-700/50 border-t border-gray-100 dark:border-slate-700 flex gap-3">
-                      <button 
-                          onClick={() => { setIsUnknownAccountModalOpen(false); setPendingImportTransactions(null); }}
-                          className="flex-1 px-4 py-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl transition-colors font-medium"
-                      >
-                          Отмена
-                      </button>
-                      <button 
-                          onClick={proceedToCreateAccount}
-                          className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-md font-bold transition-colors"
-                      >
-                          Создать этот счет
-                      </button>
-                  </div>
-              </div>
-          </div>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col p-6 text-center border border-orange-100 dark:border-orange-900/30">
+                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <FileWarning size={24} />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Неизвестный счет</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    В выписке найден счет <strong>{pendingNewAccountDetails.number}</strong>, которого нет в системе. Создать его?
+                </p>
+                <div className="flex gap-3">
+                    <button 
+                        onClick={() => { setIsUnknownAccountModalOpen(false); setPendingImportTransactions(null); }}
+                        className="flex-1 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
+                    >
+                        Отмена
+                    </button>
+                    <button 
+                        onClick={proceedToCreateAccount}
+                        className="flex-1 px-4 py-3 bg-orange-600 text-white rounded-2xl hover:bg-orange-700 font-bold transition-colors"
+                    >
+                        Создать
+                    </button>
+                </div>
+            </div>
+        </div>
       )}
-
-      {/* --- MODAL: DELETE TRANSACTIONS CONFIRMATION --- */}
+      
+      {/* --- DELETE TX CONFIRMATION MODAL --- */}
       {isDeleteTxModalOpen && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                  <div className="p-6 text-center">
-                      <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                          <Trash2 size={32} />
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Удалить транзакции?</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                          Вы выбрали <span className="font-bold text-gray-800 dark:text-gray-200">{selectedTxIds.size}</span> операций.
-                          <br/>
-                          Это действие отменит влияние этих операций на баланс счетов.
-                      </p>
-                      <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-lg border border-red-100 dark:border-red-900/50 text-xs text-red-700 dark:text-red-300 font-medium text-left flex items-start gap-2">
-                          <AlertTriangle size={14} className="shrink-0 mt-0.5" />
-                          <div>
-                              Действие необратимо. Удаленные транзакции нельзя будет восстановить.
-                          </div>
-                      </div>
+              <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col p-6 text-center border border-red-100 dark:border-red-900/30">
+                  <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <AlertOctagon size={24} />
                   </div>
-                  <div className="p-4 bg-gray-50 dark:bg-slate-700/50 border-t border-gray-100 dark:border-slate-700 flex gap-3">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Удалить операции?</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                      Вы выбрали <strong>{selectedTxIds.size}</strong> операций. Это действие отменит изменения баланса счетов.
+                  </p>
+                  <div className="flex gap-3">
                       <button 
                           onClick={() => setIsDeleteTxModalOpen(false)}
-                          className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl transition-colors font-medium"
+                          className="flex-1 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
                       >
                           Отмена
                       </button>
                       <button 
                           onClick={executeDeleteSelected}
-                          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 shadow-md font-bold transition-colors"
+                          className="flex-1 px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 font-bold transition-colors"
                       >
-                          Да, удалить
+                          Удалить
                       </button>
                   </div>
               </div>
@@ -1476,10 +1437,10 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                               value={cashActualBalance}
                               onChange={(e) => setCashActualBalance(e.target.value)}
                               placeholder="Введите сумму"
-                              className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 font-bold text-lg text-gray-900 dark:text-white"
+                              className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-green-500 font-bold text-lg text-gray-900 dark:text-white"
                           />
                       </div>
-
+                      
                       {cashActualBalance && (
                           <div className={`p-3 rounded-lg border text-sm font-medium flex justify-between items-center ${
                               parseFloat(cashActualBalance) === cashReconcileAccount.balance 
@@ -1497,7 +1458,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                       <button 
                           type="submit"
                           disabled={!cashActualBalance}
-                          className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          className="w-full py-3 bg-green-600 text-white rounded-2xl font-bold hover:bg-green-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                           Подтвердить остаток
                       </button>
@@ -1506,202 +1467,138 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
           </div>
       )}
 
-      {/* --- MODAL: DELETE ACCOUNT CONFIRMATION --- */}
-      {deletingAccount && deleteStep > 0 && (
+      {/* --- DELETE ACCOUNT MODAL --- */}
+      {deletingAccount && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm shadow-2xl flex flex-col p-6 text-center border border-red-100 dark:border-red-900/30">
+                  <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <ShieldAlert size={24} />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Удаление счета</h3>
                   
-                  {/* Step 1: Warning */}
                   {deleteStep === 1 && (
                       <>
-                        <div className="p-6 text-center">
-                            <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <AlertTriangle size={32} />
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Удалить счет?</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                                Вы собираетесь удалить счет <span className="font-bold text-gray-800 dark:text-gray-200">"{deletingAccount.name}"</span>.
-                            </p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Это действие требует подтверждения.
-                            </p>
-                        </div>
-                        <div className="p-4 bg-gray-50 dark:bg-slate-700/50 border-t border-gray-100 dark:border-slate-700 flex gap-3">
-                            <button 
-                                onClick={() => { setDeletingAccount(null); setDeleteStep(0); }}
-                                className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl transition-colors font-medium"
-                            >
-                                Отмена
-                            </button>
-                            <button 
-                                onClick={() => setDeleteStep(2)}
-                                className="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 shadow-md font-bold transition-colors"
-                            >
-                                Продолжить
-                            </button>
-                        </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                              Внимание! Это действие удалит счет <strong>{deletingAccount.name}</strong> и ВСЕ связанные с ним операции. Баланс будет утерян.
+                          </p>
+                          <div className="flex gap-3">
+                              <button 
+                                  onClick={() => setDeletingAccount(null)}
+                                  className="flex-1 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
+                              >
+                                  Отмена
+                              </button>
+                              <button 
+                                  onClick={() => setDeleteStep(2)}
+                                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 font-bold transition-colors"
+                              >
+                                  Понятно
+                              </button>
+                          </div>
                       </>
                   )}
 
-                  {/* Step 2: Critical Danger */}
                   {deleteStep === 2 && (
                       <>
-                        <div className="p-6 text-center bg-red-50 dark:bg-red-900/30">
-                            <div className="w-16 h-16 bg-white dark:bg-slate-800 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border-4 border-red-100 dark:border-red-900/50">
-                                <AlertOctagon size={32} />
-                            </div>
-                            <h3 className="text-xl font-extrabold text-red-900 dark:text-red-300 mb-2">ВНИМАНИЕ!</h3>
-                            <p className="text-sm text-red-800 dark:text-red-300 mb-4 font-medium leading-relaxed">
-                                Если вы удалите этот счет, 
-                                <br/>
-                                <span className="text-base font-black underline decoration-red-400 decoration-2">ВСЕ {transactions.filter(t => t.accountId === deletingAccount.id).length} ТРАНЗАКЦИЙ</span>
-                                <br/>
-                                связанные с ним, будут удалены безвозвратно!
-                            </p>
-                            <div className="text-xs text-red-600/80 dark:text-red-300/80 bg-red-100/50 dark:bg-red-900/50 p-2 rounded-lg border border-red-200 dark:border-red-900/50">
-                                Это действие нельзя отменить. Баланс будет пересчитан.
-                            </div>
-                        </div>
-                        <div className="p-4 bg-white dark:bg-slate-800 border-t border-red-100 dark:border-red-900/30 flex gap-3">
-                            <button 
-                                onClick={() => { setDeletingAccount(null); setDeleteStep(0); }}
-                                className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
-                            >
-                                Отмена
-                            </button>
-                            <button 
-                                onClick={() => setDeleteStep(3)}
-                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 shadow-lg shadow-red-500/30 font-bold transition-colors"
-                            >
-                                Я понимаю, продолжить
-                            </button>
-                        </div>
-                      </>
-                  )}
-
-                  {/* Step 3: Manual Confirmation */}
-                  {deleteStep === 3 && (
-                      <>
-                        <div className="p-6 bg-white dark:bg-slate-800">
-                            <div className="flex flex-col items-center text-center mb-4">
-                                <div className="w-12 h-12 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-400 rounded-full flex items-center justify-center mb-3">
-                                    <ShieldAlert size={24} />
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Финальная проверка</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Чтобы подтвердить удаление, введите название счета <br/>
-                                    <span className="font-mono font-bold text-black dark:text-white bg-gray-100 dark:bg-slate-700 px-1 rounded select-all">{deletingAccount.name}</span>
-                                </p>
-                            </div>
-                            
-                            <input 
-                                autoFocus
-                                type="text" 
-                                value={deleteConfirmationName}
-                                onChange={(e) => setDeleteConfirmationName(e.target.value)}
-                                placeholder="Введите название счета"
-                                className="w-full px-4 py-3 border-2 border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded-xl focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-200 dark:focus:ring-red-900/30 transition-all font-medium text-center"
-                            />
-                        </div>
-                        <div className="p-4 bg-gray-50 dark:bg-slate-700/50 border-t border-gray-100 dark:border-slate-700 flex gap-3">
-                            <button 
-                                onClick={() => { setDeletingAccount(null); setDeleteStep(0); setDeleteConfirmationName(''); }}
-                                className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 rounded-xl transition-colors font-medium"
-                            >
-                                Отмена
-                            </button>
-                            <button 
-                                onClick={executeDeleteAccount}
-                                disabled={deleteConfirmationName !== deletingAccount.name}
-                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 shadow-md font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Удалить навсегда
-                            </button>
-                        </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                              Для подтверждения введите название счета: <br/>
+                              <span className="font-mono font-bold select-all bg-gray-100 dark:bg-slate-700 px-1 rounded">{deletingAccount.name}</span>
+                          </p>
+                          <input 
+                              type="text" 
+                              autoFocus
+                              value={deleteConfirmationName}
+                              onChange={(e) => setDeleteConfirmationName(e.target.value)}
+                              className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-red-500 text-center mb-4 text-gray-900 dark:text-white"
+                              placeholder="Введите название"
+                          />
+                          <div className="flex gap-3">
+                              <button 
+                                  onClick={() => setDeletingAccount(null)}
+                                  className="flex-1 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
+                              >
+                                  Отмена
+                              </button>
+                              <button 
+                                  onClick={executeDeleteAccount}
+                                  disabled={deleteConfirmationName !== deletingAccount.name}
+                                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-2xl hover:bg-red-700 font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                  Удалить
+                              </button>
+                          </div>
                       </>
                   )}
               </div>
           </div>
       )}
-
-      {/* --- MODAL: IMPORT RESULT --- */}
+      
+      {/* --- IMPORT RESULT MODAL --- */}
       {importResult.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
-             {/* Header */}
-             <div className="p-6 bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900/30 flex items-center justify-center flex-col text-center">
-                 <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${importResult.added > 0 ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'}`}>
-                     <CheckCircle size={28} />
-                 </div>
-                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">Импорт завершен</h2>
-                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Счет: <span className="font-semibold">{importResult.accountName}</span></p>
-             </div>
-             
-             {/* Body */}
-             <div className="p-6 space-y-4">
-                 <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-gray-50 dark:bg-slate-700 rounded-xl border border-gray-100 dark:border-slate-600 text-center">
-                        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Добавлено</div>
-                        <div className="text-lg font-bold text-green-600 dark:text-green-400">+{importResult.added}</div>
-                    </div>
-                    <div className="p-3 bg-gray-50 dark:bg-slate-700 rounded-xl border border-gray-100 dark:border-slate-600 text-center">
-                        <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Дубликаты</div>
-                        <div className="text-lg font-bold text-orange-600 dark:text-orange-400">{importResult.duplicates}</div>
-                    </div>
-                 </div>
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+                  <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between bg-blue-50 dark:bg-blue-900/20">
+                      <h3 className="text-lg font-bold text-blue-900 dark:text-blue-300 flex items-center gap-2">
+                          <RefreshCw size={20} />
+                          Результат импорта
+                      </h3>
+                      <button onClick={() => setImportResult({...importResult, open: false})} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                          <X size={20} />
+                      </button>
+                  </div>
+                  
+                  <div className="p-6 space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-center">
+                          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl">
+                              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{importResult.added}</div>
+                              <div className="text-xs text-green-700 dark:text-green-300 font-medium">Добавлено</div>
+                          </div>
+                          <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-2xl">
+                              <div className="text-2xl font-bold text-gray-600 dark:text-gray-300">{importResult.duplicates}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">Дубликаты</div>
+                          </div>
+                      </div>
 
-                 {/* Balance Check Logic */}
-                 <div className="bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 rounded-xl p-4 space-y-3">
-                     <h4 className="text-sm font-bold text-blue-900 dark:text-blue-200 flex items-center gap-2">
-                         <Scale size={16} /> Сверка баланса по выписке
-                     </h4>
-                     
-                     <div className="flex justify-between items-center text-sm">
-                         <span className="text-gray-600 dark:text-gray-400">Конечный остаток (Файл):</span>
-                         <span className="font-bold text-gray-900 dark:text-white">
-                             {importResult.fileFinalBalance !== undefined ? importResult.fileFinalBalance.toLocaleString() : 'Н/Д'} ₸
-                         </span>
-                     </div>
-                     <div className="flex justify-between items-center text-sm">
-                         <span className="text-gray-600 dark:text-gray-400">Расчетный остаток (CRM):</span>
-                         <span className="font-bold text-gray-900 dark:text-white">{importResult.projectedBalance.toLocaleString()} ₸</span>
-                     </div>
+                      {importResult.fileFinalBalance !== undefined && (
+                          <div className="border border-gray-200 dark:border-slate-600 rounded-2xl p-4 bg-gray-50/50 dark:bg-slate-700/30">
+                              <div className="flex justify-between items-center text-sm mb-2">
+                                  <span className="text-gray-500 dark:text-gray-400">Остаток в файле 1С:</span>
+                                  <span className="font-bold text-gray-900 dark:text-white">{importResult.fileFinalBalance.toLocaleString()} ₸</span>
+                              </div>
+                              <div className="flex justify-between items-center text-sm mb-2">
+                                  <span className="text-gray-500 dark:text-gray-400">Расчетный остаток:</span>
+                                  <span className="font-bold text-gray-900 dark:text-white">{importResult.projectedBalance.toLocaleString()} ₸</span>
+                              </div>
+                              
+                              {importResult.fileFinalBalance !== importResult.projectedBalance ? (
+                                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-600">
+                                      <div className="text-xs text-red-500 dark:text-red-400 font-medium mb-2 flex items-center gap-1">
+                                          <AlertTriangle size={12} /> Обнаружено расхождение!
+                                      </div>
+                                      <button 
+                                          onClick={applyImportCorrection}
+                                          className="w-full py-2 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-xl text-sm font-bold hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                                      >
+                                          Скорректировать баланс
+                                      </button>
+                                  </div>
+                              ) : (
+                                  <div className="mt-3 pt-3 border-t border-gray-200 dark:border-slate-600 text-xs text-green-600 dark:text-green-400 font-bold flex items-center justify-center gap-1">
+                                      <CheckCircle size={14} /> Баланс сходится идеально
+                                  </div>
+                              )}
+                          </div>
+                      )}
 
-                     {importResult.fileFinalBalance !== undefined && importResult.fileFinalBalance !== importResult.projectedBalance && (
-                         <div className="bg-yellow-50 dark:bg-yellow-900/30 p-2 rounded-lg border border-yellow-200 dark:border-yellow-800 text-xs text-yellow-800 dark:text-yellow-200 mt-2">
-                             <div className="font-bold flex items-center gap-1 mb-1">
-                                 <AlertTriangle size={12} /> Расхождение: {(importResult.fileFinalBalance - importResult.projectedBalance).toLocaleString()} ₸
-                             </div>
-                             Необходимо выровнять баланс, чтобы он соответствовал выписке банка за прошедший период.
-                         </div>
-                     )}
-                 </div>
-                 
-                 {importResult.added === 0 && importResult.duplicates === 0 && (
-                     <p className="text-center text-gray-500 dark:text-gray-400 text-sm">Нет данных для импорта.</p>
-                 )}
-             </div>
-             
-             {/* Footer */}
-             <div className="p-4 border-t border-gray-100 dark:border-slate-700 flex flex-col gap-2">
-                 {(importResult.fileFinalBalance !== undefined && importResult.fileFinalBalance !== importResult.projectedBalance) ? (
-                     <button 
-                        onClick={applyImportCorrection}
-                        className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold shadow-md hover:bg-blue-700 transition-colors"
-                     >
-                        Скорректировать баланс
-                     </button>
-                 ) : (
-                    <button 
-                        onClick={() => setImportResult({...importResult, open: false})}
-                        className="w-full py-3 bg-black dark:bg-white text-white dark:text-black rounded-xl font-bold shadow-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-                    >
-                        Отлично, закрыть
-                    </button>
-                 )}
-             </div>
+                      <button 
+                          onClick={() => setImportResult({...importResult, open: false})}
+                          className="w-full py-3 bg-gray-900 text-white dark:bg-white dark:text-black rounded-2xl font-bold hover:opacity-90 transition-opacity"
+                      >
+                          Закрыть
+                      </button>
+                  </div>
+              </div>
           </div>
-        </div>
       )}
 
       {/* --- MODAL: NEW / EDIT ACCOUNT --- */}
@@ -1729,7 +1626,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   type="text" 
                   value={accForm.name}
                   onChange={e => setAccForm({...accForm, name: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                   placeholder="Касса №2, Halyk Gold..."
                 />
               </div>
@@ -1746,7 +1643,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                             key={type.id}
                             type="button"
                             onClick={() => setAccForm({...accForm, type: type.id as AccountType, accountNumber: '', parentId: ''})}
-                            className={`py-2 px-1 rounded-lg border text-sm font-medium transition-colors ${accForm.type === type.id ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300' : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'}`}
+                            className={`py-3 px-1 rounded-2xl border text-sm font-bold transition-colors ${accForm.type === type.id ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300' : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'}`}
                         >
                             {type.label}
                         </button>
@@ -1763,7 +1660,7 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                       type="text" 
                       value={accForm.accountNumber}
                       onChange={e => setAccForm({...accForm, accountNumber: e.target.value})}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm text-gray-900 dark:text-white"
+                      className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm text-gray-900 dark:text-white"
                       placeholder={accForm.type === 'SubAccount' ? "0000 0000 0000 0000" : "KZ..."}
                     />
                   </div>
@@ -1772,17 +1669,20 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
               {accForm.type === 'SubAccount' && (
                   <div className="animate-in fade-in slide-in-from-top-1">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Родительский счет</label>
-                    <select
-                      required
-                      value={accForm.parentId}
-                      onChange={e => setAccForm({...accForm, parentId: e.target.value})}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                        <option value="">Выберите главный счет</option>
-                        {accounts.filter(a => a.type !== 'SubAccount' && a.id !== editingAccount?.id).map(a => (
-                            <option key={a.id} value={a.id}>{a.name} ({a.type === 'Cash' ? 'Касса' : 'Банк'})</option>
-                        ))}
-                    </select>
+                    <div className="relative">
+                        <select
+                        required
+                        value={accForm.parentId}
+                        onChange={e => setAccForm({...accForm, parentId: e.target.value})}
+                        className="w-full pl-4 pr-10 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+                        >
+                            <option value="">Выберите главный счет</option>
+                            {accounts.filter(a => a.type !== 'SubAccount' && a.id !== editingAccount?.id).map(a => (
+                                <option key={a.id} value={a.id}>{a.name} ({a.type === 'Cash' ? 'Касса' : 'Банк'})</option>
+                            ))}
+                        </select>
+                        <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    </div>
                   </div>
               )}
 
@@ -1795,12 +1695,11 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                   type="number" 
                   value={accForm.initialBalance}
                   onChange={e => setAccForm({...accForm, initialBalance: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
                   placeholder="0"
                 />
               </div>
 
-              {/* Import specific warning inside the create modal too, just in case context is needed */}
               {pendingImportTransactions && (
                   <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-3 rounded-lg text-sm border border-blue-200 dark:border-blue-900/40 flex gap-2">
                       <FileText size={16} className="shrink-0 mt-0.5" />
@@ -1814,13 +1713,13 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
                 <button 
                   type="button" 
                   onClick={() => { setIsAccountModalOpen(false); setPendingImportTransactions(null); }}
-                  className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                  className="flex-1 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
                 >
                   Отмена
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:opacity-90 shadow-lg shadow-blue-500/30 font-medium transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-blue-500/30 font-bold transition-colors flex items-center justify-center gap-2"
                 >
                   <Save size={18} />
                   {editingAccount ? 'Сохранить' : 'Создать'}

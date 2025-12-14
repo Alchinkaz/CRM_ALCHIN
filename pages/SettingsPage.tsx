@@ -467,7 +467,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                           type="email" 
                           value={userFormData.email}
                           onChange={e => setUserFormData({...userFormData, email: e.target.value})}
-                          className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                          className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                           placeholder="employee@company.com"
                         />
                     </div>
@@ -482,7 +482,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                           type="password" 
                           value={userFormData.password}
                           onChange={e => setUserFormData({...userFormData, password: e.target.value})}
-                          className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                          className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                           placeholder="••••••••"
                         />
                     </div>
@@ -490,17 +490,20 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
 
                   <div>
                     <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1">Роль в системе</label>
-                    <select 
-                      required
-                      value={userFormData.roleId}
-                      onChange={e => setUserFormData({...userFormData, roleId: e.target.value})}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-white"
-                    >
-                      <option value="">Выберите роль...</option>
-                      {roles.map(r => (
-                          <option key={r.id} value={r.id}>{r.name}</option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select 
+                        required
+                        value={userFormData.roleId}
+                        onChange={e => setUserFormData({...userFormData, roleId: e.target.value})}
+                        className="w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-800 dark:text-white appearance-none cursor-pointer"
+                      >
+                        <option value="">Выберите роль...</option>
+                        {roles.map(r => (
+                            <option key={r.id} value={r.id}>{r.name}</option>
+                        ))}
+                      </select>
+                      <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -509,7 +512,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                 <button 
                   type="button" 
                   onClick={() => setIsUserModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-slate-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700/50 rounded-xl transition-colors font-medium"
+                  className="flex-1 px-4 py-2 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700/50 rounded-xl transition-colors font-medium"
                 >
                   Отмена
                 </button>

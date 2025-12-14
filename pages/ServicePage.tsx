@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { User, GpsTracker, Client, ClientType, CmsObject, MaintenanceObject, UserRole, MonthlyService } from '../types';
 import { GPS_TRACKERS, CMS_OBJECTS, MAINTENANCE_OBJECTS } from '../mockData';
-import { Check, X, AlertTriangle, Plus, Satellite, Search, Smartphone, Barcode, Save, Database, DollarSign, UserPlus, Shield, Home, FileText, Wrench, Video, BellRing, Eye, Radio, Lock, User as UserIcon, Building2, Building, MapPin, Phone } from 'lucide-react';
+import { Check, X, AlertTriangle, Plus, Satellite, Search, Smartphone, Barcode, Save, Database, DollarSign, UserPlus, Shield, Home, FileText, Wrench, Video, BellRing, Eye, Radio, Lock, User as UserIcon, Building2, Building, MapPin, Phone, ChevronDown } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface ServicePageProps {
@@ -585,13 +585,13 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Модель оборудования</label>
                 <div className="relative">
-                    <Satellite size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
+                    <Satellite size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
                     <input 
                     required
                     type="text" 
                     value={newTracker.model}
                     onChange={e => setNewTracker({...newTracker, model: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
+                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                     placeholder="Например: Teltonika FMB920"
                     />
                 </div>
@@ -600,13 +600,13 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">IMEI</label>
                 <div className="relative">
-                    <Barcode size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
+                    <Barcode size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
                     <input 
                     required
                     type="text" 
                     value={newTracker.imei}
                     onChange={e => setNewTracker({...newTracker, imei: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
+                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                     placeholder="15-значный код"
                     maxLength={15}
                     />
@@ -616,13 +616,13 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">SIM-карта (Номер)</label>
                 <div className="relative">
-                    <Smartphone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
+                    <Smartphone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
                     <input 
                     required
                     type="text" 
                     value={newTracker.simNumber}
                     onChange={e => setNewTracker({...newTracker, simNumber: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
+                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                     placeholder="+7 700 000 00 00"
                     />
                 </div>
@@ -632,7 +632,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label>
                 <div className="relative">
-                    <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
+                    <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 z-10" />
                     <select 
                         required
                         value={newTracker.clientId}
@@ -644,7 +644,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                                 setNewTracker(prev => ({...prev, clientId: val}));
                             }
                         }}
-                        className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
+                        className="w-full pl-11 pr-10 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                     >
                         <option value="">Выберите клиента из списка</option>
                         <option value="NEW" className="font-bold text-blue-600 dark:text-blue-400">+ Создать нового клиента</option>
@@ -652,6 +652,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                             {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </optgroup>
                     </select>
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
                 </div>
               </div>
 
@@ -659,13 +660,13 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 <button 
                   type="button" 
                   onClick={() => setIsTrackerModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
+                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
                 >
                   Отмена
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:opacity-90 shadow-lg shadow-blue-500/30 font-bold transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-blue-500/30 font-bold transition-colors flex items-center justify-center gap-2"
                 >
                   <Save size={18} />
                   Сохранить
@@ -698,7 +699,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                   type="text" 
                   value={newCmsObject.name}
                   onChange={e => setNewCmsObject({...newCmsObject, name: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                   placeholder="Магазин 'Продукты', Дом"
                 />
               </div>
@@ -710,7 +711,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                   type="text" 
                   value={newCmsObject.address}
                   onChange={e => setNewCmsObject({...newCmsObject, address: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                   placeholder="Улица, дом..."
                 />
               </div>
@@ -723,7 +724,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                       type="text" 
                       value={newCmsObject.contractNumber}
                       onChange={e => setNewCmsObject({...newCmsObject, contractNumber: e.target.value})}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                       placeholder="123-А"
                     />
                   </div>
@@ -734,7 +735,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                       type="number" 
                       value={newCmsObject.monthlyFee}
                       onChange={e => setNewCmsObject({...newCmsObject, monthlyFee: e.target.value})}
-                      className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                       placeholder="5000"
                     />
                   </div>
@@ -744,7 +745,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label>
                 <div className="relative">
-                    <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
+                    <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 z-10" />
                     <select 
                         required
                         value={newCmsObject.clientId}
@@ -756,7 +757,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                                 setNewCmsObject(prev => ({...prev, clientId: val}));
                             }
                         }}
-                        className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white"
+                        className="w-full pl-11 pr-10 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                     >
                         <option value="">Выберите клиента из списка</option>
                         <option value="NEW" className="font-bold text-indigo-600 dark:text-indigo-400">+ Создать нового клиента</option>
@@ -764,6 +765,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                             {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </optgroup>
                     </select>
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
                 </div>
               </div>
 
@@ -771,13 +773,13 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 <button 
                   type="button" 
                   onClick={() => setIsCmsModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
+                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
                 >
                   Отмена
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:opacity-90 shadow-lg shadow-indigo-500/30 font-bold transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-indigo-500/30 font-bold transition-colors flex items-center justify-center gap-2"
                 >
                   <Save size={18} />
                   Сохранить
@@ -811,10 +813,10 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                             key={type}
                             type="button"
                             onClick={() => setNewMaintenanceObject({...newMaintenanceObject, type: type as any})}
-                            className={`py-2 px-3 rounded-xl border text-sm font-bold transition-all ${
+                            className={`py-3 px-3 rounded-2xl border text-sm font-bold transition-all ${
                                 newMaintenanceObject.type === type
                                 ? 'bg-orange-100 border-orange-500 text-orange-800 shadow-sm'
-                                : 'bg-white/40 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600 text-slate-600 dark:text-gray-300 hover:bg-white/60 dark:hover:bg-slate-700'
+                                : 'bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600 text-slate-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'
                             }`}
                         >
                             {type === 'CCTV' ? 'Видеонаблюдение' : type === 'APS' ? 'АПС (Пожарная)' : type === 'OPS' ? 'ОПС (Охранная)' : 'СКУД'}
@@ -830,7 +832,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                   type="text" 
                   value={newMaintenanceObject.name}
                   onChange={e => setNewMaintenanceObject({...newMaintenanceObject, name: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-900 dark:text-white"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                   placeholder="Офис, Склад, Магазин"
                 />
               </div>
@@ -842,7 +844,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                   type="text" 
                   value={newMaintenanceObject.address}
                   onChange={e => setNewMaintenanceObject({...newMaintenanceObject, address: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-900 dark:text-white"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                   placeholder="Адрес установки"
                 />
               </div>
@@ -854,7 +856,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                   type="number" 
                   value={newMaintenanceObject.monthlyFee}
                   onChange={e => setNewMaintenanceObject({...newMaintenanceObject, monthlyFee: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-900 dark:text-white"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                   placeholder="15000"
                 />
               </div>
@@ -863,7 +865,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label>
                 <div className="relative">
-                    <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
+                    <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 z-10" />
                     <select 
                         required
                         value={newMaintenanceObject.clientId}
@@ -875,7 +877,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                                 setNewMaintenanceObject(prev => ({...prev, clientId: val}));
                             }
                         }}
-                        className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800 dark:text-white"
+                        className="w-full pl-11 pr-10 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-800 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                     >
                         <option value="">Выберите клиента из списка</option>
                         <option value="NEW" className="font-bold text-orange-600">+ Создать нового клиента</option>
@@ -883,6 +885,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                             {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </optgroup>
                     </select>
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
                 </div>
               </div>
 
@@ -890,13 +893,13 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 <button 
                   type="button" 
                   onClick={() => setIsMaintenanceModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-xl transition-colors font-medium"
+                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
                 >
                   Отмена
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:opacity-90 shadow-lg shadow-orange-500/30 font-bold transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-orange-500/30 font-bold transition-colors flex items-center justify-center gap-2"
                 >
                   <Save size={18} />
                   Сохранить
@@ -927,7 +930,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                   type="text" 
                   value={newClientFormData.name}
                   onChange={e => setNewClientFormData({...newClientFormData, name: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                   placeholder="Например: ТОО Ромашка"
                 />
               </div>
@@ -940,9 +943,9 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                       key={type}
                       type="button"
                       onClick={() => setNewClientFormData({...newClientFormData, type})}
-                      className={`py-2 px-1 text-xs sm:text-sm rounded-lg border transition-colors ${
+                      className={`py-3 px-1 text-xs sm:text-sm rounded-2xl border transition-colors font-bold ${
                         newClientFormData.type === type 
-                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300 font-medium' 
+                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300 shadow-sm' 
                           : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'
                       }`}
                     >
@@ -955,13 +958,13 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Телефон</label>
                 <div className="relative">
-                  <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                  <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
                   <input 
                     required
                     type="tel" 
                     value={newClientFormData.phone}
                     onChange={e => setNewClientFormData({...newClientFormData, phone: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                     placeholder="+7 (7xx) xxx xx xx"
                   />
                 </div>
@@ -970,12 +973,12 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Адрес (основной)</label>
                 <div className="relative">
-                  <MapPin size={16} className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" />
+                  <MapPin size={16} className="absolute left-4 top-4 text-slate-400 dark:text-gray-500" />
                   <textarea 
                     rows={2}
                     value={newClientFormData.address}
                     onChange={e => setNewClientFormData({...newClientFormData, address: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
                     placeholder="Город, Улица, Дом..."
                   />
                 </div>
@@ -985,13 +988,13 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 <button 
                   type="button" 
                   onClick={() => setIsClientModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
                 >
                   Отмена
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:opacity-90 shadow-md dark:shadow-blue-900/30 font-medium transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-md dark:shadow-blue-900/30 font-bold transition-colors flex items-center justify-center gap-2"
                 >
                   <Save size={18} />
                   Создать
