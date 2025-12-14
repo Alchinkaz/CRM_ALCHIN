@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
-import { User, UserRole, TaskStatus, TimeEntry, AttendanceStatus, Task, Sale, MonthlyService } from '../types';
+import { User, UserRole, TaskStatus, TimeEntry, AttendanceStatus, Task, Sale, MonthlyService, Advance } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, AlertCircle, CheckCircle, Wallet, Users as UsersIcon, Clock, Play, Square, MapPin, Loader2, Zap, ArrowUpRight, ChevronRight } from 'lucide-react';
+import { TrendingUp, AlertCircle, CheckCircle, Wallet, Users as UsersIcon, Clock, Play, Square, MapPin, Loader2, Zap, ArrowUpRight, ChevronRight, Calendar as CalendarIcon, Briefcase, Calculator, Banknote } from 'lucide-react';
 
 interface DashboardProps {
   user: User;
   timesheetData: TimeEntry[];
+  advances?: Advance[];
   tasks: Task[];
   sales: Sale[];
   monthlyServices: MonthlyService[];
@@ -16,7 +17,7 @@ interface DashboardProps {
 
 const COLORS = ['#007AFF', '#34C759', '#FF9500', '#FF3B30'];
 
-export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks, sales, monthlyServices, onCheckIn, onCheckOut }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advances = [], tasks, sales, monthlyServices, onCheckIn, onCheckOut }) => {
   const [isLocating, setIsLocating] = useState(false);
 
   const totalSales = sales.reduce((acc, sale) => acc + sale.amount, 0);
@@ -70,9 +71,134 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
 
   // --- ENGINEER VIEW ---
   if (user.role === UserRole.ENGINEER) {
-    const myTasks = tasks.filter(t => t.engineerId === user.id);
-    const completedToday = myTasks.filter(t => t.status === TaskStatus.COMPLETED).length; // Needs improved date filtering in real app
+    // UPDATED FILTER:
+    // 1. Tasks explicitly assigned to this engineer
+    // 2. Unassigned tasks IF they are Recurring/Maintenance (TO)
+    const myTasks = tasks.filter(t => {
+        const isAssignedToMe = t.engineerId === user.id;
+        const isUnassignedMaintenance = !t.engineerId && t.isRecurring;
+        
+        // Ensure future recurring tasks are hidden (same logic as TasksPage)
+        if (t.isRecurring) {
+            const today = new Date();
+            const taskDate = new Date(t.deadline);
+            const isFutureMonth = taskDate.getFullYear() > today.getFullYear() || 
+                                 (taskDate.getFullYear() === today.getFullYear() && taskDate.getMonth() > today.getMonth());
+            if (isFutureMonth) return false;
+        }
+
+        return isAssignedToMe || isUnassignedMaintenance;
+    });
+
+    const completedToday = myTasks.filter(t => t.status === TaskStatus.COMPLETED).length; 
     
+    // --- Render Logic for Mini Timesheet (Engineer) ---
+    const renderEngineerTimesheet = () => {
+        const currentDateObj = new Date();
+        const year = currentDateObj.getFullYear();
+        const month = currentDateObj.getMonth();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+        const getCellColor = (status?: AttendanceStatus) => {
+            switch(status) {
+                case AttendanceStatus.PRESENT: return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300';
+                case AttendanceStatus.LATE: return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300';
+                case AttendanceStatus.SICK: return 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300';
+                case AttendanceStatus.ABSENT: return 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300';
+                case AttendanceStatus.LEAVE: return 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300';
+                default: return 'bg-gray-50 text-gray-400 dark:bg-slate-700/50 dark:text-gray-500';
+            }
+        };
+
+        const getCellLabel = (status?: AttendanceStatus) => {
+             if (status === AttendanceStatus.PRESENT) return '8';
+             if (status === AttendanceStatus.LATE) return '8*';
+             if (status === AttendanceStatus.SICK) return 'Б';
+             if (status === AttendanceStatus.LEAVE) return 'О';
+             if (status === AttendanceStatus.ABSENT) return 'Н';
+             return '-';
+        };
+
+        return (
+            <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios border border-gray-100 dark:border-slate-700 overflow-hidden">
+                <div className="flex items-center gap-2 mb-4 text-gray-800 dark:text-white font-bold text-lg">
+                    <CalendarIcon size={20} className="text-blue-600 dark:text-blue-400" />
+                    Мой табель (Октябрь)
+                </div>
+                <div className="grid grid-cols-7 gap-1 sm:gap-2">
+                    {daysArray.map(day => {
+                        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        const entry = timesheetData.find(t => t.userId === user.id && t.date === dateStr);
+                        const isToday = day === currentDateObj.getDate();
+                        
+                        return (
+                            <div key={day} className={`flex flex-col items-center justify-center p-1 sm:p-2 rounded-lg ${isToday ? 'ring-2 ring-blue-500' : ''} ${getCellColor(entry?.status)}`}>
+                                <span className="text-[10px] sm:text-xs font-medium opacity-70 mb-0.5">{day}</span>
+                                <span className="text-xs sm:text-sm font-bold">{getCellLabel(entry?.status)}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+                <div className="mt-4 flex gap-4 text-xs text-gray-500 dark:text-gray-400 overflow-x-auto pb-2">
+                    <span className="flex items-center gap-1 min-w-fit"><span className="w-2 h-2 rounded-full bg-green-500"></span> 8 - Явка</span>
+                    <span className="flex items-center gap-1 min-w-fit"><span className="w-2 h-2 rounded-full bg-orange-500"></span> Б - Больничный</span>
+                    <span className="flex items-center gap-1 min-w-fit"><span className="w-2 h-2 rounded-full bg-blue-500"></span> О - Отпуск</span>
+                </div>
+            </div>
+        );
+    };
+
+    // --- Financial Calculations for Engineer ---
+    const calculateFinancials = () => {
+        const currentDateObj = new Date();
+        const year = currentDateObj.getFullYear();
+        const month = currentDateObj.getMonth();
+        
+        // 1. Calculate Business Days in Current Month (Mon-Fri)
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        let workingDaysInMonth = 0;
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayOfWeek = new Date(year, month, i).getDay();
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) workingDaysInMonth++;
+        }
+        
+        // 2. Daily Rate
+        const dailyRate = workingDaysInMonth > 0 ? user.salary / workingDaysInMonth : 0;
+
+        // 3. Worked Days (Present or Late)
+        const workedDaysCount = timesheetData.filter(t => {
+            const d = new Date(t.date);
+            return t.userId === user.id && 
+                   d.getMonth() === month && 
+                   d.getFullYear() === year && 
+                   (t.status === AttendanceStatus.PRESENT || t.status === AttendanceStatus.LATE);
+        }).length;
+
+        // 4. Earned Amount
+        const earnedAmount = Math.round(dailyRate * workedDaysCount);
+
+        // 5. Advances Taken in Current Month
+        const advancesTaken = advances.filter(a => {
+            const d = new Date(a.date);
+            return a.userId === user.id && d.getMonth() === month && d.getFullYear() === year;
+        }).reduce((sum, a) => sum + a.amount, 0);
+
+        // 6. To Pay
+        const toPay = earnedAmount - advancesTaken;
+
+        return {
+            workingDaysInMonth,
+            dailyRate,
+            workedDaysCount,
+            earnedAmount,
+            advancesTaken,
+            toPay
+        };
+    };
+
+    const financials = calculateFinancials();
+
     return (
       <div className="space-y-6 max-w-5xl mx-auto">
         <h1 className="text-[34px] font-bold text-black dark:text-white tracking-tight mb-2">Главная</h1>
@@ -126,62 +252,100 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, tasks
                 </div>
             </div>
 
-            {/* Small Widgets */}
-            <div className="grid grid-cols-2 gap-4">
-                 <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios flex flex-col justify-between">
-                    <div className="w-10 h-10 bg-ios-green/10 text-ios-green rounded-full flex items-center justify-center mb-2">
-                        <CheckCircle size={20} />
+            {/* Engineer Financial Card */}
+            <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios flex flex-col justify-between h-[300px] border border-gray-100 dark:border-slate-700">
+                <div className="flex items-center gap-2 mb-4">
+                    <div className="w-10 h-10 bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 rounded-full flex items-center justify-center">
+                        <Wallet size={20} />
                     </div>
                     <div>
-                        <div className="text-[32px] font-bold text-black dark:text-white">{completedToday}</div>
-                        <div className="text-[15px] text-gray-500 dark:text-gray-400 font-medium">Выполнено</div>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">Мои финансы</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Октябрь ({financials.workingDaysInMonth} раб. дней)</p>
                     </div>
-                 </div>
-                 <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios flex flex-col justify-between">
-                    <div className="w-10 h-10 bg-ios-blue/10 text-ios-blue rounded-full flex items-center justify-center mb-2">
-                        <TrendingUp size={20} />
+                </div>
+
+                <div className="space-y-3 flex-1">
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1.5"><Banknote size={14}/> Оклад (мес.)</span>
+                        <span className="font-bold text-gray-900 dark:text-white">{user.salary.toLocaleString()} ₸</span>
                     </div>
-                    <div>
-                        <div className="text-[32px] font-bold text-black dark:text-white">18.5k</div>
-                        <div className="text-[15px] text-gray-500 dark:text-gray-400 font-medium">Заработано</div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 dark:text-gray-400 flex items-center gap-1.5"><Calculator size={14}/> Ставка в день</span>
+                        <span className="font-medium text-gray-700 dark:text-gray-300">{Math.round(financials.dailyRate).toLocaleString()} ₸</span>
                     </div>
-                 </div>
-                 <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios col-span-2 flex items-center justify-between">
-                    <div>
-                        <div className="text-[13px] text-gray-400 dark:text-gray-500 font-medium uppercase mb-1">Рейтинг</div>
-                        <div className="text-[28px] font-bold text-black dark:text-white">4.9 <span className="text-gray-300 text-[20px]">/ 5.0</span></div>
+                    <div className="w-full h-px bg-gray-100 dark:bg-slate-700 my-2"></div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 dark:text-gray-400">Отработано дней</span>
+                        <span className="font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded">{financials.workedDaysCount}</span>
                     </div>
-                    <div className="flex gap-1">
-                        {[1,2,3,4,5].map(s => <div key={s} className="w-2 h-8 rounded-full bg-ios-yellow"></div>)}
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 dark:text-gray-400">Начислено</span>
+                        <span className="font-bold text-green-600 dark:text-green-400">+{financials.earnedAmount.toLocaleString()} ₸</span>
                     </div>
-                 </div>
+                    <div className="flex justify-between items-center text-sm">
+                        <span className="text-gray-500 dark:text-gray-400">Авансы</span>
+                        <span className="font-bold text-orange-600 dark:text-orange-400">-{financials.advancesTaken.toLocaleString()} ₸</span>
+                    </div>
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700">
+                    <div className="flex justify-between items-end">
+                        <span className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">К выдаче</span>
+                        <span className="text-2xl font-bold text-gray-900 dark:text-white">{financials.toPay.toLocaleString()} ₸</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div className="mt-8">
-            <h2 className="text-[22px] font-bold text-black dark:text-white mb-4">Ближайшие задачи</h2>
-            <div className="ios-list-group shadow-sm dark:bg-slate-800">
-                {myTasks.slice(0, 3).map(task => (
-                    <div key={task.id} className="ios-list-item justify-between group cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
-                        <div>
-                            <div className="font-semibold text-[17px] text-black dark:text-white mb-1">{task.title}</div>
-                            <div className="text-[15px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                <MapPin size={14} /> {task.address}
+        {/* Engineer Dashboard Grid: Tasks & Timesheet */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+            
+            {/* 1. SHORTENED TASKS LIST */}
+            <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios border border-gray-100 dark:border-slate-700 h-full">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-[20px] font-bold text-black dark:text-white flex items-center gap-2">
+                        <Briefcase size={20} className="text-blue-500"/>
+                        Мои задачи
+                    </h2>
+                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-bold">
+                        {myTasks.length}
+                    </span>
+                </div>
+                
+                <div className="space-y-3">
+                    {myTasks.slice(0, 3).map(task => (
+                        <div key={task.id} className="group p-3 rounded-2xl bg-gray-50 dark:bg-slate-700/30 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800 cursor-pointer">
+                            <div className="flex justify-between items-start mb-1">
+                                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                                    task.status === TaskStatus.NEW ? 'bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                                    task.status === TaskStatus.IN_PROGRESS ? 'bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                    'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-200'
+                                }`}>
+                                    {task.status === TaskStatus.NEW ? 'Новая' : task.status === TaskStatus.IN_PROGRESS ? 'В работе' : 'Готово'}
+                                </span>
+                                <span className="text-[11px] text-gray-400 font-mono">{task.deadline.split('-').slice(1).reverse().join('.')}</span>
+                            </div>
+                            <div className="font-bold text-gray-900 dark:text-white text-sm mb-1 truncate">{task.title}</div>
+                            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 truncate">
+                                <MapPin size={12} /> {task.address}
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <span className={`px-3 py-1 rounded-full text-[13px] font-medium ${
-                                task.status === TaskStatus.NEW ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
-                                task.status === TaskStatus.IN_PROGRESS ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' :
-                                'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                            }`}>
-                                {task.status}
-                            </span>
-                            <ChevronRight size={18} className="text-gray-300 dark:text-gray-600" />
+                    ))}
+                    {myTasks.length === 0 && (
+                        <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
+                            Нет активных задач
                         </div>
-                    </div>
-                ))}
+                    )}
+                    {myTasks.length > 3 && (
+                        <button className="w-full text-center text-sm font-bold text-blue-600 dark:text-blue-400 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-colors">
+                            Показать еще {myTasks.length - 3}...
+                        </button>
+                    )}
+                </div>
             </div>
+
+            {/* 2. TIMESHEET GRID (Added for Engineer) */}
+            {renderEngineerTimesheet()}
         </div>
       </div>
     );

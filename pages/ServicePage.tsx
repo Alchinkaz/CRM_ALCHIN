@@ -1,14 +1,16 @@
 
 import React, { useState } from 'react';
-import { User, GpsTracker, Client, ClientType, CmsObject, MaintenanceObject, UserRole, MonthlyService } from '../types';
+import { User, GpsTracker, Client, ClientType, CmsObject, MaintenanceObject, UserRole, MonthlyService, Task, TaskStatus } from '../types';
 import { GPS_TRACKERS, CMS_OBJECTS, MAINTENANCE_OBJECTS } from '../mockData';
-import { Check, X, AlertTriangle, Plus, Satellite, Search, Smartphone, Barcode, Save, Database, DollarSign, UserPlus, Shield, Home, FileText, Wrench, Video, BellRing, Eye, Radio, Lock, User as UserIcon, Building2, Building, MapPin, Phone, ChevronDown } from 'lucide-react';
+import { Check, X, AlertTriangle, Plus, Satellite, Search, Smartphone, Barcode, Save, Database, DollarSign, UserPlus, Shield, Home, FileText, Wrench, Video, BellRing, Eye, Radio, Lock, User as UserIcon, Building2, Building, MapPin, Phone, ChevronDown, CalendarClock } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 
 interface ServicePageProps {
   user: User;
   clients: Client[];
   monthlyServices: MonthlyService[];
+  tasks: Task[];
+  onUpdateTasks: (tasks: Task[]) => void;
   onUpdateServices: (services: MonthlyService[]) => void;
   onAddClient: (client: Client) => void;
 }
@@ -16,7 +18,7 @@ interface ServicePageProps {
 type ServiceSection = 'gps' | 'maintenance' | 'cou';
 type GpsTab = 'payments' | 'trackers';
 
-export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthlyServices, onUpdateServices, onAddClient }) => {
+export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthlyServices, tasks, onUpdateTasks, onUpdateServices, onAddClient }) => {
   // Navigation State
   const [activeSection, setActiveSection] = useState<ServiceSection>('gps');
   const [activeGpsTab, setActiveGpsTab] = useState<GpsTab>('payments');
@@ -71,7 +73,8 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
     name: '',
     address: '',
     monthlyFee: '',
-    clientId: ''
+    clientId: '',
+    startDate: new Date().toISOString().split('T')[0] // Default to today
   });
 
   // Access Control
@@ -177,9 +180,11 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
   const handleAddMaintenanceObject = (e: React.FormEvent) => {
     e.preventDefault();
     const client = clients.find(c => c.id === newMaintenanceObject.clientId);
+    const objectId = `m${Date.now()}`;
 
+    // 1. Create the Object
     const createdObject: MaintenanceObject = {
-      id: `m${Date.now()}`,
+      id: objectId,
       type: newMaintenanceObject.type,
       name: newMaintenanceObject.name,
       address: newMaintenanceObject.address,
@@ -187,10 +192,36 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
       clientId: newMaintenanceObject.clientId,
       clientName: client ? client.name : 'Неизвестно',
       status: 'Active',
-      lastCheckDate: new Date().toISOString().split('T')[0]
+      lastCheckDate: newMaintenanceObject.startDate // Initial "last check" is start date effectively or null
     };
 
     setMaintenanceObjects([createdObject, ...maintenanceObjects]);
+
+    // 2. Create the First Monthly Task Automatically
+    const sysNameMap: Record<string, string> = {
+        'CCTV': 'Видеонаблюдение',
+        'APS': 'АПС',
+        'OPS': 'ОПС',
+        'ACCESS': 'СКУД'
+    };
+    const sysName = sysNameMap[newMaintenanceObject.type] || newMaintenanceObject.type;
+    
+    const initialTask: Task = {
+        id: `t_maint_${Date.now()}`,
+        title: `ТО: ${sysName} - ${newMaintenanceObject.name}`,
+        clientName: client ? client.name : 'Неизвестно',
+        address: newMaintenanceObject.address,
+        deadline: newMaintenanceObject.startDate, // User selected date
+        status: TaskStatus.NEW,
+        priority: 'Medium',
+        // Description without fee info for Engineers safety
+        description: `Ежемесячное техническое обслуживание объекта.\nТип системы: ${sysName}.`,
+        isRecurring: true, // FLAG FOR RECURRING
+        maintenanceObjectId: objectId
+    };
+
+    onUpdateTasks([initialTask, ...tasks]);
+
     setIsMaintenanceModalOpen(false);
     resetForms();
   };
@@ -198,7 +229,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
   const resetForms = () => {
     setNewTracker({ model: '', imei: '', simNumber: '', clientId: '' });
     setNewCmsObject({ name: '', address: '', contractNumber: '', monthlyFee: '', clientId: '' });
-    setNewMaintenanceObject({ type: 'CCTV', name: '', address: '', monthlyFee: '', clientId: '' });
+    setNewMaintenanceObject({ type: 'CCTV', name: '', address: '', monthlyFee: '', clientId: '', startDate: new Date().toISOString().split('T')[0] });
   };
 
   const filteredTrackers = trackers.filter(t => 
@@ -313,6 +344,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
         </button>
       </div>
 
+      {/* ... (Rest of the component remains similar, just removed fee from task logic above) */}
       {/* SECOND LEVEL NAVIGATION (GPS ONLY) */}
       {activeSection === 'gps' && (
         <div className="flex gap-2 p-1 bg-white dark:bg-slate-800 rounded-xl w-fit border border-gray-100 dark:border-slate-700">
@@ -570,7 +602,9 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
         </div>
       )}
 
-      {/* --- ADD TRACKER MODAL --- */}
+      {/* ... MODALS START HERE (TRACKER, CMS, MAINTENANCE, CLIENT) ... */}
+      {/* Keeping modals hidden for brevity as logic didn't change except for task creation in handleAddMaintenanceObject which is already updated above */}
+      {/* ... */}
       {isTrackerModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl flex flex-col border border-white/50 dark:border-slate-700">
@@ -849,16 +883,31 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Стоимость ТО (₸)</label>
-                <input 
-                  required
-                  type="number" 
-                  value={newMaintenanceObject.monthlyFee}
-                  onChange={e => setNewMaintenanceObject({...newMaintenanceObject, monthlyFee: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                  placeholder="15000"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Стоимость ТО (₸)</label>
+                    <input 
+                      required
+                      type="number" 
+                      value={newMaintenanceObject.monthlyFee}
+                      onChange={e => setNewMaintenanceObject({...newMaintenanceObject, monthlyFee: e.target.value})}
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
+                      placeholder="15000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Дата начала</label>
+                    <div className="relative">
+                        <CalendarClock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
+                        <input 
+                          required
+                          type="date" 
+                          value={newMaintenanceObject.startDate}
+                          onChange={e => setNewMaintenanceObject({...newMaintenanceObject, startDate: e.target.value})}
+                          className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white"
+                        />
+                    </div>
+                  </div>
               </div>
 
               {/* CLIENT SELECTION */}
@@ -988,7 +1037,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 <button 
                   type="button" 
                   onClick={() => setIsClientModalOpen(false)}
-                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
+                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
                 >
                   Отмена
                 </button>

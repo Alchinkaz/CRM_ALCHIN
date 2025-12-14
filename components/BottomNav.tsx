@@ -14,7 +14,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ role, currentRoute, onNavi
   const allItems = [
     { id: 'dashboard', label: 'Главная', icon: LayoutDashboard, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
     { id: 'tasks', label: 'Заявки', icon: Wrench, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
-    { id: 'employees', label: 'Табель', icon: Users, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] }, // Or just Employees for Admin
+    { id: 'employees', label: 'Табель', icon: Users, roles: [UserRole.ADMIN, UserRole.MANAGER] }, // Removed ENGINEER
     { id: 'finance', label: 'Финансы', icon: Banknote, roles: [UserRole.ADMIN] },
     { id: 'service', label: 'Сервис', icon: Car, roles: [UserRole.MANAGER] },
   ];

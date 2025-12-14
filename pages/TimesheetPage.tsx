@@ -15,12 +15,12 @@ interface TimesheetPageProps {
   onAddAdvance: (advance: Advance) => void;
 }
 
-type ViewMode = 'day' | 'month';
+// Removed ViewMode type as we enforce Month view
 type Tab = 'timesheet' | 'employees';
 
 export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, timesheetData, advances, onUpdateEntry, onDeleteEntry, onAddUser, onUpdateUser, onAddAdvance }) => {
   const [activeTab, setActiveTab] = useState<Tab>('timesheet');
-  const [viewMode, setViewMode] = useState<ViewMode>('day');
+  // Enforce monthly view by removing viewMode state
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [editingEntry, setEditingEntry] = useState<string | null>(null);
 
@@ -50,20 +50,14 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
 
   const changeDate = (amount: number) => {
     const date = new Date(selectedDate);
-    if (viewMode === 'day') {
-      date.setDate(date.getDate() + amount);
-    } else {
-      date.setMonth(date.getMonth() + amount);
-    }
+    // Always change by month
+    date.setMonth(date.getMonth() + amount);
     setSelectedDate(date.toISOString().split('T')[0]);
     setEditingEntry(null);
   };
 
   const getHeaderDateLabel = () => {
-    const options: Intl.DateTimeFormatOptions = viewMode === 'day' 
-      ? { weekday: 'long', day: 'numeric', month: 'long' }
-      : { month: 'long', year: 'numeric' };
-    
+    const options: Intl.DateTimeFormatOptions = { month: 'long', year: 'numeric' };
     return new Date(selectedDate).toLocaleDateString('ru-RU', options);
   };
 
@@ -158,18 +152,6 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
   };
 
   // --- Edit Handlers (Timesheet) ---
-
-  const handleStatusChange = (userId: string, newStatus: AttendanceStatus) => {
-    const existingEntry = getEntryForUser(userId, selectedDate);
-    updateEntry(existingEntry, userId, selectedDate, newStatus);
-  };
-
-  const handleTimeChange = (userId: string, field: 'checkIn' | 'checkOut', value: string) => {
-    const existingEntry = getEntryForUser(userId, selectedDate);
-    if (!existingEntry) return;
-
-    onUpdateEntry({ ...existingEntry, [field]: value });
-  };
 
   const updateEntry = (existingEntry: TimeEntry | undefined, userId: string, dateStr: string, status: AttendanceStatus | null) => {
      if (status === null) {
@@ -319,125 +301,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
     );
   };
 
-  const renderDayView = () => {
-    return (
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50 dark:bg-slate-700/50 text-gray-600 dark:text-gray-200 font-medium text-sm border-b border-gray-200 dark:border-slate-700">
-                <th className="px-6 py-4 w-1/3">Сотрудник</th>
-                <th className="px-6 py-4">Статус</th>
-                <th className="px-6 py-4">Приход</th>
-                <th className="px-6 py-4">Уход</th>
-                <th className="px-6 py-4 text-center">Действия</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
-              {visibleUsers.map(u => {
-                const entry = getEntryForUser(u.id, selectedDate);
-                const isEditing = editingEntry === u.id;
-                const canEdit = user.role === UserRole.ADMIN || user.role === UserRole.MANAGER || user.id === u.id;
-                let rowClass = "hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors";
-                if (entry?.status === AttendanceStatus.ABSENT) rowClass += " bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30";
-                if (entry?.status === AttendanceStatus.SICK) rowClass += " bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30";
-                if (entry?.status === AttendanceStatus.FIRED) rowClass += " bg-gray-100 dark:bg-slate-900 text-gray-400";
-
-                return (
-                  <tr key={u.id} className={rowClass}>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <img src={u.avatar} alt={u.name} className={`w-10 h-10 rounded-full object-cover border-2 ${entry?.status === AttendanceStatus.PRESENT ? 'border-green-400' : 'border-transparent'}`} />
-                        <div>
-                          <div className="font-semibold text-gray-900 dark:text-white flex items-center gap-2 dark:drop-shadow-sm">
-                             {u.name}
-                             {entry?.status === AttendanceStatus.FIRED && <span className="text-[10px] bg-gray-600 text-white px-1.5 py-0.5 rounded">УВОЛЕН</span>}
-                          </div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">{u.position || u.role}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {isEditing && (user.role === UserRole.ADMIN || user.role === UserRole.MANAGER) ? (
-                        <select 
-                          value={entry?.status || ''} 
-                          onChange={(e) => handleStatusChange(u.id, e.target.value as AttendanceStatus)}
-                          className="w-full p-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                        >
-                          <option value="">Не отмечен</option>
-                          <option value={AttendanceStatus.PRESENT}>✅ Присутствовал</option>
-                          <option value={AttendanceStatus.LATE}>⚠️ Опоздал</option>
-                          <option value={AttendanceStatus.LEAVE}>🏠 Отгул</option>
-                          <option value={AttendanceStatus.SICK}>💊 Больничный</option>
-                          <option value={AttendanceStatus.ABSENT}>⛔ Прогул</option>
-                          <option value={AttendanceStatus.FIRED}>❌ Уволен</option>
-                        </select>
-                      ) : (
-                        <span className={`px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1
-                          ${!entry ? 'bg-gray-100 text-gray-500 dark:bg-slate-700 dark:text-gray-400' : 
-                            entry.status === AttendanceStatus.PRESENT ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
-                            entry.status === AttendanceStatus.LATE ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300' :
-                            entry.status === AttendanceStatus.ABSENT ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
-                            entry.status === AttendanceStatus.SICK ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                            entry.status === AttendanceStatus.FIRED ? 'bg-gray-200 text-gray-600 dark:bg-slate-700 dark:text-gray-400' :
-                            'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                          }`}
-                        >
-                          {!entry ? 'Нет данных' : entry.status}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      {isEditing ? (
-                        <input 
-                          type="time" 
-                          value={entry?.checkIn || ''}
-                          onChange={(e) => handleTimeChange(u.id, 'checkIn', e.target.value)}
-                          className="p-1 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded w-28 text-sm"
-                          disabled={!entry || (entry.status !== AttendanceStatus.PRESENT && entry.status !== AttendanceStatus.LATE)}
-                        />
-                      ) : (
-                         <div className="flex items-center gap-2">
-                             <div className="text-sm font-mono text-gray-700 dark:text-gray-300">{entry?.checkIn || '-'}</div>
-                             {entry?.location && <div className="text-blue-500"><MapPin size={14} /></div>}
-                         </div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      {isEditing ? (
-                        <input 
-                          type="time" 
-                          value={entry?.checkOut || ''}
-                          onChange={(e) => handleTimeChange(u.id, 'checkOut', e.target.value)}
-                          className="p-1 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white rounded w-28 text-sm"
-                          disabled={!entry || (entry.status !== AttendanceStatus.PRESENT && entry.status !== AttendanceStatus.LATE)}
-                        />
-                      ) : (
-                         <div className="text-sm font-mono text-gray-700 dark:text-gray-300">{entry?.checkOut || '-'}</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {canEdit && (
-                        isEditing ? (
-                          <button onClick={() => setEditingEntry(null)} className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors">
-                            <Save size={18} />
-                          </button>
-                        ) : (
-                          <button onClick={() => setEditingEntry(u.id)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
-                            <Edit2 size={18} />
-                          </button>
-                        )
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    );
-  };
+  // renderDayView REMOVED
 
   const renderEmployeesList = () => {
       const workDaysNorm = 22;
@@ -561,17 +425,16 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
       {activeTab === 'timesheet' && (
           <>
             <div className="flex justify-end items-center gap-2 my-4">
-                <div className="flex bg-white dark:bg-slate-800 rounded-lg p-1 border border-gray-200 dark:border-slate-700 shadow-sm mr-2">
-                    <button onClick={() => setViewMode('day')} className={`p-2 rounded-md transition-all ${viewMode === 'day' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}><List size={20} /></button>
-                    <button onClick={() => setViewMode('month')} className={`p-2 rounded-md transition-all ${viewMode === 'month' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'}`}><FileSpreadsheet size={20} /></button>
-                </div>
                 <div className="flex items-center bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-gray-200 dark:border-slate-700 p-1">
                     <button onClick={() => changeDate(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md text-gray-600 dark:text-gray-300"><ChevronLeft size={20} /></button>
                     <div className="px-4 py-1 flex items-center gap-2 font-medium text-gray-800 dark:text-white min-w-[200px] justify-center"><CalendarIcon size={18} className="text-blue-500" /><span className="capitalize">{getHeaderDateLabel()}</span></div>
                     <button onClick={() => changeDate(1)} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-md text-gray-600 dark:text-gray-300"><ChevronRight size={20} /></button>
                 </div>
             </div>
-            {viewMode === 'day' ? renderDayView() : renderMonthGrid()}
+            
+            {/* Forced Month View */}
+            {renderMonthGrid()}
+            
             <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-4 flex justify-between items-center text-sm text-gray-500 dark:text-gray-400 rounded-lg">
                 <div className="flex gap-4">
                     <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-green-500"></div> На работе: {visibleUsers.filter(u => getEntryForUser(u.id, selectedDate)?.status === AttendanceStatus.PRESENT).length}</span>

@@ -1,18 +1,18 @@
 
 import React, { useState } from 'react';
 import { User, UserRole, Task, TaskStatus, Client, ClientType } from '../types';
-import { USERS } from '../mockData';
-import { MapPin, Calendar, Clock, Filter, Plus, Camera, CheckSquare, Users as UsersIcon, X, Save, Upload, UserPlus, List, Phone, Building, Building2, User as UserIcon, ChevronDown } from 'lucide-react';
+import { MapPin, Calendar, Clock, Filter, Plus, Camera, CheckSquare, Users as UsersIcon, X, Save, Upload, UserPlus, List, Phone, Building, Building2, User as UserIcon, ChevronDown, Repeat, Edit2, RotateCcw } from 'lucide-react';
 
 interface TasksPageProps {
   user: User;
+  users: User[]; // Received from App state
   clients: Client[];
   tasks: Task[];
   onUpdateTasks: (tasks: Task[]) => void;
   onAddClient?: (client: Client) => void;
 }
 
-export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUpdateTasks, onAddClient }) => {
+export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, tasks, onUpdateTasks, onAddClient }) => {
   const [filter, setFilter] = useState<TaskStatus | 'ALL'>('ALL');
 
   // Modals state
@@ -20,7 +20,10 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [activeTaskForReport, setActiveTaskForReport] = useState<string | null>(null);
 
-  // Form state for new task
+  // Edit Mode State
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+
+  // Form state for new/edit task
   const [isManualClient, setIsManualClient] = useState(true); // Default to true
   const [manualClientName, setManualClientName] = useState('');
   
@@ -47,10 +50,37 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
   const [reportComment, setReportComment] = useState('');
 
   const filteredTasks = tasks.filter(task => {
+    // 1. Status Filter
     if (filter !== 'ALL' && task.status !== filter) return false;
+
+    // 2. Role Based Filter
     if (user.role === UserRole.ENGINEER) {
-      return task.engineerId === user.id || !task.engineerId;
+      // A. Ownership & Visibility Logic
+      // 1. If assigned to someone else -> HIDE
+      if (task.engineerId && task.engineerId !== user.id) return false;
+
+      // 2. If unassigned (no executor):
+      //    - If it is Maintenance (TO) -> SHOW (Engineers see pool of TO tasks)
+      //    - If it is Regular Task -> HIDE (Engineers don't see unassigned installs)
+      if (!task.engineerId && !task.isRecurring) return false;
+
+      // B. Recurring Logic: Hide future monthly maintenance tasks
+      if (task.isRecurring) {
+          const today = new Date();
+          const taskDate = new Date(task.deadline);
+          
+          // Check if task is strictly in a future month (regardless of day)
+          // Logic: (Task Year > Current Year) OR (Year is same AND Task Month > Current Month)
+          const isFutureMonth = taskDate.getFullYear() > today.getFullYear() || 
+                               (taskDate.getFullYear() === today.getFullYear() && taskDate.getMonth() > today.getMonth());
+          
+          if (isFutureMonth) return false;
+      }
+      
+      return true;
     }
+    
+    // Admins/Managers see everything
     return true;
   });
 
@@ -60,8 +90,45 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
       setActiveTaskForReport(taskId);
       setIsReportModalOpen(true);
     } else {
-      onUpdateTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+      // If taking a task (NEW -> IN_PROGRESS) and it was unassigned, assign it to current user
+      const updatedTasks = tasks.map(t => {
+          if (t.id === taskId) {
+              const updates: Partial<Task> = { status: newStatus };
+              if (newStatus === TaskStatus.IN_PROGRESS && !t.engineerId && user.role === UserRole.ENGINEER) {
+                  updates.engineerId = user.id;
+              }
+              return { ...t, ...updates };
+          }
+          return t;
+      });
+      onUpdateTasks(updatedTasks);
     }
+  };
+
+  // --- HANDLER: OPEN EDIT TASK (For Admin/Manager) ---
+  const handleEditTask = (task: Task) => {
+      setEditingTaskId(task.id);
+      setNewTask({
+          title: task.title,
+          clientId: tasks.find(t => t.id === task.id)?.clientId || '', // Note: we assume logic handles lookup, or rely on manual name
+          address: task.address,
+          deadline: task.deadline,
+          priority: task.priority,
+          description: task.description,
+          engineerId: task.engineerId || ''
+      });
+      
+      // Determine if it was a manual client or linked
+      const existingClient = clients.find(c => c.name === task.clientName);
+      if (existingClient) {
+          setIsManualClient(false);
+          setNewTask(prev => ({...prev, clientId: existingClient.id}));
+      } else {
+          setIsManualClient(true);
+          setManualClientName(task.clientName);
+      }
+
+      setIsCreateModalOpen(true);
   };
 
   // --- HANDLER: CREATE NEW CLIENT ---
@@ -108,30 +175,47 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
       if (client) clientName = client.name;
     }
 
-    const createdTask: Task = {
-      id: `t${Date.now()}`,
-      title: newTask.title,
-      clientName: clientName,
-      address: newTask.address,
-      deadline: newTask.deadline,
-      status: TaskStatus.NEW,
-      priority: newTask.priority,
-      description: newTask.description,
-      engineerId: newTask.engineerId || undefined
-    };
-
-    onUpdateTasks([createdTask, ...tasks]);
-
-    if (shouldKeepOpen) {
-      // Reset only task-specific fields, keep context (Client, Address, Date, Engineer)
-      setNewTask(prev => ({
-        ...prev,
-        title: '',
-        description: ''
-      }));
+    if (editingTaskId) {
+        // UPDATE EXISTING TASK
+        const updatedTasks = tasks.map(t => {
+            if (t.id === editingTaskId) {
+                return {
+                    ...t,
+                    title: newTask.title,
+                    clientName: clientName,
+                    address: newTask.address,
+                    deadline: newTask.deadline,
+                    priority: newTask.priority,
+                    description: newTask.description,
+                    engineerId: newTask.engineerId || undefined
+                };
+            }
+            return t;
+        });
+        onUpdateTasks(updatedTasks);
+        setIsCreateModalOpen(false);
+        resetForm();
     } else {
-      setIsCreateModalOpen(false);
-      resetForm();
+        // CREATE NEW TASK
+        const createdTask: Task = {
+            id: `t${Date.now()}`,
+            title: newTask.title,
+            clientName: clientName,
+            address: newTask.address,
+            deadline: newTask.deadline,
+            status: TaskStatus.NEW,
+            priority: newTask.priority,
+            description: newTask.description,
+            engineerId: newTask.engineerId || undefined
+        };
+        onUpdateTasks([createdTask, ...tasks]);
+
+        if (shouldKeepOpen) {
+            setNewTask(prev => ({ ...prev, title: '', description: '' }));
+        } else {
+            setIsCreateModalOpen(false);
+            resetForm();
+        }
     }
   };
 
@@ -163,16 +247,48 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
     });
     setIsManualClient(true); // Reset to Manual by default
     setManualClientName('');
+    setEditingTaskId(null);
   };
 
   const handleCompleteTask = () => {
     if (!activeTaskForReport) return;
     
-    onUpdateTasks(tasks.map(t => 
+    // Find the task being completed
+    const currentTask = tasks.find(t => t.id === activeTaskForReport);
+    let newTaskList = tasks.map(t => 
       t.id === activeTaskForReport 
         ? { ...t, status: TaskStatus.COMPLETED, description: `${t.description} \n\n[ОТЧЕТ ИНЖЕНЕРА]: ${reportComment}` } 
         : t
-    ));
+    );
+
+    // RECURRING LOGIC
+    if (currentTask && currentTask.isRecurring) {
+        // Calculate next month date
+        const currentDeadline = new Date(currentTask.deadline);
+        const nextMonthDate = new Date(currentDeadline.setMonth(currentDeadline.getMonth() + 1));
+        const nextDeadlineStr = nextMonthDate.toISOString().split('T')[0];
+
+        // CHECK DUPLICATE: Don't create if a task for this object already exists on that date
+        const duplicateExists = tasks.some(t => 
+            t.maintenanceObjectId === currentTask.maintenanceObjectId && 
+            t.deadline === nextDeadlineStr
+        );
+
+        if (!duplicateExists) {
+            const nextRecurringTask: Task = {
+                ...currentTask,
+                id: `t_maint_${Date.now()}`,
+                deadline: nextDeadlineStr,
+                status: TaskStatus.NEW,
+                description: currentTask.description.split('\n\n[ОТЧЕТ ИНЖЕНЕРА]')[0], // Reset desc, remove report
+                engineerId: currentTask.engineerId // Keep engineer
+            };
+            newTaskList = [nextRecurringTask, ...newTaskList];
+            // Optional: alert(`Создана заявка на ТО на ${nextDeadlineStr}`);
+        }
+    }
+    
+    onUpdateTasks(newTaskList);
     
     setIsReportModalOpen(false);
     setActiveTaskForReport(null);
@@ -185,6 +301,16 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
       case TaskStatus.IN_PROGRESS: return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800';
       case TaskStatus.COMPLETED: return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
       case TaskStatus.CANCELED: return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
+    }
+  };
+
+  const getStatusLabel = (status: TaskStatus) => {
+    switch(status) {
+        case TaskStatus.NEW: return 'Новая';
+        case TaskStatus.IN_PROGRESS: return 'В работе';
+        case TaskStatus.COMPLETED: return 'Выполнена';
+        case TaskStatus.CANCELED: return 'Отменена';
+        default: return status;
     }
   };
 
@@ -222,7 +348,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                 : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700'
             }`}
           >
-            {status === 'ALL' ? 'Все' : status === TaskStatus.NEW ? 'Новые' : status === TaskStatus.IN_PROGRESS ? 'В работе' : 'Завершенные'}
+            {status === 'ALL' ? 'Все' : getStatusLabel(status)}
           </button>
         ))}
       </div>
@@ -230,18 +356,36 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
       {/* Task Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filteredTasks.map(task => (
-          <div key={task.id} className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 hover:shadow-md transition-shadow flex flex-col h-full">
+          <div key={task.id} className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border hover:shadow-md transition-shadow flex flex-col h-full ${task.isRecurring ? 'border-l-4 border-l-orange-400 dark:border-l-orange-500' : 'border-gray-200 dark:border-slate-700'}`}>
             <div className="p-5 flex-1">
               <div className="flex justify-between items-start mb-3">
                 <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${getStatusColor(task.status)}`}>
-                  {task.status}
+                  {getStatusLabel(task.status)}
                 </span>
-                {task.priority === 'High' && (
-                  <span className="text-xs font-bold text-red-500 dark:text-red-400 flex items-center gap-1">
-                    <Clock size={12} />
-                    Срочно
-                  </span>
-                )}
+                <div className="flex gap-2">
+                    {/* EDIT BUTTON FOR ADMIN/MANAGER */}
+                    {user.role !== UserRole.ENGINEER && (
+                        <button 
+                            onClick={() => handleEditTask(task)}
+                            className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                            title="Редактировать заявку"
+                        >
+                            <Edit2 size={16} />
+                        </button>
+                    )}
+                    
+                    {task.isRecurring && (
+                        <span className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 px-2 py-1 rounded flex items-center gap-1" title="Ежемесячное ТО">
+                            <Repeat size={12} /> ТО
+                        </span>
+                    )}
+                    {task.priority === 'High' && (
+                    <span className="text-xs font-bold text-red-500 dark:text-red-400 flex items-center gap-1 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
+                        <Clock size={12} />
+                        Срочно
+                    </span>
+                    )}
+                </div>
               </div>
               
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 dark:drop-shadow-sm">{task.title}</h3>
@@ -259,14 +403,15 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                   <UsersIcon size={14} />
                   <span className="truncate max-w-[120px]" title={task.clientName}>{task.clientName}</span>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 font-medium">
                   <Calendar size={14} />
-                  <span>{task.deadline}</span>
+                  <span className={task.isRecurring ? 'text-orange-600 dark:text-orange-400' : ''}>{task.deadline}</span>
                 </div>
               </div>
             </div>
 
             <div className="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80 rounded-b-xl flex gap-3">
+              {/* ENGINEER ACTIONS */}
               {user.role === UserRole.ENGINEER && task.status === TaskStatus.NEW && (
                 <button 
                   onClick={() => handleStatusChange(task.id, TaskStatus.IN_PROGRESS)}
@@ -286,10 +431,22 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                 </button>
               )}
 
+              {/* ADMIN ACTIONS ON COMPLETED TASKS */}
               {task.status === TaskStatus.COMPLETED && (
-                <div className="w-full text-center text-green-600 dark:text-green-400 font-medium text-sm py-2 flex items-center justify-center gap-2">
-                  <CheckSquare size={16} />
-                  Работа выполнена
+                <div className="w-full flex items-center gap-2">
+                    <div className="flex-1 text-center text-green-600 dark:text-green-400 font-medium text-sm py-2 flex items-center justify-center gap-2">
+                        <CheckSquare size={16} />
+                        Выполнено
+                    </div>
+                    {user.role !== UserRole.ENGINEER && (
+                        <button 
+                            onClick={() => handleStatusChange(task.id, TaskStatus.IN_PROGRESS)}
+                            className="p-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-colors"
+                            title="Вернуть в работу (Доделать)"
+                        >
+                            <RotateCcw size={16} />
+                        </button>
+                    )}
                 </div>
               )}
             </div>
@@ -297,12 +454,14 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
         ))}
       </div>
 
-      {/* --- CREATE TASK MODAL --- */}
+      {/* --- CREATE / EDIT TASK MODAL --- */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh] border border-gray-100 dark:border-slate-700">
             <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 rounded-t-2xl">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">Новая заявка</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">
+                  {editingTaskId ? 'Редактировать заявку' : 'Новая заявка'}
+              </h2>
               <button onClick={() => setIsCreateModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                 <X size={24} />
               </button>
@@ -426,7 +585,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                         className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
                     >
                         <option value="">Не назначен</option>
-                        {USERS.filter(u => u.role === UserRole.ENGINEER).map(u => (
+                        {users.filter(u => u.role === UserRole.ENGINEER).map(u => (
                             <option key={u.id} value={u.id}>{u.name}</option>
                         ))}
                     </select>
@@ -456,20 +615,22 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, clients, tasks, onUp
                   Отмена
                 </button>
                 
-                <button 
-                  type="button"
-                  onClick={handleSaveAndCreateAnother}
-                  className="px-4 py-3 bg-white dark:bg-slate-700 border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/30 font-bold transition-colors flex items-center gap-2 justify-center"
-                >
-                  <Plus size={18} />
-                  <span>Сохранить +</span>
-                </button>
+                {!editingTaskId && (
+                    <button 
+                    type="button"
+                    onClick={handleSaveAndCreateAnother}
+                    className="px-4 py-3 bg-white dark:bg-slate-700 border border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/30 font-bold transition-colors flex items-center gap-2 justify-center"
+                    >
+                    <Plus size={18} />
+                    <span>Сохранить +</span>
+                    </button>
+                )}
 
                 <button 
                   type="submit" 
                   className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-blue-500/20 font-bold transition-colors"
                 >
-                  Создать
+                  {editingTaskId ? 'Сохранить изменения' : 'Создать'}
                 </button>
               </div>
             </form>

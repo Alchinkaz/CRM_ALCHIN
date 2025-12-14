@@ -154,10 +154,11 @@ const App: React.FC = () => {
   const isAccessAllowed = (route: string, role: UserRole): boolean => {
     switch (route) {
       case 'dashboard':
-      case 'employees':
       case 'tasks':
       case 'docs':
         return true; 
+      case 'employees':
+        return role === UserRole.ADMIN || role === UserRole.MANAGER; // Restrict Engineer
       case 'clients':
       case 'service':
         return role === UserRole.ADMIN || role === UserRole.MANAGER;
@@ -200,6 +201,7 @@ const App: React.FC = () => {
           <Dashboard 
             user={currentUser} 
             timesheetData={timesheetData}
+            advances={advances} // Added advances prop
             tasks={tasks}
             sales={sales}
             monthlyServices={monthlyServices}
@@ -211,6 +213,7 @@ const App: React.FC = () => {
         return (
           <TasksPage 
             user={currentUser} 
+            users={users} 
             clients={clients} 
             tasks={tasks}
             onUpdateTasks={setTasks}
@@ -225,6 +228,8 @@ const App: React.FC = () => {
             user={currentUser} 
             clients={clients} 
             monthlyServices={monthlyServices}
+            tasks={tasks} // Pass tasks
+            onUpdateTasks={setTasks} // Pass setter
             onUpdateServices={setMonthlyServices}
             onAddClient={handleAddClient} 
           />
@@ -260,6 +265,7 @@ const App: React.FC = () => {
             <Dashboard 
               user={currentUser} 
               timesheetData={timesheetData}
+              advances={advances} // Added advances prop
               tasks={tasks}
               sales={sales}
               monthlyServices={monthlyServices}

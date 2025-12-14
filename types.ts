@@ -113,6 +113,9 @@ export interface Task {
   priority: 'High' | 'Medium' | 'Low';
   description: string;
   engineerId?: string;
+  // New fields for Recurring Tasks
+  isRecurring?: boolean; 
+  maintenanceObjectId?: string;
 }
 
 export interface Sale {
