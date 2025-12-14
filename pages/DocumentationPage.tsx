@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Database, Layout, Server, Cpu, ShieldCheck } from 'lucide-react';
 
@@ -127,7 +128,7 @@ export const DocumentationPage: React.FC = () => {
             <div>
               <div className="font-bold mb-1">Ежемесячное ТО:</div>
               <div className="pl-3 border-l-2 border-amber-300">
-                1 число месяца → Генерация счетов → Проверка оплат → Если "Ок" -> Продление. Если "Нет" -> Блокировка/Заявка на демонтаж.
+                1 число месяца → Генерация счетов → Проверка оплат → Если "Ок" → Продление. Если "Нет" → Блокировка/Заявка на демонтаж.
               </div>
             </div>
           </div>
