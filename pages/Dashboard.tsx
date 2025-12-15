@@ -213,7 +213,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Main Widget */}
-            <div className="bg-ios-blue text-white rounded-ios p-8 relative overflow-hidden shadow-ios-float flex flex-col justify-between h-[300px]">
+            <div className="bg-ios-blue text-white rounded-ios p-8 relative overflow-hidden shadow-ios-float flex flex-col justify-between min-h-[300px]">
                 <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/20 rounded-full blur-3xl"></div>
                 
                 <div className="relative z-10">
@@ -261,7 +261,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
             </div>
 
             {/* Engineer Financial Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios flex flex-col justify-between h-[300px] border border-gray-100 dark:border-slate-700">
+            <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios flex flex-col justify-between min-h-[300px] border border-gray-100 dark:border-slate-700">
                 <div className="flex items-center gap-2 mb-4">
                     <div className="w-10 h-10 bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 rounded-full flex items-center justify-center">
                         <Wallet size={20} />

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { User, UserRole, Task, TaskStatus, Client, ClientType, TaskHistory, TaskComment } from '../types';
-import { MapPin, Calendar, Clock, Plus, Camera, CheckSquare, Users as UsersIcon, X, Save, Upload, UserPlus, List, Phone, User as UserIcon, ChevronDown, Repeat, Edit2, RotateCcw, MessageSquare, History, Send, Info, ExternalLink, Image as ImageIcon, Trash2, Maximize2, Share2, Star, Timer } from 'lucide-react';
+import { MapPin, Calendar, Clock, Plus, Camera, CheckSquare, Users as UsersIcon, X, Save, Upload, UserPlus, List, Phone, User as UserIcon, ChevronDown, Repeat, Edit2, RotateCcw, MessageSquare, History, Send, Info, ExternalLink, Image as ImageIcon, Trash2, Maximize2, Share2, Star, Timer, PlayCircle, StopCircle } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 interface TasksPageProps {
@@ -61,6 +61,15 @@ const formatDuration = (start: string, end: string) => {
         return `${hours}ч ${mins}мин`;
     }
     return `${mins}мин`;
+};
+
+// --- UTILITY: Format Date Time ---
+const formatDateTime = (isoString?: string) => {
+    if (!isoString) return 'Не указано';
+    return new Date(isoString).toLocaleString('ru-RU', {
+        day: '2-digit', month: '2-digit', year: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+    });
 };
 
 export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, tasks, onUpdateTasks, onAddClient }) => {
@@ -801,6 +810,38 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                         >
                             Скопировать
                         </button>
+                    </div>
+                )}
+
+                {/* --- TIME TRACKING BLOCK IN MODAL --- */}
+                {currentEditingTask && (currentEditingTask.startedAt || currentEditingTask.completedAt) && (
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 p-4 rounded-xl mb-4">
+                        <h4 className="text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <Clock size={14} /> Хронология выполнения
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1"><PlayCircle size={10}/> Начало работ</div>
+                                <div className="text-sm font-bold text-gray-900 dark:text-white">
+                                    {formatDateTime(currentEditingTask.startedAt)}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 flex items-center gap-1"><StopCircle size={10}/> Завершение</div>
+                                <div className="text-sm font-bold text-gray-900 dark:text-white">
+                                    {currentEditingTask.completedAt ? formatDateTime(currentEditingTask.completedAt) : <span className="text-orange-500">В процессе...</span>}
+                                </div>
+                            </div>
+                        </div>
+                        {currentEditingTask.completedAt && currentEditingTask.startedAt && (
+                            <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800 flex justify-between items-center">
+                                <span className="text-sm text-blue-800 dark:text-blue-300 font-medium">Общее время:</span>
+                                <span className="text-lg font-bold text-blue-900 dark:text-white flex items-center gap-1">
+                                    <Timer size={16} className="text-blue-500"/>
+                                    {formatDuration(currentEditingTask.startedAt, currentEditingTask.completedAt)}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 )}
 
