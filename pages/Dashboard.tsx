@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { User, UserRole, TaskStatus, TimeEntry, AttendanceStatus, Task, Sale, MonthlyService, Advance } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, AlertCircle, CheckCircle, Wallet, Users as UsersIcon, Clock, Play, Square, MapPin, Loader2, Zap, ArrowUpRight, ChevronRight, Calendar as CalendarIcon, Briefcase, Calculator, Banknote } from 'lucide-react';
+import { TrendingUp, AlertCircle, CheckCircle, Wallet, Users as UsersIcon, Clock, Play, Square, MapPin, Loader2, Zap, ArrowUpRight, ChevronRight, Calendar as CalendarIcon, Briefcase, Calculator, Banknote, ArrowDownLeft } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 interface DashboardProps {
@@ -22,30 +22,54 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
   const { addToast } = useToast();
   const [isLocating, setIsLocating] = useState(false);
 
+  // --- Real-time Stats Calculation ---
   const totalSales = sales.reduce((acc, sale) => acc + sale.amount, 0);
   const activeTasks = tasks.filter(t => t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELED).length;
   const pendingService = monthlyServices.filter(s => s.status === 'Pending').length;
+  
+  // Find today's sales
+  const todayDate = new Date().toISOString().split('T')[0];
+  const salesToday = sales.filter(s => s.date === todayDate).reduce((acc, s) => acc + s.amount, 0);
 
   // Find today's time entry for current user
-  const today = new Date().toISOString().split('T')[0];
-  const todayEntry = timesheetData.find(t => t.userId === user.id && t.date === today);
+  const todayEntry = timesheetData.find(t => t.userId === user.id && t.date === todayDate);
   const isCheckedIn = todayEntry?.status === AttendanceStatus.PRESENT && !todayEntry.checkOut;
   const isWorkDone = todayEntry?.status === AttendanceStatus.PRESENT && todayEntry.checkOut;
 
-  // Mock chart data generation from real data (simplified)
-  const salesData = [
-    { name: 'Пн', amount: 120000 },
-    { name: 'Вт', amount: 80000 },
-    { name: 'Ср', amount: 450000 },
-    { name: 'Чт', amount: 95000 },
-    { name: 'Пт', amount: 210000 },
-  ];
+  // --- DYNAMIC CHART DATA GENERATION ---
+  const salesChartData = useMemo(() => {
+      const data = [];
+      const today = new Date();
+      // Generate last 7 days
+      for (let i = 6; i >= 0; i--) {
+          const d = new Date(today);
+          d.setDate(d.getDate() - i);
+          const dateStr = d.toISOString().split('T')[0];
+          // Russian short weekday
+          const dayName = d.toLocaleDateString('ru-RU', { weekday: 'short' });
+          
+          // Sum sales for this day
+          const dailyTotal = sales
+              .filter(s => s.date === dateStr)
+              .reduce((sum, s) => sum + s.amount, 0);
+          
+          data.push({
+              name: dayName.charAt(0).toUpperCase() + dayName.slice(1), // Capitalize
+              amount: dailyTotal,
+              fullDate: dateStr
+          });
+      }
+      return data;
+  }, [sales]);
 
   const taskData = [
     { name: 'Новые', value: tasks.filter(t => t.status === TaskStatus.NEW).length },
     { name: 'В работе', value: tasks.filter(t => t.status === TaskStatus.IN_PROGRESS).length },
     { name: 'Готово', value: tasks.filter(t => t.status === TaskStatus.COMPLETED).length },
   ];
+
+  // --- RECENT SALES LIST ---
+  const recentSales = [...sales].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 4);
 
   const handleGeoCheckIn = () => {
     setIsLocating(true);
@@ -365,7 +389,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
       <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-end mb-4">
         <div>
           <h1 className="text-[34px] font-bold text-black dark:text-white tracking-tight leading-tight">Обзор</h1>
-          <p className="text-[17px] text-gray-500 dark:text-gray-400">Октябрь 2023</p>
+          <p className="text-[17px] text-gray-500 dark:text-gray-400">Сводка за сегодня: {new Date().toLocaleDateString()}</p>
         </div>
         
         <div className="bg-white dark:bg-slate-800 rounded-full p-1 pl-4 pr-1 shadow-sm flex items-center gap-3">
@@ -385,10 +409,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-            { label: 'Продажи', value: totalSales.toLocaleString() + ' ₸', icon: Zap, color: 'text-ios-green', bg: 'bg-ios-green' },
-            { label: 'Заявки', value: activeTasks, icon: CheckCircle, color: 'text-ios-blue', bg: 'bg-ios-blue' },
-            { label: 'Долги по ТО', value: pendingService, icon: AlertCircle, color: 'text-ios-orange', bg: 'bg-ios-orange' },
-            { label: 'Новые клиенты', value: '12', icon: ArrowUpRight, color: 'text-ios-indigo', bg: 'bg-ios-indigo' }
+            { label: 'Всего Продаж (Все время)', value: totalSales.toLocaleString() + ' ₸', icon: Wallet, color: 'text-blue-500', bg: 'bg-blue-100' },
+            { label: 'Продажи (Сегодня)', value: salesToday.toLocaleString() + ' ₸', icon: Zap, color: 'text-ios-green', bg: 'bg-ios-green' },
+            { label: 'Активные Заявки', value: activeTasks, icon: CheckCircle, color: 'text-ios-blue', bg: 'bg-ios-blue' },
+            { label: 'Долги по ТО', value: pendingService, icon: AlertCircle, color: 'text-ios-orange', bg: 'bg-ios-orange' }
         ].map((stat, i) => (
             <div key={i} className="bg-white dark:bg-slate-800 p-5 rounded-ios shadow-ios hover:scale-[1.02] transition-transform">
                 <div className="flex justify-between items-start mb-4">
@@ -407,11 +431,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-ios lg:col-span-2">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-[20px] font-bold text-black dark:text-white">Динамика продаж</h3>
+            <h3 className="text-[20px] font-bold text-black dark:text-white">Динамика продаж (7 дней)</h3>
           </div>
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={salesData}>
+              <BarChart data={salesChartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E5EA" />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#8E8E93', fontSize: 13, fontWeight: 500}} dy={10} />
                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#8E8E93', fontSize: 13}} />
@@ -424,62 +448,76 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
                       border: 'none',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                       color: '#000'
-                  }} 
+                  }}
+                  labelFormatter={(label, payload) => payload[0]?.payload.fullDate || label}
                 />
-                <Bar dataKey="amount" fill="#007AFF" radius={[6, 6, 6, 6]} barSize={40} />
+                <Bar dataKey="amount" fill="#007AFF" radius={[6, 6, 6, 6]} barSize={40} animationDuration={1000} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-ios flex flex-col">
-          <h3 className="text-[20px] font-bold text-black dark:text-white mb-6">Статус заявок</h3>
-          <div className="h-[220px] w-full relative">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={taskData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={6}
-                  dataKey="value"
-                  stroke="none"
-                  cornerRadius={6}
-                >
-                  {taskData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)', 
-                      borderRadius: '12px', 
-                      border: 'none',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-             {/* Center Text */}
-             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-3xl font-bold text-black dark:text-white">{activeTasks}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 uppercase font-semibold">Активно</span>
-            </div>
-          </div>
-          
-          <div className="space-y-3 mt-6">
-            {taskData.map((entry, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full" style={{backgroundColor: COLORS[index]}}></div>
-                    <span className="text-[15px] text-gray-700 dark:text-gray-300 font-medium">{entry.name}</span>
+        <div className="flex flex-col gap-6">
+            {/* Pie Chart */}
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-ios flex flex-col flex-1">
+                <h3 className="text-[20px] font-bold text-black dark:text-white mb-6">Статус заявок</h3>
+                <div className="h-[180px] w-full relative">
+                    <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                        data={taskData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={70}
+                        paddingAngle={6}
+                        dataKey="value"
+                        stroke="none"
+                        cornerRadius={6}
+                        >
+                        {taskData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                        </Pie>
+                        <Tooltip 
+                            contentStyle={{
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)', 
+                            borderRadius: '12px', 
+                            border: 'none',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                        }}
+                        />
+                    </PieChart>
+                    </ResponsiveContainer>
+                    {/* Center Text */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span className="text-2xl font-bold text-black dark:text-white">{activeTasks}</span>
+                        <span className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-semibold">Активно</span>
+                    </div>
                 </div>
-                <span className="text-[15px] font-bold text-black dark:text-white">{entry.value}</span>
-              </div>
-            ))}
-          </div>
+            </div>
+
+            {/* Recent Activity List */}
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-ios shadow-ios flex-1 flex flex-col">
+                <h3 className="text-[17px] font-bold text-black dark:text-white mb-4 flex items-center gap-2">
+                    <ArrowDownLeft size={20} className="text-green-500" />
+                    Последние поступления
+                </h3>
+                <div className="flex-1 overflow-y-auto max-h-[200px] pr-2 space-y-3">
+                    {recentSales.map(sale => (
+                        <div key={sale.id} className="flex justify-between items-center text-sm border-b border-gray-50 dark:border-slate-700 pb-2 last:border-0 last:pb-0">
+                            <div>
+                                <div className="font-bold text-gray-800 dark:text-white">{sale.clientName}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">{sale.date}</div>
+                            </div>
+                            <div className="font-bold text-green-600 dark:text-green-400">+{sale.amount.toLocaleString()} ₸</div>
+                        </div>
+                    ))}
+                    {recentSales.length === 0 && (
+                        <div className="text-center text-gray-400 text-sm py-4">Нет недавних продаж</div>
+                    )}
+                </div>
+            </div>
         </div>
       </div>
     </div>
