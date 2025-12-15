@@ -838,7 +838,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                           <div className="flex items-center gap-2">
                               <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                               <h3 className="font-bold text-gray-700 dark:text-gray-200">Новые</h3>
-                              <span className="bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full text-xs font-bold text-gray-500 dark:text-gray-400 shadow-sm">
+                              <span className="bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full text-xs font-bold text-gray-500 dark:text-gray-400 shadow-sm select-none cursor-default">
                                   {filteredTasks.filter(t => t.status === TaskStatus.NEW).length}
                               </span>
                           </div>
@@ -863,7 +863,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                       <div className="p-4 flex items-center gap-2 sticky top-0 bg-yellow-50/90 dark:bg-slate-800/90 backdrop-blur-sm z-10 rounded-t-2xl">
                           <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                           <h3 className="font-bold text-gray-700 dark:text-gray-200">В работе</h3>
-                          <span className="bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full text-xs font-bold text-gray-500 dark:text-gray-400 shadow-sm">
+                          <span className="bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full text-xs font-bold text-gray-500 dark:text-gray-400 shadow-sm select-none cursor-default">
                               {filteredTasks.filter(t => t.status === TaskStatus.IN_PROGRESS).length}
                           </span>
                       </div>
@@ -881,7 +881,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                       <div className="p-4 flex items-center gap-2 sticky top-0 bg-green-50/90 dark:bg-slate-800/90 backdrop-blur-sm z-10 rounded-t-2xl">
                           <div className="w-3 h-3 rounded-full bg-green-500"></div>
                           <h3 className="font-bold text-gray-700 dark:text-gray-200">Выполненные</h3>
-                          <span className="bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full text-xs font-bold text-gray-500 dark:text-gray-400 shadow-sm">
+                          <span className="bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full text-xs font-bold text-gray-500 dark:text-gray-400 shadow-sm select-none cursor-default">
                               {filteredTasks.filter(t => t.status === TaskStatus.COMPLETED).length}
                           </span>
                       </div>

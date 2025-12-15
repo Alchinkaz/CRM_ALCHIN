@@ -339,7 +339,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
                         <Briefcase size={20} className="text-blue-500"/>
                         Мои задачи
                     </h2>
-                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-bold">
+                    {/* Added select-none and cursor-default to prevent 'text input' confusion */}
+                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-bold select-none cursor-default">
                         {myTasks.length}
                     </span>
                 </div>
