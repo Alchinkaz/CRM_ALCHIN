@@ -152,6 +152,9 @@ export interface Task {
   // Public Access
   publicToken?: string; // Random string for public link
   clientConfirmation?: ClientConfirmation;
+  // Time Tracking
+  startedAt?: string; // ISO String
+  completedAt?: string; // ISO String
 }
 
 export interface Sale {

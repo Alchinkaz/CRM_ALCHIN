@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Task, User, TaskStatus } from '../types';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { CheckCircle, MapPin, Calendar, Clock, Star, MessageSquare, AlertTriangle, Send, ExternalLink, ThumbsUp } from 'lucide-react';
+import { CheckCircle, MapPin, Calendar, Clock, Star, MessageSquare, AlertTriangle, Send, ExternalLink, ThumbsUp, Wrench, Timer } from 'lucide-react';
 
 export const PublicTaskConfirmation: React.FC = () => {
   const [tasks, setTasks] = useLocalStorage<Task[]>('crm_tasks', []);
@@ -80,6 +80,24 @@ export const PublicTaskConfirmation: React.FC = () => {
       setSubmitted(true);
   };
 
+  const formatDateTime = (isoString?: string) => {
+      if (!isoString) return '--:--';
+      return new Date(isoString).toLocaleString('ru-RU', {
+          day: '2-digit', month: '2-digit', year: '2-digit',
+          hour: '2-digit', minute: '2-digit'
+      });
+  };
+
+  const getDuration = (start?: string, end?: string) => {
+      if (!start || !end) return null;
+      const diff = new Date(end).getTime() - new Date(start).getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      
+      if (hours > 0) return `${hours}ч ${minutes}мин`;
+      return `${minutes} мин`;
+  };
+
   if (loading) {
       return <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">Загрузка...</div>;
   }
@@ -99,6 +117,31 @@ export const PublicTaskConfirmation: React.FC = () => {
   }
 
   if (!task) return null;
+
+  // --- CHECK IF WORK IS COMPLETED ---
+  if (task.status !== TaskStatus.COMPLETED && !submitted) {
+      return (
+        <div className="min-h-screen bg-[#F2F2F7] py-8 px-4 font-sans text-slate-900 flex items-center justify-center">
+            <div className="max-w-md w-full bg-white p-8 rounded-3xl shadow-lg text-center">
+                <div className="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                    <Wrench size={40} />
+                </div>
+                <h1 className="text-2xl font-bold text-slate-900 mb-3">Работы еще ведутся</h1>
+                <p className="text-slate-500 mb-6">
+                    Инженер еще не отметил заявку как выполненную. <br/>
+                    Пожалуйста, дождитесь окончания работ для подтверждения.
+                </p>
+                <div className="bg-gray-50 p-4 rounded-2xl text-left border border-gray-100">
+                    <div className="text-xs text-gray-400 uppercase font-bold mb-1">Статус</div>
+                    <div className="font-bold text-slate-900 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        В процессе выполнения
+                    </div>
+                </div>
+            </div>
+        </div>
+      );
+  }
 
   return (
     <div className="min-h-screen bg-[#F2F2F7] py-8 px-4 font-sans text-slate-900">
@@ -166,9 +209,31 @@ export const PublicTaskConfirmation: React.FC = () => {
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <Calendar className="text-gray-400 shrink-0" size={16} />
-                                    <span className="text-slate-600">{task.deadline}</span>
+                                    <span className="text-slate-600">Срок: {task.deadline}</span>
                                 </div>
                             </div>
+
+                            {/* Time Tracking Info */}
+                            {task.startedAt && task.completedAt && (
+                                <div className="mt-4 bg-blue-50 rounded-xl p-3 border border-blue-100">
+                                    <div className="flex justify-between text-xs text-blue-800 uppercase font-bold mb-2">
+                                        <span>Начало</span>
+                                        <span>Завершение</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm font-semibold text-slate-800 mb-2">
+                                        <span>{formatDateTime(task.startedAt)}</span>
+                                        <span className="text-blue-300">→</span>
+                                        <span>{formatDateTime(task.completedAt)}</span>
+                                    </div>
+                                    <div className="pt-2 border-t border-blue-100 flex items-center justify-end gap-2 text-sm">
+                                        <span className="text-gray-500">Время работы:</span>
+                                        <span className="font-bold text-slate-900 flex items-center gap-1">
+                                            <Timer size={14} className="text-blue-500"/>
+                                            {getDuration(task.startedAt, task.completedAt)}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Engineer Info */}

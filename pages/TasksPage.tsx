@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { User, UserRole, Task, TaskStatus, Client, ClientType, TaskHistory, TaskComment } from '../types';
-import { MapPin, Calendar, Clock, Plus, Camera, CheckSquare, Users as UsersIcon, X, Save, Upload, UserPlus, List, Phone, User as UserIcon, ChevronDown, Repeat, Edit2, RotateCcw, MessageSquare, History, Send, Info, ExternalLink, Image as ImageIcon, Trash2, Maximize2, Share2, Star } from 'lucide-react';
+import { MapPin, Calendar, Clock, Plus, Camera, CheckSquare, Users as UsersIcon, X, Save, Upload, UserPlus, List, Phone, User as UserIcon, ChevronDown, Repeat, Edit2, RotateCcw, MessageSquare, History, Send, Info, ExternalLink, Image as ImageIcon, Trash2, Maximize2, Share2, Star, Timer } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 interface TasksPageProps {
@@ -43,6 +43,24 @@ const compressImage = (file: File): Promise<string> => {
         };
         reader.onerror = (err) => reject(err);
     });
+};
+
+// --- UTILITY: Calculate Duration ---
+const formatDuration = (start: string, end: string) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffMs = endDate.getTime() - startDate.getTime();
+    
+    if (diffMs < 0) return '0 мин';
+
+    const diffMins = Math.floor(diffMs / 60000);
+    const hours = Math.floor(diffMins / 60);
+    const mins = diffMins % 60;
+
+    if (hours > 0) {
+        return `${hours}ч ${mins}мин`;
+    }
+    return `${mins}мин`;
 };
 
 export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, tasks, onUpdateTasks, onAddClient }) => {
@@ -176,6 +194,11 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                   status: newStatus,
                   history: [...(t.history || []), createHistoryEntry('Изменил статус', `${oldStatusLabel} -> ${newStatusLabel}`)]
               };
+
+              // START TIME LOGIC: If moving to IN_PROGRESS and start time not set, set it.
+              if (newStatus === TaskStatus.IN_PROGRESS && !t.startedAt) {
+                  updates.startedAt = new Date().toISOString();
+              }
 
               if (newStatus === TaskStatus.IN_PROGRESS && !t.engineerId && user.role === UserRole.ENGINEER) {
                   updates.engineerId = user.id;
@@ -419,7 +442,8 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
             status: TaskStatus.COMPLETED, 
             description: `${t.description} \n\n[ОТЧЕТ ИНЖЕНЕРА]: ${reportComment}`,
             history: [...(t.history || []), createHistoryEntry('Завершил работу', `Сдал отчет. Фото: ${reportImages.length}`)],
-            attachments: reportImages // SAVE PHOTOS HERE
+            attachments: reportImages, // SAVE PHOTOS HERE
+            completedAt: new Date().toISOString() // TIME TRACKING: COMPLETE
           } 
         : t
     );
@@ -448,7 +472,9 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                 history: [createHistoryEntry('Авто-создание (ТО)', 'Ежемесячная генерация')],
                 comments: [],
                 attachments: [], // Reset attachments for new task
-                publicToken: Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10) // New token
+                publicToken: Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10), // New token
+                startedAt: undefined, // Reset time
+                completedAt: undefined // Reset time
             };
             newTaskList = [nextRecurringTask, ...newTaskList];
             addToast(`Создана заявка на ТО на ${nextDeadlineStr}`, 'info');
@@ -587,11 +613,11 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                     {task.description}
                 </div>
 
-                {/* Executor Section */}
-                <div className="mb-4 pt-3 border-t border-gray-100 dark:border-slate-700/50">
-                    <div className="flex items-center gap-3">
+                {/* Executor & Timing Section */}
+                <div className="mb-4 pt-3 border-t border-gray-100 dark:border-slate-700/50 space-y-3">
+                    <div className="flex items-center justify-between">
                         {assignedEngineer ? (
-                            <>
+                            <div className="flex items-center gap-3">
                                 <img src={assignedEngineer.avatar} alt={assignedEngineer.name} className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-slate-600" />
                                 <div className="flex flex-col">
                                     <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
@@ -601,9 +627,9 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                                         {assignedEngineer.name}
                                     </span>
                                 </div>
-                            </>
+                            </div>
                         ) : (
-                            <>
+                            <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center border border-dashed border-gray-400 dark:border-slate-500">
                                     <UserIcon size={16} className="text-gray-400 dark:text-gray-500" />
                                 </div>
@@ -615,7 +641,18 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                                         Не назначен
                                     </span>
                                 </div>
-                            </>
+                            </div>
+                        )}
+
+                        {/* --- DURATION DISPLAY --- */}
+                        {task.status === TaskStatus.COMPLETED && task.startedAt && task.completedAt && (
+                            <div className="text-right">
+                                <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Затрачено</span>
+                                <div className="text-sm font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1 justify-end">
+                                    <Timer size={14} className="text-blue-500" />
+                                    {formatDuration(task.startedAt, task.completedAt)}
+                                </div>
+                            </div>
                         )}
                     </div>
                 </div>
