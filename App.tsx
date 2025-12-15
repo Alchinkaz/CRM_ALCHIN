@@ -228,7 +228,15 @@ const App: React.FC = () => {
           />
         );
       case 'clients':
-        return <ClientsPage user={currentUser} clients={clients} onAddClient={handleAddClient} />;
+        return (
+          <ClientsPage 
+            user={currentUser} 
+            clients={clients} 
+            tasks={tasks} // Pass Tasks
+            sales={sales} // Pass Sales
+            onAddClient={handleAddClient} 
+          />
+        );
       case 'service':
         return (
           <ServicePage 

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { User, UserRole, Task, TaskStatus, Client, ClientType, TaskHistory, TaskComment } from '../types';
-import { MapPin, Calendar, Clock, Plus, Camera, CheckSquare, Users as UsersIcon, X, Save, Upload, UserPlus, List, Phone, User as UserIcon, ChevronDown, Repeat, Edit2, RotateCcw, MessageSquare, History, Send, Info, ExternalLink, Image as ImageIcon, Trash2, Maximize2, Share2, Star, Timer, PlayCircle, StopCircle } from 'lucide-react';
+import { MapPin, Calendar, Clock, Plus, Camera, CheckSquare, Users as UsersIcon, X, Save, Upload, UserPlus, List, Phone, User as UserIcon, ChevronDown, Repeat, Edit2, RotateCcw, MessageSquare, History, Send, Info, ExternalLink, Image as ImageIcon, Trash2, Maximize2, Share2, Star, Timer, PlayCircle, StopCircle, Columns, Search as SearchIcon, GripVertical } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 interface TasksPageProps {
@@ -74,7 +74,11 @@ const formatDateTime = (isoString?: string) => {
 
 export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, tasks, onUpdateTasks, onAddClient }) => {
   const { addToast } = useToast();
+  
+  // VIEW STATE
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
   const [filter, setFilter] = useState<TaskStatus | 'ALL'>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Modals state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -87,6 +91,9 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
 
   // Photo Preview State
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  // Drag and Drop State
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
 
   // Form state for new/edit task
   const [isManualClient, setIsManualClient] = useState(true); // Default to true
@@ -128,11 +135,23 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
       }
   }, [activeTab, isCreateModalOpen, tasks]);
 
+  // --- FILTERING LOGIC ---
   const filteredTasks = tasks.filter(task => {
-    // 1. Status Filter
-    if (filter !== 'ALL' && task.status !== filter) return false;
+    // 1. Search Query
+    if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matches = 
+            task.title.toLowerCase().includes(query) ||
+            task.clientName.toLowerCase().includes(query) ||
+            task.address.toLowerCase().includes(query) ||
+            task.description.toLowerCase().includes(query);
+        if (!matches) return false;
+    }
 
-    // 2. Role Based Filter
+    // 2. Status Filter (Only in List Mode)
+    if (viewMode === 'list' && filter !== 'ALL' && task.status !== filter) return false;
+
+    // 3. Role Based Filter
     if (user.role === UserRole.ENGINEER) {
       // A. Ownership & Visibility Logic
       // 1. If assigned to someone else -> HIDE
@@ -220,6 +239,43 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
       onUpdateTasks(updatedTasks);
       addToast(`Статус обновлен на "${getStatusLabel(newStatus)}"`, 'success');
     }
+  };
+
+  // --- DRAG AND DROP HANDLERS ---
+  const handleDragStart = (e: React.DragEvent, taskId: string) => {
+      setDraggedTaskId(taskId);
+      e.dataTransfer.effectAllowed = 'move';
+      // Make drag image semi-transparent
+      e.currentTarget.classList.add('opacity-50');
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+      setDraggedTaskId(null);
+      e.currentTarget.classList.remove('opacity-50');
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+      e.preventDefault(); // Necessary to allow dropping
+      e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetStatus: TaskStatus) => {
+      e.preventDefault();
+      if (!draggedTaskId) return;
+
+      const task = tasks.find(t => t.id === draggedTaskId);
+      if (task && task.status !== targetStatus) {
+          // Prevent dropping directly to completed if engineer needs report
+          if (targetStatus === TaskStatus.COMPLETED) {
+              setActiveTaskForReport(draggedTaskId);
+              setReportComment('');
+              setReportImages([]);
+              setIsReportModalOpen(true);
+          } else {
+              handleStatusChange(draggedTaskId, targetStatus);
+          }
+      }
+      setDraggedTaskId(null);
   };
 
   // --- HANDLER: FILE UPLOAD (COMPRESSION) ---
@@ -521,237 +577,322 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
   // Helper to get active task object when editing
   const currentEditingTask = editingTaskId ? tasks.find(t => t.id === editingTaskId) : null;
 
-  return (
-    <div className="space-y-6 relative h-full flex flex-col">
-      {/* Header & Filter */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">Заявки на работы</h1>
-          <p className="text-gray-500 dark:text-gray-400">Монтаж, ремонт и обслуживание</p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-            {user.role !== UserRole.ENGINEER && (
-            <button 
-                onClick={() => {
-                resetForm();
-                setIsCreateModalOpen(true);
-                }}
-                className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:opacity-90 transition-all shadow-md shadow-blue-500/30"
-            >
-                <Plus size={18} />
-                <span className="hidden sm:inline">Создать заявку</span>
-            </button>
-            )}
-        </div>
-      </div>
-
-      <div className="flex gap-2 overflow-x-auto pb-2 shrink-0">
-        {(['ALL', TaskStatus.NEW, TaskStatus.IN_PROGRESS, TaskStatus.COMPLETED] as const).map(status => (
-          <button
-            key={status}
-            onClick={() => setFilter(status)}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${
-              filter === status 
-                ? 'bg-slate-800 dark:bg-white text-white dark:text-black border-slate-800 dark:border-white shadow-sm' 
-                : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700'
-            }`}
-          >
-            {status === 'ALL' ? 'Все' : getStatusLabel(status)}
-          </button>
-        ))}
-      </div>
-
-      {/* --- TASKS LIST --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-20">
-            {filteredTasks.map(task => {
-            const assignedEngineer = getEngineerInfo(task.engineerId);
-            return (
-            <div key={task.id} className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border hover:shadow-md transition-shadow flex flex-col h-full ${task.isRecurring ? 'border-l-4 border-l-orange-400 dark:border-l-orange-500' : 'border-gray-200 dark:border-slate-700'}`}>
-                <div className="p-5 flex-1">
-                <div className="flex justify-between items-start mb-3">
+  // --- RENDER HELPERS ---
+  const renderTaskCard = (task: Task, isKanban = false) => {
+      const assignedEngineer = getEngineerInfo(task.engineerId);
+      return (
+        <div 
+            key={task.id} 
+            draggable={isKanban}
+            onDragStart={(e) => isKanban && handleDragStart(e, task.id)}
+            onDragEnd={handleDragEnd}
+            onClick={() => handleEditTask(task)}
+            className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border flex flex-col transition-all cursor-pointer ${
+                task.isRecurring ? 'border-l-4 border-l-orange-400 dark:border-l-orange-500' : 'border-gray-200 dark:border-slate-700'
+            } ${isKanban ? 'p-3 hover:shadow-md active:cursor-grabbing hover:border-blue-400 dark:hover:border-blue-500' : 'p-5 hover:shadow-md h-full'}`}
+        >
+            {/* KANBAN COMPACT HEADER */}
+            <div className="flex justify-between items-start mb-2">
+                {!isKanban && (
                     <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${getStatusColor(task.status)}`}>
-                    {getStatusLabel(task.status)}
+                        {getStatusLabel(task.status)}
                     </span>
-                    <div className="flex gap-2">
-                        {/* ATTACHMENT INDICATOR */}
-                        {task.attachments && task.attachments.length > 0 && (
-                            <span className="text-gray-400 flex items-center" title={`${task.attachments.length} фото`}>
-                                <ImageIcon size={16} />
-                            </span>
-                        )}
+                )}
+                {isKanban && (
+                    <div className="flex gap-1 flex-wrap">
+                        {task.priority === 'High' && <div className="w-2 h-2 rounded-full bg-red-500" title="Срочно"></div>}
+                        {task.isRecurring && <Repeat size={10} className="text-orange-500" />}
+                        {task.attachments?.length ? <ImageIcon size={10} className="text-blue-500" /> : null}
+                        {task.comments?.length ? <MessageSquare size={10} className="text-gray-400" /> : null}
+                    </div>
+                )}
+                
+                <div className={`flex gap-2 ${isKanban ? 'ml-auto' : ''}`}>
+                    {!isKanban && task.attachments && task.attachments.length > 0 && (
+                        <span className="text-gray-400 flex items-center" title={`${task.attachments.length} фото`}>
+                            <ImageIcon size={16} />
+                        </span>
+                    )}
+                    {/* View Button Logic handled by onClick on card */}
+                    {!isKanban && (
                         <button 
-                            onClick={() => handleEditTask(task)}
                             className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                            title={user.role === UserRole.ENGINEER ? "Просмотр деталей" : "Редактировать заявку"}
                         >
                             {user.role === UserRole.ENGINEER ? <Info size={16} /> : <Edit2 size={16} />}
                         </button>
-                        
-                        {task.isRecurring && (
-                            <span className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 px-2 py-1 rounded flex items-center gap-1" title="Ежемесячное ТО">
-                                <Repeat size={12} /> ТО
-                            </span>
-                        )}
-                        {task.priority === 'High' && (
+                    )}
+                    
+                    {!isKanban && task.isRecurring && (
+                        <span className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 px-2 py-1 rounded flex items-center gap-1">
+                            <Repeat size={12} /> ТО
+                        </span>
+                    )}
+                    {!isKanban && task.priority === 'High' && (
                         <span className="text-xs font-bold text-red-500 dark:text-red-400 flex items-center gap-1 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded">
                             <Clock size={12} />
                             Срочно
                         </span>
-                        )}
-                    </div>
+                    )}
                 </div>
-                
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1 dark:drop-shadow-sm cursor-pointer hover:text-blue-600 transition-colors" onClick={() => handleEditTask(task)}>{task.title}</h3>
-                
-                {/* --- ADDRESS LINK TO 2GIS --- */}
-                <a
-                    href={`https://2gis.kz/search/${encodeURIComponent(task.address)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={(e) => e.stopPropagation()} // Prevent opening edit modal
-                    className="text-sm text-blue-600 dark:text-blue-400 mb-4 flex items-center gap-1 hover:underline w-fit"
-                    title="Открыть в 2GIS"
-                >
-                    <MapPin size={14} />
-                    {task.address}
-                    <ExternalLink size={10} className="opacity-50" />
-                </a>
-                
+            </div>
+            
+            <h3 className={`${isKanban ? 'text-sm' : 'text-lg'} font-bold text-gray-900 dark:text-white mb-1 dark:drop-shadow-sm line-clamp-2`}>{task.title}</h3>
+            
+            <div className={`text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1 truncate`}>
+                <UsersIcon size={12} />
+                <span className="truncate">{task.clientName}</span>
+            </div>
+
+            {/* Address */}
+            <div className={`text-xs text-blue-600 dark:text-blue-400 mb-3 flex items-center gap-1 hover:underline w-fit ${isKanban ? 'line-clamp-1' : ''}`}>
+                <MapPin size={12} />
+                <span className="truncate">{task.address}</span>
+            </div>
+            
+            {!isKanban && (
                 <div className="bg-gray-50 dark:bg-slate-700/50 p-3 rounded-lg text-sm text-gray-700 dark:text-gray-200 mb-4 whitespace-pre-wrap border border-gray-100 dark:border-slate-600/50 line-clamp-3">
                     {task.description}
                 </div>
+            )}
 
-                {/* Executor & Timing Section */}
-                <div className="mb-4 pt-3 border-t border-gray-100 dark:border-slate-700/50 space-y-3">
-                    <div className="flex items-center justify-between">
-                        {assignedEngineer ? (
-                            <div className="flex items-center gap-3">
-                                <img src={assignedEngineer.avatar} alt={assignedEngineer.name} className="w-8 h-8 rounded-full object-cover border border-gray-200 dark:border-slate-600" />
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
-                                        {task.status === TaskStatus.COMPLETED ? 'Выполнил' : 'Исполнитель'}
-                                    </span>
-                                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 leading-tight">
-                                        {assignedEngineer.name}
-                                    </span>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center border border-dashed border-gray-400 dark:border-slate-500">
-                                    <UserIcon size={16} className="text-gray-400 dark:text-gray-500" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
-                                        Исполнитель
-                                    </span>
-                                    <span className="text-sm font-semibold text-orange-500 dark:text-orange-400 leading-tight">
-                                        Не назначен
-                                    </span>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* --- DURATION DISPLAY --- */}
-                        {task.status === TaskStatus.COMPLETED && task.startedAt && task.completedAt && (
-                            <div className="text-right">
-                                <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Затрачено</span>
-                                <div className="text-sm font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1 justify-end">
-                                    <Timer size={14} className="text-blue-500" />
-                                    {formatDuration(task.startedAt, task.completedAt)}
-                                </div>
+            {/* Executor & Timing Section - Compact for Kanban */}
+            <div className={`mt-auto pt-3 border-t border-gray-100 dark:border-slate-700/50 flex items-center justify-between`}>
+                {assignedEngineer ? (
+                    <div className="flex items-center gap-2">
+                        <img src={assignedEngineer.avatar} alt={assignedEngineer.name} className={`${isKanban ? 'w-6 h-6' : 'w-8 h-8'} rounded-full object-cover border border-gray-200 dark:border-slate-600`} />
+                        {!isKanban && (
+                            <div className="flex flex-col">
+                                <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+                                    {task.status === TaskStatus.COMPLETED ? 'Выполнил' : 'Исполнитель'}
+                                </span>
+                                <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 leading-tight">
+                                    {assignedEngineer.name}
+                                </span>
                             </div>
                         )}
                     </div>
-                </div>
+                ) : (
+                    <div className="flex items-center gap-2">
+                        <div className={`${isKanban ? 'w-6 h-6' : 'w-8 h-8'} rounded-full bg-gray-200 dark:bg-slate-700 flex items-center justify-center border border-dashed border-gray-400 dark:border-slate-500`}>
+                            <UserIcon size={isKanban ? 12 : 16} className="text-gray-400 dark:text-gray-500" />
+                        </div>
+                        {!isKanban && (
+                            <div className="flex flex-col">
+                                <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Исполнитель</span>
+                                <span className="text-sm font-semibold text-orange-500 dark:text-orange-400 leading-tight">Не назначен</span>
+                            </div>
+                        )}
+                    </div>
+                )}
 
-                {/* --- CLIENT CONFIRMATION STATUS --- */}
-                {task.clientConfirmation?.isConfirmed && (
-                    <div className="mb-3 px-3 py-2 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center justify-between">
-                        <span className="text-xs font-bold text-green-700 dark:text-green-300 flex items-center gap-1">
-                            <CheckSquare size={14} /> Подтверждено клиентом
+                {/* Deadline or Duration */}
+                {task.status === TaskStatus.COMPLETED && task.startedAt && task.completedAt ? (
+                    <div className="text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center gap-1">
+                        <Timer size={12} className="text-blue-500" />
+                        {formatDuration(task.startedAt, task.completedAt)}
+                    </div>
+                ) : (
+                    <div className={`flex items-center gap-1 font-medium ${isKanban ? 'text-[10px]' : 'text-sm'}`}>
+                        <Calendar size={isKanban ? 12 : 14} />
+                        <span className={task.isRecurring ? 'text-orange-600 dark:text-orange-400' : 'text-gray-500 dark:text-gray-400'}>
+                            {new Date(task.deadline).toLocaleDateString('ru-RU', { day: 'numeric', month: 'numeric' })}
                         </span>
-                        <div className="flex gap-0.5">
-                            {[1,2,3,4,5].map(star => (
-                                <Star key={star} size={10} className={`${star <= (task.clientConfirmation?.rating || 0) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
-                            ))}
-                        </div>
                     </div>
                 )}
-
-                <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-auto">
-                    <div className="flex items-center gap-1">
-                    <UsersIcon size={14} />
-                    <span className="truncate max-w-[120px]" title={task.clientName}>{task.clientName}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        {/* Comment Count Badge */}
-                        {(task.comments?.length || 0) > 0 && (
-                            <div className="flex items-center gap-1 font-medium text-blue-600 dark:text-blue-400">
-                                <MessageSquare size={14} />
-                                {task.comments?.length}
-                            </div>
-                        )}
-                        <div className="flex items-center gap-1 font-medium">
-                            <Calendar size={14} />
-                            <span className={task.isRecurring ? 'text-orange-600 dark:text-orange-400' : ''}>{task.deadline}</span>
-                        </div>
-                    </div>
-                </div>
-                </div>
-
-                <div className="p-4 border-t border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/80 rounded-b-xl flex gap-3">
-                {/* ENGINEER ACTIONS */}
-                {user.role === UserRole.ENGINEER && task.status === TaskStatus.NEW && (
-                    <button 
-                    onClick={() => handleStatusChange(task.id, TaskStatus.IN_PROGRESS)}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2 rounded-lg font-medium hover:opacity-90 text-sm shadow-md shadow-blue-500/20"
-                    >
-                    Принять в работу
-                    </button>
-                )}
-                
-                {user.role === UserRole.ENGINEER && task.status === TaskStatus.IN_PROGRESS && (
-                    <button 
-                    onClick={() => handleStatusChange(task.id, TaskStatus.COMPLETED)}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-2 rounded-lg font-medium hover:opacity-90 text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-500/20"
-                    >
-                    <CheckSquare size={16} />
-                    Завершить работу
-                    </button>
-                )}
-
-                {/* ADMIN ACTIONS ON COMPLETED TASKS */}
-                {task.status === TaskStatus.COMPLETED && (
-                    <div className="w-full flex items-center gap-2">
-                        <div className="flex-1 text-center text-green-600 dark:text-green-400 font-medium text-sm py-2 flex items-center justify-center gap-2">
-                            <CheckSquare size={16} />
-                            Выполнено
-                        </div>
-                        {user.role !== UserRole.ENGINEER && (
-                            <button 
-                                onClick={() => handleStatusChange(task.id, TaskStatus.IN_PROGRESS)}
-                                className="p-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-500 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-colors"
-                                title="Вернуть в работу (Доделать)"
-                            >
-                                <RotateCcw size={16} />
-                            </button>
-                        )}
-                        {/* SHARE BUTTON FOR CLIENT CONFIRMATION */}
-                        <button 
-                            onClick={() => copyPublicLink(task)}
-                            className="p-2 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg hover:bg-blue-100 transition-colors"
-                            title="Скопировать ссылку для клиента"
-                        >
-                            <Share2 size={16} />
-                        </button>
-                    </div>
-                )}
-                </div>
             </div>
-            )})}
+
+            {/* List Mode Actions (Buttons) */}
+            {!isKanban && (
+                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-slate-700 flex gap-3">
+                    {user.role === UserRole.ENGINEER && task.status === TaskStatus.NEW && (
+                        <button 
+                        onClick={(e) => { e.stopPropagation(); handleStatusChange(task.id, TaskStatus.IN_PROGRESS); }}
+                        className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
+                        >
+                        Принять
+                        </button>
+                    )}
+                    {user.role === UserRole.ENGINEER && task.status === TaskStatus.IN_PROGRESS && (
+                        <button 
+                        onClick={(e) => { e.stopPropagation(); handleStatusChange(task.id, TaskStatus.COMPLETED); }}
+                        className="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 flex items-center justify-center gap-2"
+                        >
+                        <CheckSquare size={14} /> Завершить
+                        </button>
+                    )}
+                    {task.status === TaskStatus.COMPLETED && (
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); copyPublicLink(task); }}
+                            className="w-full py-2 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 rounded-lg text-sm font-bold hover:bg-blue-100 flex items-center justify-center gap-2"
+                        >
+                            <Share2 size={14} /> Ссылка
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
+      );
+  };
+
+  return (
+    <div className="space-y-6 relative h-full flex flex-col">
+      {/* Header & Controls */}
+      <div className="flex flex-col gap-4 shrink-0">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">Заявки на работы</h1>
+                <p className="text-gray-500 dark:text-gray-400">Монтаж, ремонт и обслуживание</p>
+            </div>
+            
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+                {/* Search Bar */}
+                <div className="relative flex-1 sm:w-64">
+                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input 
+                        type="text" 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Поиск..." 
+                        className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    />
+                </div>
+
+                {/* View Switcher */}
+                <div className="flex bg-gray-200 dark:bg-slate-700 p-1 rounded-xl shrink-0">
+                    <button 
+                        onClick={() => setViewMode('list')}
+                        className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}
+                        title="Список"
+                    >
+                        <List size={18} />
+                    </button>
+                    <button 
+                        onClick={() => setViewMode('kanban')}
+                        className={`p-2 rounded-lg transition-all ${viewMode === 'kanban' ? 'bg-white dark:bg-slate-600 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}
+                        title="Канбан доска"
+                    >
+                        <Columns size={18} />
+                    </button>
+                </div>
+
+                {user.role !== UserRole.ENGINEER && (
+                <button 
+                    onClick={() => {
+                        resetForm();
+                        setIsCreateModalOpen(true);
+                    }}
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2.5 rounded-xl hover:opacity-90 transition-all shadow-md shadow-blue-500/30 shrink-0"
+                >
+                    <Plus size={18} />
+                    <span className="hidden md:inline">Создать</span>
+                </button>
+                )}
+            </div>
+        </div>
+
+        {/* Status Filter (Only visible in List mode) */}
+        {viewMode === 'list' && (
+            <div className="flex gap-2 overflow-x-auto pb-2 shrink-0">
+                {(['ALL', TaskStatus.NEW, TaskStatus.IN_PROGRESS, TaskStatus.COMPLETED] as const).map(status => (
+                <button
+                    key={status}
+                    onClick={() => setFilter(status)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors border ${
+                    filter === status 
+                        ? 'bg-slate-800 dark:bg-white text-white dark:text-black border-slate-800 dark:border-white shadow-sm' 
+                        : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700'
+                    }`}
+                >
+                    {status === 'ALL' ? 'Все' : getStatusLabel(status)}
+                </button>
+                ))}
+            </div>
+        )}
+      </div>
+
+      {/* --- LIST VIEW --- */}
+      {viewMode === 'list' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-20">
+            {filteredTasks.map(task => renderTaskCard(task, false))}
+            {filteredTasks.length === 0 && (
+                <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-400">
+                    <SearchIcon size={48} className="mb-4 opacity-20" />
+                    <p>Задачи не найдены</p>
+                </div>
+            )}
+        </div>
+      )}
+
+      {/* --- KANBAN VIEW --- */}
+      {viewMode === 'kanban' && (
+          <div className="flex-1 overflow-x-auto pb-4">
+              <div className="flex gap-6 min-w-[800px] h-full">
+                  
+                  {/* COLUMN 1: NEW */}
+                  <div 
+                    className="flex-1 bg-gray-100 dark:bg-slate-800/50 rounded-2xl flex flex-col h-full min-h-[500px]"
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, TaskStatus.NEW)}
+                  >
+                      <div className="p-4 flex justify-between items-center sticky top-0 bg-gray-100/90 dark:bg-slate-800/90 backdrop-blur-sm z-10 rounded-t-2xl">
+                          <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                              <h3 className="font-bold text-gray-700 dark:text-gray-200">Новые</h3>
+                              <span className="bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full text-xs font-bold text-gray-500 dark:text-gray-400 shadow-sm">
+                                  {filteredTasks.filter(t => t.status === TaskStatus.NEW).length}
+                              </span>
+                          </div>
+                          <button 
+                            onClick={() => { resetForm(); setIsCreateModalOpen(true); }}
+                            className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          >
+                              <Plus size={18} />
+                          </button>
+                      </div>
+                      <div className="p-3 space-y-3 flex-1 overflow-y-auto">
+                          {filteredTasks.filter(t => t.status === TaskStatus.NEW).map(task => renderTaskCard(task, true))}
+                      </div>
+                  </div>
+
+                  {/* COLUMN 2: IN PROGRESS */}
+                  <div 
+                    className="flex-1 bg-yellow-50/50 dark:bg-slate-800/50 rounded-2xl flex flex-col h-full min-h-[500px]"
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, TaskStatus.IN_PROGRESS)}
+                  >
+                      <div className="p-4 flex items-center gap-2 sticky top-0 bg-yellow-50/90 dark:bg-slate-800/90 backdrop-blur-sm z-10 rounded-t-2xl">
+                          <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                          <h3 className="font-bold text-gray-700 dark:text-gray-200">В работе</h3>
+                          <span className="bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full text-xs font-bold text-gray-500 dark:text-gray-400 shadow-sm">
+                              {filteredTasks.filter(t => t.status === TaskStatus.IN_PROGRESS).length}
+                          </span>
+                      </div>
+                      <div className="p-3 space-y-3 flex-1 overflow-y-auto">
+                          {filteredTasks.filter(t => t.status === TaskStatus.IN_PROGRESS).map(task => renderTaskCard(task, true))}
+                      </div>
+                  </div>
+
+                  {/* COLUMN 3: COMPLETED */}
+                  <div 
+                    className="flex-1 bg-green-50/50 dark:bg-slate-800/50 rounded-2xl flex flex-col h-full min-h-[500px]"
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, TaskStatus.COMPLETED)}
+                  >
+                      <div className="p-4 flex items-center gap-2 sticky top-0 bg-green-50/90 dark:bg-slate-800/90 backdrop-blur-sm z-10 rounded-t-2xl">
+                          <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                          <h3 className="font-bold text-gray-700 dark:text-gray-200">Выполненные</h3>
+                          <span className="bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full text-xs font-bold text-gray-500 dark:text-gray-400 shadow-sm">
+                              {filteredTasks.filter(t => t.status === TaskStatus.COMPLETED).length}
+                          </span>
+                      </div>
+                      <div className="p-3 space-y-3 flex-1 overflow-y-auto">
+                          {filteredTasks.filter(t => t.status === TaskStatus.COMPLETED).map(task => renderTaskCard(task, true))}
+                      </div>
+                  </div>
+
+              </div>
+          </div>
+      )}
 
       {/* ... CREATE / EDIT TASK MODAL (REDESIGNED) ... */}
       {isCreateModalOpen && (
