@@ -86,7 +86,7 @@ export const Header: React.FC<HeaderProps> = ({ user, users, clients, tasks, isD
   const hasResults = searchResults.clients.length > 0 || searchResults.tasks.length > 0 || searchResults.users.length > 0;
 
   return (
-    <header className="px-4 pt-4 md:px-6 md:pt-6 pb-2 z-20">
+    <header className="px-4 pt-4 md:px-6 md:pt-6 pb-2 z-20 select-none">
       <div className="glass-panel h-20 rounded-3xl px-6 flex items-center justify-between shadow-glass relative">
         <div className="flex items-center gap-4 flex-1 max-w-2xl">
           <div className="relative group w-full" ref={searchRef}>
@@ -97,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({ user, users, clients, tasks, isD
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               placeholder="Поиск по системе (Клиенты, Заявки, Сотрудники)..." 
-              className="pl-12 pr-4 py-2.5 bg-white/40 border border-white/50 rounded-2xl text-sm focus:outline-none focus:bg-white/70 focus:ring-2 focus:ring-blue-400 w-full transition-all placeholder:text-slate-500 text-slate-800 dark:bg-slate-800/50 dark:border-slate-600 dark:text-white dark:placeholder:text-slate-400 dark:focus:bg-slate-800"
+              className="pl-12 pr-4 py-2.5 bg-white/40 border border-white/50 rounded-2xl text-sm focus:outline-none focus:bg-white/70 focus:ring-2 focus:ring-blue-400 w-full transition-all placeholder:text-slate-500 text-slate-800 dark:bg-slate-800/50 dark:border-slate-600 dark:text-white dark:placeholder:text-slate-400 dark:focus:bg-slate-800 cursor-text select-text"
             />
 
             {/* SEARCH DROPDOWN RESULTS */}
@@ -115,7 +115,7 @@ export const Header: React.FC<HeaderProps> = ({ user, users, clients, tasks, isD
                                         <button 
                                             key={client.id}
                                             onClick={() => handleSearchResultClick(`#clients?id=${client.id}`)}
-                                            className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 flex flex-col transition-colors group"
+                                            className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 flex flex-col transition-colors group cursor-pointer"
                                         >
                                             <span className="text-sm font-bold text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">{client.name}</span>
                                             <span className="text-xs text-gray-500 dark:text-gray-400 truncate">{client.address} • {client.phone}</span>
@@ -134,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({ user, users, clients, tasks, isD
                                         <button 
                                             key={task.id}
                                             onClick={() => handleSearchResultClick(`#tasks?id=${task.id}`)}
-                                            className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 flex flex-col transition-colors group"
+                                            className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 flex flex-col transition-colors group cursor-pointer"
                                         >
                                             <div className="flex justify-between">
                                                 <span className="text-sm font-bold text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 truncate pr-2">{task.title}</span>
@@ -156,7 +156,7 @@ export const Header: React.FC<HeaderProps> = ({ user, users, clients, tasks, isD
                                         <button 
                                             key={u.id}
                                             onClick={() => handleSearchResultClick(`#chat`)} // Ideally go to chat or employee profile
-                                            className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 flex items-center gap-3 transition-colors group"
+                                            className="w-full text-left px-4 py-2 hover:bg-gray-50 dark:hover:bg-slate-700/50 flex items-center gap-3 transition-colors group cursor-pointer"
                                         >
                                             <img src={u.avatar} className="w-8 h-8 rounded-full object-cover" alt="" />
                                             <div>
@@ -181,13 +181,13 @@ export const Header: React.FC<HeaderProps> = ({ user, users, clients, tasks, isD
         <div className="flex items-center gap-4 md:gap-6 pl-4">
           <button 
             onClick={onToggleTheme}
-            className="p-2.5 text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl transition-all"
+            className="p-2.5 text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl transition-all cursor-pointer"
             title={isDarkMode ? "Включить светлую тему" : "Включить темную тему"}
           >
              {isDarkMode ? <Sun size={22} /> : <Moon size={22} />}
           </button>
 
-          <button className="relative p-2.5 text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl transition-all">
+          <button className="relative p-2.5 text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/50 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl transition-all cursor-pointer">
             <Bell size={22} />
             <span className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-800 shadow-glow animate-pulse"></span>
           </button>
@@ -197,7 +197,7 @@ export const Header: React.FC<HeaderProps> = ({ user, users, clients, tasks, isD
           <div className="relative">
             <button 
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-3 focus:outline-none group p-1.5 rounded-2xl hover:bg-white/40 dark:hover:bg-slate-700/40 transition-all"
+              className="flex items-center gap-3 focus:outline-none group p-1.5 rounded-2xl hover:bg-white/40 dark:hover:bg-slate-700/40 transition-all cursor-pointer"
             >
               <div className="text-right hidden md:block">
                 <div className="text-sm font-bold text-slate-800 dark:text-slate-100">{user.name}</div>
@@ -234,7 +234,7 @@ export const Header: React.FC<HeaderProps> = ({ user, users, clients, tasks, isD
                       onSwitchUser(u);
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-blue-50/50 dark:hover:bg-blue-900/30 transition-colors ${user.id === u.id ? 'bg-blue-100/40 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' : 'text-slate-700 dark:text-slate-200'}`}
+                    className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-blue-50/50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer ${user.id === u.id ? 'bg-blue-100/40 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' : 'text-slate-700 dark:text-slate-200'}`}
                   >
                     <img src={u.avatar} alt={u.name} className="w-9 h-9 rounded-xl object-cover shadow-sm" />
                     <div>

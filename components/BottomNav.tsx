@@ -24,7 +24,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ role, currentRoute, onNavi
   const visibleItems = allItems.filter(item => item.roles.includes(role)).slice(0, 5); 
   
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-lg border-t border-gray-200 z-50 pb-safe">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-lg border-t border-gray-200 z-50 pb-safe select-none">
       <div className="flex justify-around items-center h-full px-2">
         {visibleItems.map(item => {
           const Icon = item.icon;
@@ -33,7 +33,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ role, currentRoute, onNavi
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors ${
+              className={`flex flex-col items-center justify-center w-full h-full gap-1 transition-colors cursor-pointer ${
                 isActive ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
               }`}
             >

@@ -39,12 +39,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ role, currentRoute, onNavigate
   const filteredItems = menuItems.filter(item => item.roles.includes(role));
 
   return (
-    <aside className={`hidden md:flex flex-col h-full glass-panel border-r-0 border-white/40 m-4 rounded-3xl shadow-glass z-20 transition-all duration-300 relative ${isCollapsed ? 'w-24' : 'w-72'}`}>
+    <aside className={`hidden md:flex flex-col h-full glass-panel border-r-0 border-white/40 m-4 rounded-3xl shadow-glass z-20 transition-all duration-300 relative select-none ${isCollapsed ? 'w-24' : 'w-72'}`}>
       
       {/* Collapse Toggle */}
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-9 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-full p-1 shadow-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 z-50 transition-colors"
+        className="absolute -right-3 top-9 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-full p-1 shadow-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 z-50 transition-colors cursor-pointer"
       >
         {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
       </button>
@@ -66,7 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ role, currentRoute, onNavigate
                 <button
                   onClick={() => onNavigate(item.id)}
                   title={isCollapsed ? item.label : undefined}
-                  className={`w-full flex items-center gap-3 px-3 py-3.5 rounded-2xl transition-all duration-300 group ${
+                  className={`w-full flex items-center gap-3 px-3 py-3.5 rounded-2xl transition-all duration-300 group cursor-pointer ${
                     isActive 
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/40' 
                       : 'text-slate-600 dark:text-slate-300 hover:bg-white/50 dark:hover:bg-white/10 hover:text-blue-600 dark:hover:text-blue-400'

@@ -50,6 +50,14 @@
       }
     </script>
     <style>
+      /* --- GLOBAL RESETS FOR APP-LIKE FEEL --- */
+      
+      /* Remove default focus outline (black border) everywhere */
+      *, *::before, *::after {
+        outline: none !important;
+        -webkit-tap-highlight-color: transparent; /* Remove blue highlight on mobile tap */
+      }
+
       body {
         margin: 0;
         font-family: 'Inter', sans-serif;
@@ -57,6 +65,27 @@
         color: #1c1c1e;
         min-height: 100vh;
         transition: background-color 0.3s ease, color 0.3s ease;
+        
+        /* DISABLE TEXT CURSOR & SELECTION GLOBALLY */
+        cursor: default;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
+
+      /* Re-enable text cursor and selection ONLY for inputs */
+      input, textarea, [contenteditable] {
+        cursor: text;
+        user-select: text;
+        -webkit-user-select: text;
+      }
+
+      /* Helper class if you specifically need copy-paste ability on some data */
+      .selectable-text {
+        cursor: text;
+        user-select: text;
+        -webkit-user-select: text;
       }
 
       /* Dark Mode Body Override */
@@ -65,13 +94,12 @@
         color: #f8fafc;
       }
 
-      /* Custom Scrollbar - Project Style (Gradient) */
+      /* Custom Scrollbar */
       * {
         scrollbar-width: thin;
-        scrollbar-color: #2563eb transparent; /* Firefox fallback */
+        scrollbar-color: #2563eb transparent;
       }
 
-      /* WebKit Browsers (Chrome, Safari, Edge) */
       ::-webkit-scrollbar {
         width: 6px;
         height: 6px;
@@ -85,8 +113,8 @@
       ::-webkit-scrollbar-thumb {
         background-image: linear-gradient(to bottom, #2563eb, #4f46e5);
         border-radius: 20px;
-        border: 2px solid transparent; /* Creates padding around thumb */
-        background-clip: content-box; /* Makes the thumb look floating */
+        border: 2px solid transparent;
+        background-clip: content-box;
       }
 
       ::-webkit-scrollbar-thumb:hover {
@@ -124,6 +152,9 @@
         border: 1px solid rgba(60, 60, 67, 0.1);
         backdrop-filter: blur(10px);
         transition: all 0.2s ease;
+        cursor: text;
+        user-select: text;
+        -webkit-user-select: text;
       }
       
       .dark .glass-input {
@@ -150,7 +181,7 @@
         overflow: hidden;
       }
       .dark .ios-list-group {
-        background: #1e293b; /* Slate 800 */
+        background: #1e293b;
       }
 
       .ios-list-item {

@@ -152,6 +152,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
     if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matches = 
+            task.id.toLowerCase().includes(query) ||
             task.title.toLowerCase().includes(query) ||
             task.clientName.toLowerCase().includes(query) ||
             task.address.toLowerCase().includes(query) ||
@@ -425,8 +426,18 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
         resetForm();
     } else {
         // CREATE NEW TASK
+        // Generate Sequential ID Logic
+        const existingIds = tasks
+            .map(t => t.id)
+            .filter(id => id.startsWith('T-'))
+            .map(id => parseInt(id.replace('T-', ''), 10))
+            .filter(num => !isNaN(num));
+        
+        const maxId = existingIds.length > 0 ? Math.max(...existingIds) : 1000;
+        const newId = `T-${maxId + 1}`;
+
         const createdTask: Task = {
-            id: `t${Date.now()}`,
+            id: newId,
             title: newTask.title,
             clientName: clientName,
             address: newTask.address,
@@ -441,7 +452,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
             publicToken: Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10)
         };
         onUpdateTasks([createdTask, ...tasks]);
-        addToast('Заявка создана', 'success');
+        addToast(`Заявка ${newId} создана`, 'success');
 
         if (shouldKeepOpen) {
             setNewTask(prev => ({ ...prev, title: '', description: '' }));
@@ -605,9 +616,12 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
             {/* KANBAN COMPACT HEADER */}
             <div className="flex justify-between items-start mb-2">
                 {!isKanban && (
-                    <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${getStatusColor(task.status)}`}>
-                        {getStatusLabel(task.status)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${getStatusColor(task.status)}`}>
+                            {getStatusLabel(task.status)}
+                        </span>
+                        <span className="text-xs font-mono text-gray-400 font-bold">#{task.id}</span>
+                    </div>
                 )}
                 {isKanban && (
                     <div className="flex gap-1 flex-wrap">
@@ -646,6 +660,8 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                     )}
                 </div>
             </div>
+            
+            {isKanban && <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 mb-1">#{task.id}</div>}
             
             <h3 className={`${isKanban ? 'text-sm' : 'text-lg'} font-bold text-gray-900 dark:text-white mb-1 dark:drop-shadow-sm line-clamp-2`}>{task.title}</h3>
             
