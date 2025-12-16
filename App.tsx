@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, UserRole, Client, TimeEntry, AttendanceStatus, Advance, Task, Sale, MonthlyService } from './types';
-import { USERS, CLIENTS, TIMESHEET, ADVANCES, TASKS, SALES, MONTHLY_SERVICES } from './mockData';
+import { User, UserRole, Client, TimeEntry, AttendanceStatus, Advance, Task, Sale, MonthlyService, ChatMessage } from './types';
+import { USERS, CLIENTS, TIMESHEET, ADVANCES, TASKS, SALES, MONTHLY_SERVICES, MESSAGES } from './mockData';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
@@ -13,7 +13,8 @@ import { DocumentationPage } from './pages/DocumentationPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TimesheetPage } from './pages/TimesheetPage';
 import { ServicePage } from './pages/ServicePage';
-import { PublicTaskConfirmation } from './pages/PublicTaskConfirmation'; // Import public page
+import { ChatPage } from './pages/ChatPage'; // New Import
+import { PublicTaskConfirmation } from './pages/PublicTaskConfirmation'; 
 import { ShieldAlert } from 'lucide-react';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { ToastProvider } from './components/Toast';
@@ -49,6 +50,9 @@ const App: React.FC = () => {
   // HR Data
   const [timesheetData, setTimesheetData] = useLocalStorage<TimeEntry[]>('crm_timesheet', TIMESHEET);
   const [advances, setAdvances] = useLocalStorage<Advance[]>('crm_advances', ADVANCES);
+
+  // Chat Data
+  const [messages, setMessages] = useLocalStorage<ChatMessage[]>('crm_messages', MESSAGES);
 
   const [currentHash, setCurrentHash] = useState<string>(window.location.hash || '#dashboard');
 
@@ -157,12 +161,36 @@ const App: React.FC = () => {
       setTimesheetData(prev => prev.filter(t => t.id !== id));
   };
 
+  // --- CHAT LOGIC ---
+  const handleSendMessage = (text: string, receiverId?: string) => {
+      const newMessage: ChatMessage = {
+          id: `msg_${Date.now()}`,
+          senderId: currentUser.id,
+          receiverId, // undefined if general chat
+          text,
+          createdAt: new Date().toISOString(),
+          isRead: false,
+          type: 'text'
+      };
+      setMessages(prev => [...prev, newMessage]);
+  };
+
+  const handleReadMessages = (senderId: string) => {
+      setMessages(prev => prev.map(m => {
+          if (m.senderId === senderId && m.receiverId === currentUser.id && !m.isRead) {
+              return { ...m, isRead: true };
+          }
+          return m;
+      }));
+  };
+
   // --- ACCESS CONTROL ---
   const isAccessAllowed = (route: string, role: UserRole): boolean => {
     switch (route) {
       case 'dashboard':
       case 'tasks':
       case 'docs':
+      case 'chat': // Chat allowed for everyone
         return true; 
       case 'employees':
         return role === UserRole.ADMIN || role === UserRole.MANAGER; // Restrict Engineer
@@ -208,13 +236,23 @@ const App: React.FC = () => {
           <Dashboard 
             user={currentUser} 
             timesheetData={timesheetData}
-            advances={advances} // Added advances prop
+            advances={advances}
             tasks={tasks}
             sales={sales}
             monthlyServices={monthlyServices}
             onCheckIn={handleCheckIn}
             onCheckOut={handleCheckOut}
           />
+        );
+      case 'chat':
+        return (
+            <ChatPage 
+                currentUser={currentUser}
+                users={users}
+                messages={messages}
+                onSendMessage={handleSendMessage}
+                onReadMessages={handleReadMessages}
+            />
         );
       case 'tasks':
         return (
@@ -232,8 +270,8 @@ const App: React.FC = () => {
           <ClientsPage 
             user={currentUser} 
             clients={clients} 
-            tasks={tasks} // Pass Tasks
-            sales={sales} // Pass Sales
+            tasks={tasks}
+            sales={sales}
             onAddClient={handleAddClient} 
           />
         );
@@ -243,8 +281,8 @@ const App: React.FC = () => {
             user={currentUser} 
             clients={clients} 
             monthlyServices={monthlyServices}
-            tasks={tasks} // Pass tasks
-            onUpdateTasks={setTasks} // Pass setter
+            tasks={tasks}
+            onUpdateTasks={setTasks}
             onUpdateServices={setMonthlyServices}
             onAddClient={handleAddClient} 
           />
@@ -280,7 +318,7 @@ const App: React.FC = () => {
             <Dashboard 
               user={currentUser} 
               timesheetData={timesheetData}
-              advances={advances} // Added advances prop
+              advances={advances}
               tasks={tasks}
               sales={sales}
               monthlyServices={monthlyServices}

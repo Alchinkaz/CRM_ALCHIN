@@ -1,5 +1,5 @@
 
-import { Client, Sale, Task, TimeEntry, MonthlyService, User, UserRole, GpsTracker, CmsObject, MaintenanceObject, Advance, Role, FinancialAccount, Transaction, InventoryItem } from './types';
+import { Client, Sale, Task, TimeEntry, MonthlyService, User, UserRole, GpsTracker, CmsObject, MaintenanceObject, Advance, Role, FinancialAccount, Transaction, InventoryItem, ChatMessage } from './types';
 
 // Default Permissions Setup - System Structure (Keep this)
 const ALL_ACTIONS: any[] = ['view', 'create', 'edit', 'delete'];
@@ -89,4 +89,15 @@ export const INVENTORY: InventoryItem[] = [
     { id: 'i2', category: 'GPS', model: 'Teltonika FMB125', quantity: 5, ownerId: 'warehouse' },
     { id: 'i3', category: 'SIM', model: 'Beeline M2M', quantity: 50, ownerId: 'warehouse' },
     { id: 'i4', category: 'Consumable', model: 'Изолента (Синяя)', quantity: 20, ownerId: 'warehouse' },
+];
+
+export const MESSAGES: ChatMessage[] = [
+    {
+        id: 'msg1',
+        senderId: 'u_admin',
+        text: 'Добро пожаловать в общий чат компании! Здесь публикуем важные анонсы.',
+        createdAt: new Date().toISOString(),
+        isRead: true,
+        type: 'text'
+    }
 ];

@@ -11,7 +11,8 @@ import {
   BookOpen,
   Briefcase,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MessageCircle
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,6 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ role, currentRoute, onNavigate
 
   const menuItems = [
     { id: 'dashboard', label: 'Дашборд', icon: LayoutDashboard, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
+    { id: 'chat', label: 'Чат', icon: MessageCircle, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
     { id: 'employees', label: 'Сотрудники', icon: Users, roles: [UserRole.ADMIN, UserRole.MANAGER] },
     { id: 'tasks', label: 'Заявки', icon: Wrench, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
     { id: 'clients', label: 'Клиенты', icon: Briefcase, roles: [UserRole.ADMIN, UserRole.MANAGER] },

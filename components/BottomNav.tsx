@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UserRole } from '../types';
-import { LayoutDashboard, Wrench, Users, Car, Banknote, User } from 'lucide-react';
+import { LayoutDashboard, Wrench, Users, Car, Banknote, User, MessageCircle } from 'lucide-react';
 
 interface BottomNavProps {
   role: UserRole;
@@ -13,6 +13,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ role, currentRoute, onNavi
   // Mobile typically has fewer items (3-5 max)
   const allItems = [
     { id: 'dashboard', label: 'Главная', icon: LayoutDashboard, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
+    { id: 'chat', label: 'Чат', icon: MessageCircle, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
     { id: 'tasks', label: 'Заявки', icon: Wrench, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
     { id: 'employees', label: 'Табель', icon: Users, roles: [UserRole.ADMIN, UserRole.MANAGER] }, // Removed ENGINEER
     { id: 'finance', label: 'Финансы', icon: Banknote, roles: [UserRole.ADMIN] },
@@ -20,10 +21,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({ role, currentRoute, onNavi
   ];
 
   // Filter based on role
-  const visibleItems = allItems.filter(item => item.roles.includes(role)).slice(0, 4); 
-  // Limit to 4 for mobile aesthetics, pushing Profile or others to a "More" menu could be next step, 
-  // but for now keeping it simple as per prompt.
-
+  const visibleItems = allItems.filter(item => item.roles.includes(role)).slice(0, 5); 
+  
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 h-20 bg-white/90 backdrop-blur-lg border-t border-gray-200 z-50 pb-safe">
       <div className="flex justify-around items-center h-full px-2">

@@ -231,3 +231,15 @@ export interface MaintenanceObject {
   status: 'Active' | 'Paused';
   lastCheckDate: string;
 }
+
+// --- CHAT TYPES ---
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  receiverId?: string; // undefined = General Chat (Group)
+  text: string;
+  createdAt: string; // ISO
+  isRead: boolean;
+  type: 'text' | 'image';
+  attachmentUrl?: string;
+}
