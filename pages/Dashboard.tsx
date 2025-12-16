@@ -67,6 +67,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
   const [commentText, setCommentText] = useState('');
   const commentsEndRef = useRef<HTMLDivElement>(null);
 
+  // Sync selected task with latest data from props to ensure modal is up to date
+  useEffect(() => {
+    if (selectedTask) {
+        const freshTask = tasks.find(t => t.id === selectedTask.id);
+        if (freshTask && freshTask !== selectedTask) {
+            setSelectedTask(freshTask);
+        }
+    }
+  }, [tasks, selectedTask]);
+
   // Scroll to bottom of chat when opening task
   useEffect(() => {
       if (isDetailModalOpen && commentsEndRef.current) {
@@ -189,10 +199,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
       });
 
       onUpdateTasks(updatedTasks);
-      // Update local selected task to reflect changes if modal is open
-      const updatedSelected = updatedTasks.find(t => t.id === taskId);
-      if (updatedSelected) setSelectedTask(updatedSelected);
-      
       addToast('Статус обновлен', 'success');
   };
 
@@ -247,11 +253,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
       );
       
       onUpdateTasks(updatedTasks);
-      
-      // Update local state immediately for UI response
-      const updatedSelected = updatedTasks.find(t => t.id === selectedTask.id);
-      if (updatedSelected) setSelectedTask(updatedSelected);
-      
       setCommentText('');
   };
 
@@ -397,12 +398,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
 
         {/* --- DETAIL MODAL (ENGINEER) --- */}
         {isDetailModalOpen && selectedTask && (
-            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none">
+            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
                 <div 
-                    className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto" 
+                    className="absolute inset-0 bg-black/60 backdrop-blur-sm" 
                     onClick={() => setIsDetailModalOpen(false)}
                 ></div>
-                <div className="bg-white dark:bg-slate-900 w-full sm:max-w-lg sm:rounded-3xl rounded-t-3xl shadow-2xl pointer-events-auto max-h-[92vh] flex flex-col animate-in slide-in-from-bottom-full duration-300">
+                <div className="bg-white dark:bg-slate-900 w-full sm:max-w-lg sm:rounded-3xl rounded-t-3xl shadow-2xl relative z-10 max-h-[92vh] flex flex-col animate-in slide-in-from-bottom-full duration-300">
                     {/* Header */}
                     <div className="p-5 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50 rounded-t-3xl">
                         <div>
@@ -411,7 +412,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
                             </div>
                             <h2 className="text-lg font-bold text-gray-900 dark:text-white leading-tight line-clamp-1">{selectedTask.title}</h2>
                         </div>
-                        <button onClick={() => setIsDetailModalOpen(false)} className="bg-gray-200 dark:bg-slate-700 p-2 rounded-full text-gray-600 dark:text-gray-300">
+                        <button onClick={() => setIsDetailModalOpen(false)} className="bg-gray-200 dark:bg-slate-700 p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors">
                             <X size={20} />
                         </button>
                     </div>

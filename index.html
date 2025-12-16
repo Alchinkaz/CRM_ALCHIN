@@ -202,13 +202,10 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          // Use a relative path that works better in nested/preview environments
-          const swUrl = 'sw.js';
-          navigator.serviceWorker.register(swUrl)
+          // Use relative path ./sw.js to avoid origin mismatch issues in previews
+          navigator.serviceWorker.register('./sw.js')
             .then(reg => console.log('Service Worker registered', reg))
-            .catch(err => {
-              console.warn('Service Worker registration failed (likely due to preview environment restricted origin):', err);
-            });
+            .catch(err => console.warn('Service Worker registration failed (harmless in preview):', err));
         });
       }
     </script>

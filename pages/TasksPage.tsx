@@ -1316,4 +1316,59 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                         <div className="grid grid-cols-3 gap-2 mb-3 animate-in fade-in">
                             {reportImages.map((img, idx) => (
                                 <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-slate-600 group">
-                                    <img src={img} alt="Preview" className="
+                                    <img src={img} alt="Preview" className="w-full h-full object-cover" />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeReportImage(idx)}
+                                        className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                    
+                    {reportImages.length === 0 && (
+                        <div 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-8 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                        >
+                            <Camera size={32} className="mb-2 opacity-50" />
+                            <span className="text-sm font-medium">Нажмите, чтобы добавить фото</span>
+                        </div>
+                    )}
+                    
+                    {reportImages.length > 0 && (
+                         <button 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full py-3 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                        >
+                            <Plus size={18} />
+                            Добавить еще фото
+                        </button>
+                    )}
+                </div>
+             </div>
+
+             <div className="p-6 border-t border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800/50 flex gap-3">
+                <button 
+                  onClick={() => setIsReportModalOpen(false)}
+                  className="flex-1 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
+                >
+                  Отмена
+                </button>
+                <button 
+                  onClick={handleCompleteTask}
+                  disabled={!reportComment || reportImages.length === 0}
+                  className="flex-1 px-4 py-3 bg-green-600 text-white rounded-2xl hover:bg-green-700 shadow-lg shadow-green-500/30 font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Отправить отчет
+                </button>
+             </div>
+           </div>
+        </div>
+      )}
+    </div>
+  );
+};
