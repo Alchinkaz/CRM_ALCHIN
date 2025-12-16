@@ -765,10 +765,10 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
   }).length;
 
   return (
-    <div className="space-y-6 max-w-[1200px] mx-auto pb-10">
+    <div className="space-y-6 relative pb-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-           <h1 className="text-[34px] font-bold text-black dark:text-white tracking-tight leading-tight">Финансы</h1>
+           <h1 className="text-3xl font-extrabold text-black dark:text-white tracking-tight leading-tight">Финансы</h1>
            <p className="text-[17px] text-gray-500 dark:text-gray-400">Управление счетами и потоками</p>
         </div>
         <div className="flex gap-3">
@@ -1432,6 +1432,8 @@ export const FinancePage: React.FC<FinancePageProps> = ({ user }) => {
             </div>
         </div>
       )}
+      
+      {/* ... (Existing modals for Delete, Cash, Import, Account kept unchanged) ... */}
       
       {/* --- DELETE TX CONFIRMATION MODAL --- */}
       {isDeleteTxModalOpen && (
