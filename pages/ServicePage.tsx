@@ -5,6 +5,7 @@ import { GPS_TRACKERS, CMS_OBJECTS, MAINTENANCE_OBJECTS } from '../mockData';
 import { Check, X, Plus, Satellite, Search, Smartphone, Barcode, Save, Database, DollarSign, Shield, Home, FileText, Wrench, Video, BellRing, Eye, Radio, Lock, User as UserIcon, AlertTriangle, ChevronDown } from 'lucide-react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useToast } from '../components/Toast';
+import { CustomSelect, SelectOption } from '../components/CustomSelect';
 
 interface ServicePageProps {
   user: User;
@@ -267,6 +268,12 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
         default: return <Wrench size={16} className="text-gray-500" />;
     }
   };
+
+  // --- OPTIONS ---
+  const clientOptions: SelectOption[] = [
+      { value: 'NEW', label: '+ Создать нового клиента', isAction: true },
+      ...clients.map(c => ({ value: c.id, label: c.name }))
+  ];
 
   return (
     <div className="space-y-6 relative">
@@ -670,29 +677,19 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               {/* CLIENT SELECTION */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label>
-                <div className="relative">
-                    <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 z-10" />
-                    <select 
-                        required
-                        value={newTracker.clientId}
-                        onChange={e => {
-                            const val = e.target.value;
-                            if (val === 'NEW') {
-                                openClientModal('tracker');
-                            } else {
-                                setNewTracker(prev => ({...prev, clientId: val}));
-                            }
-                        }}
-                        className="w-full pl-11 pr-10 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
-                    >
-                        <option value="">Выберите клиента из списка</option>
-                        <option value="NEW" className="font-bold text-blue-600 dark:text-blue-400">+ Создать нового клиента</option>
-                        <optgroup label="Существующие клиенты">
-                            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </optgroup>
-                    </select>
-                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
-                </div>
+                <CustomSelect 
+                    value={newTracker.clientId}
+                    onChange={(val) => {
+                        if (val === 'NEW') {
+                            openClientModal('tracker');
+                        } else {
+                            setNewTracker(prev => ({...prev, clientId: val}));
+                        }
+                    }}
+                    options={clientOptions}
+                    placeholder="Выберите клиента"
+                    icon={<UserIcon size={16} />}
+                />
               </div>
 
               <div className="pt-4 flex gap-3">
@@ -783,29 +780,19 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               {/* CLIENT SELECTION */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label>
-                <div className="relative">
-                    <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 z-10" />
-                    <select 
-                        required
-                        value={newCmsObject.clientId}
-                        onChange={e => {
-                            const val = e.target.value;
-                            if (val === 'NEW') {
-                                openClientModal('cms');
-                            } else {
-                                setNewCmsObject(prev => ({...prev, clientId: val}));
-                            }
-                        }}
-                        className="w-full pl-11 pr-10 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
-                    >
-                        <option value="">Выберите клиента из списка</option>
-                        <option value="NEW" className="font-bold text-indigo-600 dark:text-indigo-400">+ Создать нового клиента</option>
-                        <optgroup label="Существующие клиенты">
-                            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </optgroup>
-                    </select>
-                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
-                </div>
+                <CustomSelect 
+                    value={newCmsObject.clientId}
+                    onChange={(val) => {
+                        if (val === 'NEW') {
+                            openClientModal('cms');
+                        } else {
+                            setNewCmsObject(prev => ({...prev, clientId: val}));
+                        }
+                    }}
+                    options={clientOptions}
+                    placeholder="Выберите клиента"
+                    icon={<UserIcon size={16} />}
+                />
               </div>
 
               <div className="pt-4 flex gap-3">
@@ -917,29 +904,19 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
               {/* CLIENT SELECTION */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label>
-                <div className="relative">
-                    <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 z-10" />
-                    <select 
-                        required
-                        value={newMaintenanceObject.clientId}
-                        onChange={e => {
-                            const val = e.target.value;
-                            if (val === 'NEW') {
-                                openClientModal('maintenance');
-                            } else {
-                                setNewMaintenanceObject(prev => ({...prev, clientId: val}));
-                            }
-                        }}
-                        className="w-full pl-11 pr-10 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-800 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700"
-                    >
-                        <option value="">Выберите клиента из списка</option>
-                        <option value="NEW" className="font-bold text-orange-600">+ Создать нового клиента</option>
-                        <optgroup label="Существующие клиенты">
-                            {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </optgroup>
-                    </select>
-                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
-                </div>
+                <CustomSelect 
+                    value={newMaintenanceObject.clientId}
+                    onChange={(val) => {
+                        if (val === 'NEW') {
+                            openClientModal('maintenance');
+                        } else {
+                            setNewMaintenanceObject(prev => ({...prev, clientId: val}));
+                        }
+                    }}
+                    options={clientOptions}
+                    placeholder="Выберите клиента"
+                    icon={<UserIcon size={16} />}
+                />
               </div>
 
               <div className="pt-4 flex gap-3">

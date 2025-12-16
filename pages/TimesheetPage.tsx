@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { User, UserRole, TimeEntry, AttendanceStatus, Advance } from '../types';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Edit2, AlertCircle, LayoutGrid, List, FileSpreadsheet, MapPin, Plus, X, UserPlus, Phone, Briefcase, User as UserIcon, Wallet, CreditCard, DollarSign } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Edit2, AlertCircle, LayoutGrid, List, FileSpreadsheet, MapPin, Plus, X, UserPlus, Phone, Briefcase, User as UserIcon, Wallet, CreditCard, DollarSign, ChevronDown } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 interface TimesheetPageProps {
@@ -316,7 +316,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                 {(user.role === UserRole.ADMIN || user.role === UserRole.MANAGER) && (
                     <button 
                         onClick={openAddUserModal}
-                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm text-sm font-medium dark:shadow-blue-900/20"
+                        className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:opacity-90 transition-colors shadow-lg shadow-blue-500/30 font-bold"
                     >
                         <UserPlus size={18} />
                         <span>Добавить сотрудника</span>
@@ -477,7 +477,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                       type="text" 
                       value={userForm.name}
                       onChange={e => setUserForm({...userForm, name: e.target.value})}
-                      className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      className="w-full pl-9 pr-3 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       placeholder="Иванов Иван Иванович"
                     />
                 </div>
@@ -493,7 +493,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                         type="text" 
                         value={userForm.position}
                         onChange={e => setUserForm({...userForm, position: e.target.value})}
-                        className="w-full pl-9 pr-2 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                        className="w-full pl-9 pr-2 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="Бригадир..."
                         />
                     </div>
@@ -507,7 +507,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                         type="number" 
                         value={userForm.salary}
                         onChange={e => setUserForm({...userForm, salary: e.target.value})}
-                        className="w-full pl-9 pr-2 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                        className="w-full pl-9 pr-2 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                         placeholder="250000"
                         />
                     </div>
@@ -523,7 +523,7 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                       type="tel" 
                       value={userForm.phone}
                       onChange={e => setUserForm({...userForm, phone: e.target.value})}
-                      className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                      className="w-full pl-9 pr-3 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       placeholder="+7 700 000 00 00"
                     />
                 </div>
@@ -533,13 +533,13 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
                 <button 
                   type="button" 
                   onClick={() => setIsUserModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700/50 rounded-2xl transition-colors font-medium"
                 >
                   Отмена
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md dark:shadow-blue-900/30 font-medium transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 shadow-md dark:shadow-blue-900/30 font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   {editingUser ? <Save size={18} /> : <Plus size={18} />}
                   {editingUser ? 'Сохранить' : 'Создать'}
@@ -554,86 +554,4 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
       {isAdvanceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col border dark:border-slate-700">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-orange-50 dark:bg-slate-800/50 rounded-t-2xl">
-              <h2 className="text-xl font-bold text-orange-900 dark:text-orange-300 flex items-center gap-2 dark:drop-shadow-sm">
-                  <Wallet size={24} />
-                  Выдача аванса
-              </h2>
-              <button onClick={() => setIsAdvanceModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                <X size={24} />
-              </button>
-            </div>
-            
-            <form onSubmit={handleAddAdvanceSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Сотрудник</label>
-                <select 
-                  required
-                  value={newAdvanceForm.userId}
-                  onChange={e => setNewAdvanceForm({...newAdvanceForm, userId: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white"
-                >
-                  <option value="">Выберите сотрудника</option>
-                  {visibleUsers.map(u => (
-                      <option key={u.id} value={u.id}>{u.name} - {u.position}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Сумма аванса (₸)</label>
-                <input 
-                  required
-                  type="number" 
-                  value={newAdvanceForm.amount}
-                  onChange={e => setNewAdvanceForm({...newAdvanceForm, amount: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold text-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                  placeholder="50000"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Дата выдачи</label>
-                <input 
-                  required
-                  type="date" 
-                  value={newAdvanceForm.date}
-                  onChange={e => setNewAdvanceForm({...newAdvanceForm, date: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Комментарий (необязательно)</label>
-                <input 
-                  type="text" 
-                  value={newAdvanceForm.comment}
-                  onChange={e => setNewAdvanceForm({...newAdvanceForm, comment: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                  placeholder="На бензин, семейные обстоятельства..."
-                />
-              </div>
-
-              <div className="pt-4 flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setIsAdvanceModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-                >
-                  Отмена
-                </button>
-                <button 
-                  type="submit" 
-                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 shadow-md dark:shadow-orange-900/30 font-medium transition-colors flex items-center justify-center gap-2"
-                >
-                  <Wallet size={18} />
-                  Выдать
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center

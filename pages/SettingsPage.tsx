@@ -302,7 +302,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                 </h3>
                 <button 
                     onClick={() => setIsUserModalOpen(true)}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition-colors text-sm shadow-lg shadow-blue-500/30 font-bold dark:shadow-blue-900/20"
+                    className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:opacity-90 transition-all shadow-md shadow-blue-500/30 font-bold"
                     >
                     <Plus size={16} />
                     <span>Добавить</span>
@@ -445,18 +445,19 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                   1. Выберите сотрудника
                 </label>
                 <div className="relative">
-                    <UserIcon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
+                    <UserIcon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 z-10" />
                     <select 
                       required
                       value={selectedEmployeeId}
                       onChange={e => setSelectedEmployeeId(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-yellow-200 dark:border-yellow-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500 text-slate-800 dark:text-white"
+                      className="w-full pl-11 pr-10 py-3 bg-white dark:bg-slate-700 border border-yellow-200 dark:border-yellow-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-yellow-500 text-slate-800 dark:text-white appearance-none cursor-pointer"
                     >
                       <option value="">-- Выберите из списка --</option>
                       {availableEmployees.map(emp => (
                         <option key={emp.id} value={emp.id}>{emp.name} ({emp.position})</option>
                       ))}
                     </select>
+                    <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
                 </div>
               </div>
 
@@ -467,13 +468,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                   <div>
                     <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1">Email (Логин)</label>
                     <div className="relative">
-                        <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
+                        <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
                         <input 
                           required
                           type="email" 
                           value={userFormData.email}
                           onChange={e => setUserFormData({...userFormData, email: e.target.value})}
-                          className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                          className="w-full pl-11 pr-3 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                           placeholder="employee@company.com"
                         />
                     </div>
@@ -482,13 +483,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                   <div>
                     <label className="block text-xs font-bold text-slate-500 dark:text-gray-400 mb-1">Пароль</label>
                     <div className="relative">
-                        <Key size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
+                        <Key size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
                         <input 
                           required
                           type="password" 
                           value={userFormData.password}
                           onChange={e => setUserFormData({...userFormData, password: e.target.value})}
-                          className="w-full pl-9 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                          className="w-full pl-11 pr-3 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                           placeholder="••••••••"
                         />
                     </div>
@@ -501,7 +502,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                         required
                         value={userFormData.roleId}
                         onChange={e => setUserFormData({...userFormData, roleId: e.target.value})}
-                        className="w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-800 dark:text-white appearance-none cursor-pointer"
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-800 dark:text-white appearance-none cursor-pointer"
                       >
                         <option value="">Выберите роль...</option>
                         {roles.map(r => (
@@ -518,14 +519,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                 <button 
                   type="button" 
                   onClick={() => setIsUserModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700/50 rounded-xl transition-colors font-medium"
+                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700/50 rounded-2xl transition-colors font-medium"
                 >
                   Отмена
                 </button>
                 <button 
                   type="submit" 
                   disabled={!selectedEmployeeId}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/30 font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-500/30 font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save size={18} />
                   Создать доступ
@@ -559,7 +560,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                             type="text" 
                             value={roleForm.name}
                             onChange={e => setRoleForm({...roleForm, name: e.target.value})}
-                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                             placeholder="Например: Бухгалтер"
                         />
                     </div>
@@ -569,7 +570,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ user, users, onUpdat
                             type="text" 
                             value={roleForm.description}
                             onChange={e => setRoleForm({...roleForm, description: e.target.value})}
-                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                             placeholder="Краткое описание обязанностей"
                         />
                     </div>

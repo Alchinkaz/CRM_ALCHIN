@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { User, UserRole, Task, TaskStatus, Client, ClientType, TaskHistory, TaskComment } from '../types';
 import { MapPin, Calendar, Clock, Plus, Camera, CheckSquare, Users as UsersIcon, X, Save, Upload, UserPlus, List, Phone, User as UserIcon, ChevronDown, Repeat, Edit2, RotateCcw, MessageSquare, History, Send, Info, ExternalLink, Image as ImageIcon, Trash2, Maximize2, Share2, Star, Timer, PlayCircle, StopCircle, Columns, Search as SearchIcon, GripVertical } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { CustomSelect, SelectOption } from '../components/CustomSelect';
 
 interface TasksPageProps {
   user: User;
@@ -599,6 +600,23 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
   // Helper to get active task object when editing
   const currentEditingTask = editingTaskId ? tasks.find(t => t.id === editingTaskId) : null;
 
+  // --- DROPDOWN OPTIONS ---
+  const clientOptions: SelectOption[] = [
+      ...(user.role !== UserRole.ENGINEER ? [{ value: 'NEW', label: '+ Создать нового клиента', isAction: true }] : []),
+      ...clients.map(c => ({ value: c.id, label: c.name }))
+  ];
+
+  const priorityOptions: SelectOption[] = [
+      { value: 'Low', label: 'Низкий' },
+      { value: 'Medium', label: 'Средний' },
+      { value: 'High', label: 'Высокий' }
+  ];
+
+  const engineerOptions: SelectOption[] = [
+      { value: '', label: 'Не назначен' },
+      ...users.filter(u => u.role === UserRole.ENGINEER).map(u => ({ value: u.id, label: u.name }))
+  ];
+
   // --- RENDER HELPERS ---
   const renderTaskCard = (task: Task, isKanban = false) => {
       const assignedEngineer = getEngineerInfo(task.engineerId);
@@ -1060,13 +1078,9 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                         className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400 disabled:opacity-70"
                         />
                     ) : (
-                        <div className="relative">
-                            <select 
-                            required={!isManualClient}
-                            disabled={user.role === UserRole.ENGINEER}
+                        <CustomSelect 
                             value={newTask.clientId}
-                            onChange={e => {
-                                const val = e.target.value;
+                            onChange={(val) => {
                                 if (val === 'NEW') {
                                     setIsClientModalOpen(true);
                                 } else {
@@ -1074,33 +1088,21 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                                     setNewTask({...newTask, clientId: val, address: client?.address || ''});
                                 }
                             }}
-                            className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-70"
-                            >
-                            <option value="">Выберите клиента</option>
-                            {user.role !== UserRole.ENGINEER && <option value="NEW" className="font-bold text-blue-600 dark:text-blue-400">+ Создать нового клиента</option>}
-                            <optgroup label="Существующие клиенты">
-                                {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                            </optgroup>
-                            </select>
-                            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
-                        </div>
+                            options={clientOptions}
+                            disabled={user.role === UserRole.ENGINEER}
+                            placeholder="Выберите клиента"
+                            icon={<UserIcon size={16} />}
+                        />
                     )}
                     </div>
                     <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Приоритет</label>
-                    <div className="relative">
-                        <select 
-                            disabled={user.role === UserRole.ENGINEER}
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Приоритет</label>
+                        <CustomSelect 
                             value={newTask.priority}
-                            onChange={e => setNewTask({...newTask, priority: e.target.value as any})}
-                            className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-70"
-                        >
-                            <option value="Low">Низкий</option>
-                            <option value="Medium">Средний</option>
-                            <option value="High">Высокий</option>
-                        </select>
-                        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
-                    </div>
+                            onChange={(val) => setNewTask({...newTask, priority: val as any})}
+                            options={priorityOptions}
+                            disabled={user.role === UserRole.ENGINEER}
+                        />
                     </div>
                 </div>
 
@@ -1129,21 +1131,14 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                     />
                     </div>
                     <div>
-                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Исполнитель</label>
-                    <div className="relative">
-                        <select 
-                            disabled={user.role === UserRole.ENGINEER}
+                        <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Исполнитель</label>
+                        <CustomSelect 
                             value={newTask.engineerId}
-                            onChange={e => setNewTask({...newTask, engineerId: e.target.value})}
-                            className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white appearance-none cursor-pointer hover:bg-gray-100 dark:hover:bg-slate-700 disabled:opacity-70"
-                        >
-                            <option value="">Не назначен</option>
-                            {users.filter(u => u.role === UserRole.ENGINEER).map(u => (
-                                <option key={u.id} value={u.id}>{u.name}</option>
-                            ))}
-                        </select>
-                        <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 pointer-events-none" />
-                    </div>
+                            onChange={(val) => setNewTask({...newTask, engineerId: val})}
+                            options={engineerOptions}
+                            disabled={user.role === UserRole.ENGINEER}
+                            placeholder="Не назначен"
+                        />
                     </div>
                 </div>
 

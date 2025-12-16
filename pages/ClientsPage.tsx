@@ -99,7 +99,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, tasks, 
         </div>
         <button 
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors shadow-sm dark:shadow-blue-900/20"
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:opacity-90 transition-colors shadow-lg shadow-blue-500/30 font-bold"
         >
           <Plus size={18} />
           <span>Добавить клиента</span>
@@ -351,10 +351,11 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, tasks, 
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Название / ФИО</label>
                 <input 
                   required
+                  autoFocus
                   type="text" 
                   value={formData.name}
                   onChange={e => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                   placeholder="Например: ТОО Ромашка"
                 />
               </div>
@@ -367,7 +368,7 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, tasks, 
                       key={type}
                       type="button"
                       onClick={() => setFormData({...formData, type})}
-                      className={`py-2 px-1 text-xs sm:text-sm rounded-lg border transition-colors ${
+                      className={`py-3 px-1 text-xs sm:text-sm rounded-2xl border transition-colors ${
                         formData.type === type 
                           ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300 font-medium shadow-sm' 
                           : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'
@@ -382,13 +383,13 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, tasks, 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Телефон</label>
                 <div className="relative">
-                  <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                  <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
                   <input 
                     required
                     type="tel" 
                     value={formData.phone}
                     onChange={e => setFormData({...formData, phone: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                    className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                     placeholder="+7 (7xx) xxx xx xx"
                   />
                 </div>
@@ -397,12 +398,12 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, tasks, 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Адрес (основной)</label>
                 <div className="relative">
-                  <MapPin size={16} className="absolute left-3 top-3 text-gray-400 dark:text-gray-500" />
+                  <MapPin size={16} className="absolute left-4 top-4 text-slate-400 dark:text-gray-500" />
                   <textarea 
                     rows={2}
                     value={formData.address}
                     onChange={e => setFormData({...formData, address: e.target.value})}
-                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                    className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                     placeholder="Город, Улица, Дом..."
                   />
                 </div>
@@ -412,13 +413,13 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, tasks, 
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
                 >
                   Отмена
                 </button>
                 <button 
                   type="submit" 
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md dark:shadow-blue-900/30 font-medium transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-blue-500/30 font-bold transition-colors flex items-center justify-center gap-2"
                 >
                   <Save size={18} />
                   Сохранить
