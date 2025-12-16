@@ -318,81 +318,105 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
 
     return (
       <div className="space-y-6 max-w-5xl mx-auto pb-20">
-        <h1 className="text-[34px] font-bold text-black dark:text-white tracking-tight mb-2">Главная</h1>
+        <div className="flex justify-between items-center px-1">
+            <div>
+                <h1 className="text-[28px] font-bold text-black dark:text-white tracking-tight">Привет, {user.name.split(' ')[0]}!</h1>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Хорошего рабочего дня</p>
+            </div>
+            {isCheckedIn ? (
+                <button onClick={handleCheckOutWrapper} className="bg-ios-red text-white px-5 py-2 rounded-xl font-semibold text-sm shadow-lg shadow-red-500/30 active:scale-95 transition-transform flex items-center gap-2">
+                    <Square size={16} fill="currentColor"/> Стоп
+                </button>
+            ) : (
+                <button onClick={handleGeoCheckIn} disabled={!!isWorkDone || isLocating} className="bg-ios-blue text-white px-5 py-2 rounded-xl font-semibold text-sm shadow-lg shadow-blue-500/30 active:scale-95 transition-transform disabled:opacity-50 flex items-center gap-2">
+                    {isLocating && <Loader2 size={16} className="animate-spin" />}
+                    <Play size={16} fill="currentColor"/> Старт
+                </button>
+            )}
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Main Widget */}
-            <div className="bg-ios-blue text-white rounded-ios p-8 relative overflow-hidden shadow-ios-float flex flex-col justify-between min-h-[300px]">
-                <div className="absolute -top-10 -right-10 w-48 h-48 bg-white/20 rounded-full blur-3xl"></div>
-                <div className="relative z-10">
-                    <h2 className="text-[28px] font-bold mb-1">Привет, {user.name.split(' ')[0]}!</h2>
-                    <p className="text-blue-100 text-[17px]">У тебя {myTasks.filter(t => t.status !== TaskStatus.COMPLETED && t.status !== TaskStatus.CANCELED).length} активных заявок.</p>
+        {/* STATS CARDS (Restored) */}
+        <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-blue-100 text-blue-600 rounded-lg"><Wallet size={20}/></div>
+                    <span className="text-xs font-bold text-slate-500 uppercase">Зарплата</span>
                 </div>
-                <div className="bg-white/10 backdrop-blur-md rounded-ios-sm p-5 border border-white/20">
-                    <div className="flex justify-between items-center mb-4">
-                        <span className="text-[13px] font-semibold uppercase tracking-wide opacity-80 flex items-center gap-1.5">
-                            <Clock size={14} /> Смена
-                        </span>
-                        {isCheckedIn && <span className="w-2.5 h-2.5 bg-green-400 rounded-full shadow-[0_0_10px_rgba(74,222,128,0.8)]"></span>}
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <div>
-                             <div className="text-[34px] font-bold leading-none">
-                                {isCheckedIn ? todayEntry.checkIn : isWorkDone ? `${todayEntry.totalHours}ч` : '--:--'}
-                             </div>
-                             <div className="text-[13px] opacity-70 mt-1">
-                                {isCheckedIn ? 'Начало работы' : isWorkDone ? 'Всего за день' : 'Не начато'}
-                             </div>
-                        </div>
-                        {isCheckedIn ? (
-                            <button onClick={handleCheckOutWrapper} className="bg-white text-ios-red px-6 py-3 rounded-full font-semibold text-[15px] shadow-sm active:scale-95 transition-transform">Завершить</button>
-                        ) : (
-                            <button onClick={handleGeoCheckIn} disabled={!!isWorkDone || isLocating} className="bg-white text-ios-blue px-6 py-3 rounded-full font-semibold text-[15px] shadow-sm active:scale-95 transition-transform disabled:opacity-50 flex items-center gap-2">
-                                {isLocating && <Loader2 size={16} className="animate-spin" />}
-                                {isWorkDone ? 'Закрыто' : 'Начать'}
-                            </button>
-                        )}
-                    </div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">{financials.earnedAmount.toLocaleString()} ₸</div>
+                <div className="text-xs text-slate-400 mt-1">За этот месяц</div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-green-100 text-green-600 rounded-lg"><CheckCircle size={20}/></div>
+                    <span className="text-xs font-bold text-slate-500 uppercase">К выдаче</span>
+                </div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{financials.toPay.toLocaleString()} ₸</div>
+                <div className="text-xs text-slate-400 mt-1">За вычетом авансов</div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-orange-100 text-orange-600 rounded-lg"><Clock size={20}/></div>
+                    <span className="text-xs font-bold text-slate-500 uppercase">Смена</span>
+                </div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {isCheckedIn ? 'Активна' : 'Закрыта'}
+                </div>
+                <div className="text-xs text-slate-400 mt-1">
+                    {isCheckedIn ? `С ${todayEntry.checkIn}` : `Отработано: ${todayEntry?.totalHours || 0}ч`}
                 </div>
             </div>
 
-            {/* Tasks List Widget */}
-            <div className="bg-white dark:bg-slate-800 rounded-ios p-6 shadow-ios border border-gray-100 dark:border-slate-700 h-full">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-[20px] font-bold text-black dark:text-white flex items-center gap-2">
-                        <Briefcase size={20} className="text-blue-500"/>
-                        Мои задачи
-                    </h2>
-                    <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-bold">
-                        {myTasks.length}
-                    </span>
+            <div className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg"><Briefcase size={20}/></div>
+                    <span className="text-xs font-bold text-slate-500 uppercase">Задачи</span>
                 </div>
-                
-                <div className="space-y-3">
-                    {myTasks.slice(0, 5).map(task => (
-                        <div 
-                            key={task.id} 
-                            onClick={() => handleTaskClick(task)}
-                            className="group p-4 rounded-2xl bg-gray-50 dark:bg-slate-700/30 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800 cursor-pointer active:scale-[0.98] transform duration-100"
-                        >
-                            <div className="flex justify-between items-start mb-1">
-                                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                                    task.status === TaskStatus.NEW ? 'bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                                    task.status === TaskStatus.IN_PROGRESS ? 'bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
-                                    'bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-200'
-                                }`}>
-                                    {task.status === TaskStatus.NEW ? 'Новая' : task.status === TaskStatus.IN_PROGRESS ? 'В работе' : 'Готово'}
-                                </span>
-                                <span className="text-[11px] text-gray-400 font-mono">{task.deadline.split('-').slice(1).reverse().join('.')}</span>
-                            </div>
-                            <div className="font-bold text-gray-900 dark:text-white text-sm mb-1 truncate">{task.title}</div>
-                            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 truncate">
-                                <MapPin size={12} /> {task.address}
-                            </div>
+                <div className="text-2xl font-bold text-slate-900 dark:text-white">{myTasks.length}</div>
+                <div className="text-xs text-slate-400 mt-1">Активных заявок</div>
+            </div>
+        </div>
+
+        {/* Tasks List Widget */}
+        <div className="space-y-4">
+            <h2 className="text-xl font-bold text-black dark:text-white flex items-center gap-2 px-1">
+                Мои задачи
+                <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-bold">
+                    {myTasks.length}
+                </span>
+            </h2>
+            
+            <div className="space-y-3">
+                {myTasks.map(task => (
+                    <div 
+                        key={task.id} 
+                        onClick={() => handleTaskClick(task)}
+                        className="group p-5 rounded-2xl bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-all border border-gray-100 dark:border-slate-700 cursor-pointer active:scale-[0.99]"
+                    >
+                        <div className="flex justify-between items-start mb-2">
+                            <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg ${
+                                task.status === TaskStatus.NEW ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300' :
+                                task.status === TaskStatus.IN_PROGRESS ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300' :
+                                'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                            }`}>
+                                {task.status === TaskStatus.NEW ? 'Новая' : task.status === TaskStatus.IN_PROGRESS ? 'В работе' : 'Готово'}
+                            </span>
+                            <span className="text-xs text-gray-400 font-medium">{new Date(task.deadline).toLocaleDateString()}</span>
                         </div>
-                    ))}
-                    {myTasks.length === 0 && <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">Нет активных задач</div>}
-                </div>
+                        <div className="font-bold text-gray-900 dark:text-white text-base mb-2 line-clamp-2">{task.title}</div>
+                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                            <MapPin size={14} className="text-blue-500" /> 
+                            <span className="truncate">{task.address}</span>
+                        </div>
+                    </div>
+                ))}
+                {myTasks.length === 0 && (
+                    <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-3xl border border-dashed border-gray-200 dark:border-slate-700">
+                        <div className="text-gray-300 dark:text-slate-600 mb-2"><Briefcase size={40} className="mx-auto"/></div>
+                        <div className="text-gray-400 dark:text-gray-500 font-medium">Нет активных задач</div>
+                    </div>
+                )}
             </div>
         </div>
 
