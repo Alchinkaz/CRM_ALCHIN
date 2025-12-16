@@ -7,7 +7,7 @@
     <title>ServiceCRM Pro</title>
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#007AFF">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -202,9 +202,13 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
+          // Use a relative path that works better in nested/preview environments
+          const swUrl = 'sw.js';
+          navigator.serviceWorker.register(swUrl)
             .then(reg => console.log('Service Worker registered', reg))
-            .catch(err => console.log('Service Worker registration failed:', err));
+            .catch(err => {
+              console.warn('Service Worker registration failed (likely due to preview environment restricted origin):', err);
+            });
         });
       }
     </script>

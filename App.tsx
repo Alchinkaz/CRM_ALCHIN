@@ -222,6 +222,7 @@ const App: React.FC = () => {
       case 'tasks':
         return (
           <TasksPage 
+            key={currentHash} // Key forces re-mount on ID change
             user={currentUser} 
             users={users} 
             clients={clients} 
