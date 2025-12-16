@@ -214,6 +214,7 @@ const App: React.FC = () => {
             monthlyServices={monthlyServices}
             onCheckIn={handleCheckIn}
             onCheckOut={handleCheckOut}
+            onUpdateTasks={setTasks} // Pass setTasks to Dashboard
           />
         );
       case 'tasks':
@@ -286,6 +287,7 @@ const App: React.FC = () => {
               monthlyServices={monthlyServices}
               onCheckIn={handleCheckIn}
               onCheckOut={handleCheckOut}
+              onUpdateTasks={setTasks} // Pass setTasks to Dashboard
             />
           );
     }

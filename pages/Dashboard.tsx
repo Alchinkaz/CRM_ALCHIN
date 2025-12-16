@@ -1,8 +1,8 @@
 
 import React, { useState, useMemo } from 'react';
-import { User, UserRole, TaskStatus, TimeEntry, AttendanceStatus, Task, Sale, MonthlyService, Advance } from '../types';
+import { User, UserRole, TaskStatus, TimeEntry, AttendanceStatus, Task, Sale, MonthlyService, Advance, TaskHistory } from '../types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, AlertCircle, CheckCircle, Wallet, Users as UsersIcon, Clock, Play, Square, MapPin, Loader2, Zap, ArrowUpRight, ChevronRight, Calendar as CalendarIcon, Briefcase, Calculator, Banknote, ArrowDownLeft } from 'lucide-react';
+import { TrendingUp, AlertCircle, CheckCircle, Wallet, Users as UsersIcon, Clock, Play, Square, MapPin, Loader2, Zap, ArrowUpRight, ChevronRight, Calendar as CalendarIcon, Briefcase, Calculator, Banknote, ArrowDownLeft, PlayCircle, CheckSquare } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 interface DashboardProps {
@@ -14,11 +14,12 @@ interface DashboardProps {
   monthlyServices: MonthlyService[];
   onCheckIn: (location?: { lat: number; lng: number }) => void;
   onCheckOut: () => void;
+  onUpdateTasks?: (tasks: Task[]) => void;
 }
 
 const COLORS = ['#007AFF', '#34C759', '#FF9500', '#FF3B30'];
 
-export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advances = [], tasks, sales, monthlyServices, onCheckIn, onCheckOut }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advances = [], tasks, sales, monthlyServices, onCheckIn, onCheckOut, onUpdateTasks }) => {
   const { addToast } = useToast();
   const [isLocating, setIsLocating] = useState(false);
 
@@ -123,6 +124,45 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
     });
 
     const completedToday = myTasks.filter(t => t.status === TaskStatus.COMPLETED).length; 
+
+    // --- QUICK ACTIONS HANDLER ---
+    const handleQuickStatusChange = (e: React.MouseEvent, taskId: string, newStatus: TaskStatus) => {
+        e.stopPropagation(); // Stop propagation to prevent card click
+        if (!onUpdateTasks) return;
+
+        const updatedTasks = tasks.map(t => {
+            if (t.id === taskId) {
+                const historyEntry: TaskHistory = {
+                    id: `h_${Date.now()}`,
+                    userId: user.id,
+                    userName: user.name,
+                    action: newStatus === TaskStatus.IN_PROGRESS ? 'Принял работу' : 'Выполнил работу',
+                    details: newStatus === TaskStatus.IN_PROGRESS ? 'Статус: В работе' : 'Статус: Выполнено',
+                    createdAt: new Date().toISOString()
+                };
+
+                const updates: Partial<Task> = {
+                    status: newStatus,
+                    history: [...(t.history || []), historyEntry]
+                };
+
+                if (newStatus === TaskStatus.IN_PROGRESS) {
+                    if (!t.startedAt) updates.startedAt = new Date().toISOString();
+                    if (!t.engineerId) updates.engineerId = user.id; // Assign self
+                }
+                
+                if (newStatus === TaskStatus.COMPLETED) {
+                    updates.completedAt = new Date().toISOString();
+                }
+
+                return { ...t, ...updates };
+            }
+            return t;
+        });
+
+        onUpdateTasks(updatedTasks);
+        addToast(newStatus === TaskStatus.IN_PROGRESS ? 'Заявка принята в работу' : 'Заявка выполнена', 'success');
+    };
     
     // --- Render Logic for Mini Timesheet (Engineer) ---
     const renderEngineerTimesheet = () => {
@@ -347,7 +387,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
                 
                 <div className="space-y-3">
                     {myTasks.slice(0, 3).map(task => (
-                        <div key={task.id} className="group p-3 rounded-2xl bg-gray-50 dark:bg-slate-700/30 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800 cursor-pointer">
+                        <div 
+                            key={task.id} 
+                            onClick={() => window.location.hash = '#tasks'} // Navigate to full view
+                            className="group p-3 rounded-2xl bg-gray-50 dark:bg-slate-700/30 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800 cursor-pointer"
+                        >
                             <div className="flex justify-between items-start mb-1">
                                 <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
                                     task.status === TaskStatus.NEW ? 'bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
@@ -359,8 +403,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
                                 <span className="text-[11px] text-gray-400 font-mono">{task.deadline.split('-').slice(1).reverse().join('.')}</span>
                             </div>
                             <div className="font-bold text-gray-900 dark:text-white text-sm mb-1 truncate">{task.title}</div>
-                            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 truncate">
+                            <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 truncate mb-2">
                                 <MapPin size={12} /> {task.address}
+                            </div>
+
+                            {/* QUICK ACTIONS BUTTONS */}
+                            <div className="flex gap-2">
+                                {task.status === TaskStatus.NEW && (
+                                    <button 
+                                        onClick={(e) => handleQuickStatusChange(e, task.id, TaskStatus.IN_PROGRESS)}
+                                        className="flex-1 flex items-center justify-center gap-1.5 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                                    >
+                                        <PlayCircle size={14} /> Принять
+                                    </button>
+                                )}
+                                {task.status === TaskStatus.IN_PROGRESS && (
+                                    <button 
+                                        onClick={(e) => handleQuickStatusChange(e, task.id, TaskStatus.COMPLETED)}
+                                        className="flex-1 flex items-center justify-center gap-1.5 bg-green-100 hover:bg-green-200 dark:bg-green-900/40 dark:hover:bg-green-900/60 text-green-700 dark:text-green-300 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                                    >
+                                        <CheckSquare size={14} /> Завершить
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}
