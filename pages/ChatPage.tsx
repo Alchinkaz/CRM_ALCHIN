@@ -67,11 +67,36 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser, users, messages
 
   // --- FILTERS & DATA PREP ---
 
-  // 1. Prepare Contact List with Last Message & Unread Count
-  const contacts = [
+  // 1. Prepare Contact List with Search (Name OR Message Content)
+  const normalizedSearch = searchQuery.toLowerCase().trim();
+
+  const allContacts = [
       { id: 'general', name: 'Общий чат', avatar: null, isGroup: true },
       ...users.filter(u => u.id !== currentUser.id)
-  ].filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  ];
+
+  const contacts = allContacts.filter(contact => {
+      if (!normalizedSearch) return true;
+
+      // 1. Check Name
+      if (contact.name.toLowerCase().includes(normalizedSearch)) return true;
+
+      // 2. Check Message History Content
+      const hasMatchingMessage = messages.some(m => {
+          // Optimization: Check text content match first
+          if (!m.text.toLowerCase().includes(normalizedSearch)) return false;
+
+          // Then check if message belongs to this chat
+          if (contact.id === 'general') {
+              return !m.receiverId; // General chat messages
+          } else {
+              return (m.senderId === currentUser.id && m.receiverId === contact.id) ||
+                     (m.senderId === contact.id && m.receiverId === currentUser.id);
+          }
+      });
+
+      return hasMatchingMessage;
+  });
 
   const getContactMeta = (contactId: string, isGroup: boolean) => {
       let chatMsgs: ChatMessage[] = [];
@@ -179,6 +204,11 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser, users, messages
                     </div>
                 );
             })}
+            {contacts.length === 0 && (
+                <div className="p-8 text-center text-gray-400 text-sm">
+                    Ничего не найдено
+                </div>
+            )}
         </div>
       </div>
 

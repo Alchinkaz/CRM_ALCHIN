@@ -13,7 +13,7 @@ import { DocumentationPage } from './pages/DocumentationPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TimesheetPage } from './pages/TimesheetPage';
 import { ServicePage } from './pages/ServicePage';
-import { ChatPage } from './pages/ChatPage'; // New Import
+import { ChatPage } from './pages/ChatPage';
 import { PublicTaskConfirmation } from './pages/PublicTaskConfirmation'; 
 import { ShieldAlert } from 'lucide-react';
 import { useLocalStorage } from './hooks/useLocalStorage';
@@ -186,7 +186,10 @@ const App: React.FC = () => {
 
   // --- ACCESS CONTROL ---
   const isAccessAllowed = (route: string, role: UserRole): boolean => {
-    switch (route) {
+    // Clean route from params
+    const cleanRoute = route.split('?')[0];
+    
+    switch (cleanRoute) {
       case 'dashboard':
       case 'tasks':
       case 'docs':
@@ -224,7 +227,10 @@ const App: React.FC = () => {
   );
 
   const renderContent = () => {
-    const route = currentHash.replace('#', '');
+    // Parse Hash with Params
+    const [route, queryString] = currentHash.replace('#', '').split('?');
+    const params = new URLSearchParams(queryString || '');
+    const targetId = params.get('id') || undefined;
     
     if (!isAccessAllowed(route, currentUser.role)) {
       return <AccessDenied />;
@@ -263,6 +269,7 @@ const App: React.FC = () => {
             tasks={tasks}
             onUpdateTasks={setTasks}
             onAddClient={handleAddClient}
+            targetId={targetId}
           />
         );
       case 'clients':
@@ -273,6 +280,7 @@ const App: React.FC = () => {
             tasks={tasks}
             sales={sales}
             onAddClient={handleAddClient} 
+            targetId={targetId}
           />
         );
       case 'service':
@@ -334,7 +342,7 @@ const App: React.FC = () => {
       <div className="flex h-screen overflow-hidden bg-slate-100 dark:bg-slate-950 transition-colors duration-300">
         <Sidebar 
           role={currentUser.role} 
-          currentRoute={currentHash.replace('#', '')} 
+          currentRoute={currentHash.replace('#', '').split('?')[0]} 
           onNavigate={navigate} 
         />
         
@@ -342,11 +350,14 @@ const App: React.FC = () => {
           <Header 
             user={currentUser} 
             users={users} 
+            clients={clients}
+            tasks={tasks}
             isDarkMode={theme === 'dark'}
             onToggleTheme={toggleTheme}
             onSwitchUser={(u) => {
               setCurrentUser(u);
-              if (!isAccessAllowed(currentHash.replace('#', ''), u.role)) {
+              const baseRoute = currentHash.replace('#', '').split('?')[0];
+              if (!isAccessAllowed(baseRoute, u.role)) {
                 navigate('#dashboard');
               }
             }} 
@@ -360,7 +371,7 @@ const App: React.FC = () => {
           {/* Mobile Navigation */}
           <BottomNav 
             role={currentUser.role} 
-            currentRoute={currentHash.replace('#', '')} 
+            currentRoute={currentHash.replace('#', '').split('?')[0]} 
             onNavigate={navigate} 
           />
         </div>

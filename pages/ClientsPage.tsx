@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, ClientType, Client, UserRole, Task, Sale, TaskStatus } from '../types';
 import { Search, Plus, Building2, User as UserIcon, Building, X, Save, MapPin, Phone, Lock, Eye, Briefcase, Wallet, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useToast } from '../components/Toast';
@@ -10,9 +10,10 @@ interface ClientsPageProps {
   tasks: Task[]; // Received from App
   sales: Sale[]; // Received from App
   onAddClient: (client: Client) => void;
+  targetId?: string; // Optional ID for deep linking
 }
 
-export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, tasks, sales, onAddClient }) => {
+export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, tasks, sales, onAddClient, targetId }) => {
   const { addToast } = useToast();
   
   // States
@@ -30,6 +31,16 @@ export const ClientsPage: React.FC<ClientsPageProps> = ({ user, clients, tasks, 
     phone: '',
     address: ''
   });
+
+  // Deep Linking Effect
+  useEffect(() => {
+      if (targetId) {
+          const client = clients.find(c => c.id === targetId);
+          if (client) {
+              setSelectedClient(client);
+          }
+      }
+  }, [targetId, clients]);
 
   // Access Control
   if (user.role === UserRole.ENGINEER) {

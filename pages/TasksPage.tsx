@@ -11,6 +11,7 @@ interface TasksPageProps {
   tasks: Task[];
   onUpdateTasks: (tasks: Task[]) => void;
   onAddClient?: (client: Client) => void;
+  targetId?: string; // Optional ID for deep linking
 }
 
 // --- UTILITY: Compress Image to prevent LocalStorage quota exceeded ---
@@ -72,7 +73,7 @@ const formatDateTime = (isoString?: string) => {
     });
 };
 
-export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, tasks, onUpdateTasks, onAddClient }) => {
+export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, tasks, onUpdateTasks, onAddClient, targetId }) => {
   const { addToast } = useToast();
   
   // VIEW STATE
@@ -127,6 +128,16 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
   const [reportImages, setReportImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCompressing, setIsCompressing] = useState(false);
+
+  // --- DEEP LINKING EFFECT ---
+  useEffect(() => {
+      if (targetId) {
+          const foundTask = tasks.find(t => t.id === targetId);
+          if (foundTask) {
+              handleEditTask(foundTask);
+          }
+      }
+  }, [targetId, tasks]); // Dependencies ensure it runs when targetId changes or data loads
 
   // Scroll to bottom of comments
   useEffect(() => {
