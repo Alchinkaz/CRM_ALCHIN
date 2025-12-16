@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { User, UserRole, TimeEntry, AttendanceStatus, Advance } from '../types';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Save, Edit2, AlertCircle, LayoutGrid, List, FileSpreadsheet, MapPin, Plus, X, UserPlus, Phone, Briefcase, User as UserIcon, Wallet, CreditCard, DollarSign, ChevronDown } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { CustomSelect } from '../components/CustomSelect';
 
 interface TimesheetPageProps {
   user: User;
@@ -306,8 +307,6 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
     );
   };
 
-  // renderDayView REMOVED
-
   const renderEmployeesList = () => {
       const workDaysNorm = 22;
       return (
@@ -554,4 +553,86 @@ export const TimesheetPage: React.FC<TimesheetPageProps> = ({ user, users, times
       {isAdvanceModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col border dark:border-slate-700">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-orange-50 dark:bg-orange-900/20 rounded-t-2xl">
+              <h2 className="text-xl font-bold text-orange-900 dark:text-orange-300 flex items-center gap-2 dark:drop-shadow-sm">
+                  <Wallet size={24} />
+                  Выдача аванса
+              </h2>
+              <button onClick={() => setIsAdvanceModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleAddAdvanceSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Сотрудник</label>
+                <CustomSelect 
+                    value={newAdvanceForm.userId}
+                    onChange={(val) => setNewAdvanceForm({...newAdvanceForm, userId: val})}
+                    options={users.map(u => ({ value: u.id, label: u.name }))}
+                    placeholder="-- Выберите сотрудника --"
+                    icon={<UserIcon size={16} />}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Сумма (₸)</label>
+                <div className="relative">
+                    <DollarSign size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+                    <input 
+                      required
+                      autoFocus
+                      type="number" 
+                      value={newAdvanceForm.amount}
+                      onChange={e => setNewAdvanceForm({...newAdvanceForm, amount: e.target.value})}
+                      className="w-full pl-9 pr-3 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-lg font-bold"
+                      placeholder="0"
+                    />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Дата выдачи</label>
+                <input 
+                  required
+                  type="date" 
+                  value={newAdvanceForm.date}
+                  onChange={e => setNewAdvanceForm({...newAdvanceForm, date: e.target.value})}
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Комментарий (необязательно)</label>
+                <input 
+                  type="text" 
+                  value={newAdvanceForm.comment}
+                  onChange={e => setNewAdvanceForm({...newAdvanceForm, comment: e.target.value})}
+                  className="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                  placeholder="Например: на ремонт авто"
+                />
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => setIsAdvanceModalOpen(false)}
+                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700/50 rounded-2xl transition-colors font-medium"
+                >
+                  Отмена
+                </button>
+                <button 
+                  type="submit" 
+                  className="flex-1 px-4 py-3 bg-orange-600 text-white rounded-2xl hover:bg-orange-700 shadow-md dark:shadow-orange-900/30 font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <Save size={18} />
+                  Выдать
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

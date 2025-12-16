@@ -632,14 +632,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Модель оборудования</label>
                 <div className="relative">
                     <Satellite size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
-                    <input 
-                    required
-                    type="text" 
-                    value={newTracker.model}
-                    onChange={e => setNewTracker({...newTracker, model: e.target.value})}
-                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                    placeholder="Например: Teltonika FMB920"
-                    />
+                    <input required type="text" value={newTracker.model} onChange={e => setNewTracker({...newTracker, model: e.target.value})} className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="Например: Teltonika FMB920"/>
                 </div>
               </div>
 
@@ -647,15 +640,7 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">IMEI</label>
                 <div className="relative">
                     <Barcode size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
-                    <input 
-                    required
-                    type="text" 
-                    value={newTracker.imei}
-                    onChange={e => setNewTracker({...newTracker, imei: e.target.value})}
-                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                    placeholder="15-значный код"
-                    maxLength={15}
-                    />
+                    <input required type="text" value={newTracker.imei} onChange={e => setNewTracker({...newTracker, imei: e.target.value})} className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="15-значный код" maxLength={15}/>
                 </div>
               </div>
 
@@ -663,50 +648,19 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">SIM-карта (Номер)</label>
                 <div className="relative">
                     <Smartphone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
-                    <input 
-                    required
-                    type="text" 
-                    value={newTracker.simNumber}
-                    onChange={e => setNewTracker({...newTracker, simNumber: e.target.value})}
-                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                    placeholder="+7 700 000 00 00"
-                    />
+                    <input required type="text" value={newTracker.simNumber} onChange={e => setNewTracker({...newTracker, simNumber: e.target.value})} className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="+7 700 000 00 00"/>
                 </div>
               </div>
 
               {/* CLIENT SELECTION */}
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label>
-                <CustomSelect 
-                    value={newTracker.clientId}
-                    onChange={(val) => {
-                        if (val === 'NEW') {
-                            openClientModal('tracker');
-                        } else {
-                            setNewTracker(prev => ({...prev, clientId: val}));
-                        }
-                    }}
-                    options={clientOptions}
-                    placeholder="Выберите клиента"
-                    icon={<UserIcon size={16} />}
-                />
+                <CustomSelect value={newTracker.clientId} onChange={(val) => { if (val === 'NEW') { openClientModal('tracker'); } else { setNewTracker(prev => ({...prev, clientId: val})); } }} options={clientOptions} placeholder="Выберите клиента" icon={<UserIcon size={16} />} />
               </div>
 
               <div className="pt-4 flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setIsTrackerModalOpen(false)}
-                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
-                >
-                  Отмена
-                </button>
-                <button 
-                  type="submit" 
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-blue-500/30 font-bold transition-colors flex items-center justify-center gap-2"
-                >
-                  <Save size={18} />
-                  Сохранить
-                </button>
+                <button type="button" onClick={() => setIsTrackerModalOpen(false)} className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold">Отмена</button>
+                <button type="submit" className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-blue-500/30 font-bold transition-colors flex items-center justify-center gap-2"><Save size={18} /> Сохранить</button>
               </div>
             </form>
           </div>
@@ -718,99 +672,19 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl flex flex-col border border-white/50 dark:border-slate-700">
             <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 rounded-t-3xl">
-              <h2 className="text-xl font-extrabold text-indigo-900 dark:text-white flex items-center gap-2 dark:drop-shadow-sm">
-                  <Shield size={24} />
-                  Новый объект ЦОУ
-              </h2>
-              <button onClick={() => setIsCmsModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-300">
-                <X size={24} />
-              </button>
+              <h2 className="text-xl font-extrabold text-indigo-900 dark:text-white flex items-center gap-2 dark:drop-shadow-sm"><Shield size={24} /> Новый объект ЦОУ</h2>
+              <button onClick={() => setIsCmsModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-300"><X size={24} /></button>
             </div>
             
             <form onSubmit={handleAddCmsObject} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Название объекта</label>
-                <input 
-                  required
-                  type="text" 
-                  value={newCmsObject.name}
-                  onChange={e => setNewCmsObject({...newCmsObject, name: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                  placeholder="Магазин 'Продукты', Дом"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Адрес объекта</label>
-                <input 
-                  required
-                  type="text" 
-                  value={newCmsObject.address}
-                  onChange={e => setNewCmsObject({...newCmsObject, address: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                  placeholder="Улица, дом..."
-                />
-              </div>
-
+              <div><label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Название объекта</label><input required type="text" value={newCmsObject.name} onChange={e => setNewCmsObject({...newCmsObject, name: e.target.value})} className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="Магазин 'Продукты', Дом"/></div>
+              <div><label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Адрес объекта</label><input required type="text" value={newCmsObject.address} onChange={e => setNewCmsObject({...newCmsObject, address: e.target.value})} className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="Улица, дом..."/></div>
               <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">№ Договора</label>
-                    <input 
-                      required
-                      type="text" 
-                      value={newCmsObject.contractNumber}
-                      onChange={e => setNewCmsObject({...newCmsObject, contractNumber: e.target.value})}
-                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                      placeholder="123-А"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Абон. плата (₸)</label>
-                    <input 
-                      required
-                      type="number" 
-                      value={newCmsObject.monthlyFee}
-                      onChange={e => setNewCmsObject({...newCmsObject, monthlyFee: e.target.value})}
-                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                      placeholder="5000"
-                    />
-                  </div>
+                  <div><label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">№ Договора</label><input required type="text" value={newCmsObject.contractNumber} onChange={e => setNewCmsObject({...newCmsObject, contractNumber: e.target.value})} className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="123-А"/></div>
+                  <div><label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Абон. плата (₸)</label><input required type="number" value={newCmsObject.monthlyFee} onChange={e => setNewCmsObject({...newCmsObject, monthlyFee: e.target.value})} className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="5000"/></div>
               </div>
-
-              {/* CLIENT SELECTION */}
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label>
-                <CustomSelect 
-                    value={newCmsObject.clientId}
-                    onChange={(val) => {
-                        if (val === 'NEW') {
-                            openClientModal('cms');
-                        } else {
-                            setNewCmsObject(prev => ({...prev, clientId: val}));
-                        }
-                    }}
-                    options={clientOptions}
-                    placeholder="Выберите клиента"
-                    icon={<UserIcon size={16} />}
-                />
-              </div>
-
-              <div className="pt-4 flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setIsCmsModalOpen(false)}
-                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
-                >
-                  Отмена
-                </button>
-                <button 
-                  type="submit" 
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-indigo-500/30 font-bold transition-colors flex items-center justify-center gap-2"
-                >
-                  <Save size={18} />
-                  Сохранить
-                </button>
-              </div>
+              <div><label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label><CustomSelect value={newCmsObject.clientId} onChange={(val) => { if (val === 'NEW') { openClientModal('cms'); } else { setNewCmsObject(prev => ({...prev, clientId: val})); } }} options={clientOptions} placeholder="Выберите клиента" icon={<UserIcon size={16} />} /></div>
+              <div className="pt-4 flex gap-3"><button type="button" onClick={() => setIsCmsModalOpen(false)} className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold">Отмена</button><button type="submit" className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-indigo-500/30 font-bold transition-colors flex items-center justify-center gap-2"><Save size={18} /> Сохранить</button></div>
             </form>
           </div>
         </div>
@@ -821,120 +695,25 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl flex flex-col border border-white/50 dark:border-slate-700">
             <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-orange-50/50 dark:bg-orange-900/20 rounded-t-3xl">
-              <h2 className="text-xl font-extrabold text-orange-900 dark:text-white flex items-center gap-2 dark:drop-shadow-sm">
-                  <Wrench size={24} />
-                  На обслуживание (ТО)
-              </h2>
-              <button onClick={() => setIsMaintenanceModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-300">
-                <X size={24} />
-              </button>
+              <h2 className="text-xl font-extrabold text-orange-900 dark:text-white flex items-center gap-2 dark:drop-shadow-sm"><Wrench size={24} /> На обслуживание (ТО)</h2>
+              <button onClick={() => setIsMaintenanceModalOpen(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-gray-300"><X size={24} /></button>
             </div>
             
             <form onSubmit={handleAddMaintenanceObject} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Тип системы</label>
                 <div className="grid grid-cols-2 gap-2">
-                    {['CCTV', 'APS', 'OPS', 'ACCESS'].map((type) => (
-                        <button
-                            key={type}
-                            type="button"
-                            onClick={() => setNewMaintenanceObject({...newMaintenanceObject, type: type as any})}
-                            className={`py-3 px-3 rounded-2xl border text-sm font-bold transition-all ${
-                                newMaintenanceObject.type === type
-                                ? 'bg-orange-100 border-orange-500 text-orange-800 shadow-sm'
-                                : 'bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600 text-slate-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'
-                            }`}
-                        >
-                            {type === 'CCTV' ? 'Видеонаблюдение' : type === 'APS' ? 'АПС (Пожарная)' : type === 'OPS' ? 'ОПС (Охранная)' : 'СКУД'}
-                        </button>
-                    ))}
+                    {['CCTV', 'APS', 'OPS', 'ACCESS'].map((type) => (<button key={type} type="button" onClick={() => setNewMaintenanceObject({...newMaintenanceObject, type: type as any})} className={`py-3 px-3 rounded-2xl border text-sm font-bold transition-all ${newMaintenanceObject.type === type ? 'bg-orange-100 border-orange-500 text-orange-800 shadow-sm' : 'bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-600 text-slate-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700'}`}>{type === 'CCTV' ? 'Видеонаблюдение' : type === 'APS' ? 'АПС (Пожарная)' : type === 'OPS' ? 'ОПС (Охранная)' : 'СКУД'}</button>))}
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Название объекта</label>
-                <input 
-                  required
-                  type="text" 
-                  value={newMaintenanceObject.name}
-                  onChange={e => setNewMaintenanceObject({...newMaintenanceObject, name: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                  placeholder="Офис, Склад, Магазин"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Адрес</label>
-                <input 
-                  required
-                  type="text" 
-                  value={newMaintenanceObject.address}
-                  onChange={e => setNewMaintenanceObject({...newMaintenanceObject, address: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                  placeholder="Адрес установки"
-                />
-              </div>
-
+              <div><label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Название объекта</label><input required type="text" value={newMaintenanceObject.name} onChange={e => setNewMaintenanceObject({...newMaintenanceObject, name: e.target.value})} className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="Офис, Склад, Магазин"/></div>
+              <div><label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Адрес</label><input required type="text" value={newMaintenanceObject.address} onChange={e => setNewMaintenanceObject({...newMaintenanceObject, address: e.target.value})} className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="Адрес установки"/></div>
               <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Стоимость ТО (₸)</label>
-                    <input 
-                      required
-                      type="number" 
-                      value={newMaintenanceObject.monthlyFee}
-                      onChange={e => setNewMaintenanceObject({...newMaintenanceObject, monthlyFee: e.target.value})}
-                      className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                      placeholder="15000"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Дата начала</label>
-                    <div className="relative">
-                        <input 
-                          required
-                          type="date" 
-                          value={newMaintenanceObject.startDate}
-                          onChange={e => setNewMaintenanceObject({...newMaintenanceObject, startDate: e.target.value})}
-                          className="w-full pl-4 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white"
-                        />
-                    </div>
-                  </div>
+                  <div><label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Стоимость ТО (₸)</label><input required type="number" value={newMaintenanceObject.monthlyFee} onChange={e => setNewMaintenanceObject({...newMaintenanceObject, monthlyFee: e.target.value})} className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="15000"/></div>
+                  <div><label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Дата начала</label><div className="relative"><input required type="date" value={newMaintenanceObject.startDate} onChange={e => setNewMaintenanceObject({...newMaintenanceObject, startDate: e.target.value})} className="w-full pl-4 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition-all text-slate-900 dark:text-white"/></div></div>
               </div>
-
-              {/* CLIENT SELECTION */}
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label>
-                <CustomSelect 
-                    value={newMaintenanceObject.clientId}
-                    onChange={(val) => {
-                        if (val === 'NEW') {
-                            openClientModal('maintenance');
-                        } else {
-                            setNewMaintenanceObject(prev => ({...prev, clientId: val}));
-                        }
-                    }}
-                    options={clientOptions}
-                    placeholder="Выберите клиента"
-                    icon={<UserIcon size={16} />}
-                />
-              </div>
-
-              <div className="pt-4 flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setIsMaintenanceModalOpen(false)}
-                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
-                >
-                  Отмена
-                </button>
-                <button 
-                  type="submit" 
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-orange-500/30 font-bold transition-colors flex items-center justify-center gap-2"
-                >
-                  <Save size={18} />
-                  Сохранить
-                </button>
-              </div>
+              <div><label className="block text-sm font-bold text-slate-700 dark:text-gray-300 mb-1">Владелец (Клиент)</label><CustomSelect value={newMaintenanceObject.clientId} onChange={(val) => { if (val === 'NEW') { openClientModal('maintenance'); } else { setNewMaintenanceObject(prev => ({...prev, clientId: val})); } }} options={clientOptions} placeholder="Выберите клиента" icon={<UserIcon size={16} />} /></div>
+              <div className="pt-4 flex gap-3"><button type="button" onClick={() => setIsMaintenanceModalOpen(false)} className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold">Отмена</button><button type="submit" className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-lg shadow-orange-500/30 font-bold transition-colors flex items-center justify-center gap-2"><Save size={18} /> Сохранить</button></div>
             </form>
           </div>
         </div>
@@ -946,90 +725,18 @@ export const ServicePage: React.FC<ServicePageProps> = ({ user, clients, monthly
           <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col border border-gray-100 dark:border-slate-700">
             <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 rounded-t-2xl">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">Новый клиент</h2>
-              <button onClick={() => setIsClientModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
-                <X size={24} />
-              </button>
+              <button onClick={() => setIsClientModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><X size={24} /></button>
             </div>
             
             <form onSubmit={handleCreateClient} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Название / ФИО</label>
-                <input 
-                  required
-                  autoFocus
-                  type="text" 
-                  value={newClientFormData.name}
-                  onChange={e => setNewClientFormData({...newClientFormData, name: e.target.value})}
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                  placeholder="Например: ТОО Ромашка"
-                />
-              </div>
-
+              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Название / ФИО</label><input required autoFocus type="text" value={newClientFormData.name} onChange={e => setNewClientFormData({...newClientFormData, name: e.target.value})} className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="Например: ТОО Ромашка"/></div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Тип клиента</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[ClientType.COMPANY, ClientType.INDIVIDUAL, ClientType.GOV].map((type) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => setNewClientFormData({...newClientFormData, type})}
-                      className={`py-3 px-1 text-xs sm:text-sm rounded-2xl border transition-colors font-bold ${
-                        newClientFormData.type === type 
-                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300 shadow-sm' 
-                          : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
+                <div className="grid grid-cols-3 gap-2">{[ClientType.COMPANY, ClientType.INDIVIDUAL, ClientType.GOV].map((type) => (<button key={type} type="button" onClick={() => setNewClientFormData({...newClientFormData, type})} className={`py-3 px-1 text-xs sm:text-sm rounded-2xl border transition-colors font-bold ${newClientFormData.type === type ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300 shadow-sm' : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'}`}>{type}</button>))}</div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Телефон</label>
-                <div className="relative">
-                  <Smartphone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
-                  <input 
-                    required
-                    type="tel" 
-                    value={newClientFormData.phone}
-                    onChange={e => setNewClientFormData({...newClientFormData, phone: e.target.value})}
-                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                    placeholder="+7 (7xx) xxx xx xx"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Адрес (основной)</label>
-                <div className="relative">
-                  <Home size={16} className="absolute left-4 top-4 text-slate-400 dark:text-gray-500" />
-                  <textarea 
-                    rows={2}
-                    value={newClientFormData.address}
-                    onChange={e => setNewClientFormData({...newClientFormData, address: e.target.value})}
-                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
-                    placeholder="Город, Улица, Дом..."
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setIsClientModalOpen(false)}
-                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
-                >
-                  Отмена
-                </button>
-                <button 
-                  type="submit" 
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-md dark:shadow-blue-900/30 font-bold transition-colors flex items-center justify-center gap-2"
-                >
-                  <Save size={18} />
-                  Создать
-                </button>
-              </div>
+              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Телефон</label><div className="relative"><Smartphone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" /><input required type="tel" value={newClientFormData.phone} onChange={e => setNewClientFormData({...newClientFormData, phone: e.target.value})} className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="+7 (7xx) xxx xx xx"/></div></div>
+              <div><label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Адрес (основной)</label><div className="relative"><Home size={16} className="absolute left-4 top-4 text-slate-400 dark:text-gray-500" /><textarea rows={2} value={newClientFormData.address} onChange={e => setNewClientFormData({...newClientFormData, address: e.target.value})} className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400" placeholder="Город, Улица, Дом..."/></div></div>
+              <div className="pt-4 flex gap-3"><button type="button" onClick={() => setIsClientModalOpen(false)} className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold">Отмена</button><button type="submit" className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-md dark:shadow-blue-900/30 font-bold transition-colors flex items-center justify-center gap-2"><Save size={18} /> Создать</button></div>
             </form>
           </div>
         </div>
