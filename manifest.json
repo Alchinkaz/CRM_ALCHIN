@@ -1,0 +1,22 @@
+
+{
+  "name": "ServiceCRM Pro",
+  "short_name": "ServiceCRM",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f2f2f7",
+  "theme_color": "#007AFF",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/10628/10628960.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/10628/10628960.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
