@@ -196,13 +196,15 @@ const App: React.FC = () => {
   );
 
   const renderContent = () => {
-    const route = currentHash.replace('#', '');
+    const rawHash = currentHash.replace('#', '');
+    const [baseRoute, query] = rawHash.split('?');
+    const params = new URLSearchParams(query);
     
-    if (!isAccessAllowed(route, currentUser.role)) {
+    if (!isAccessAllowed(baseRoute, currentUser.role)) {
       return <AccessDenied />;
     }
 
-    switch (route) {
+    switch (baseRoute) {
       case 'dashboard':
         return (
           <Dashboard 
@@ -226,6 +228,7 @@ const App: React.FC = () => {
             tasks={tasks}
             onUpdateTasks={setTasks}
             onAddClient={handleAddClient}
+            initialTaskId={params.get('id')}
           />
         );
       case 'clients':
@@ -298,7 +301,7 @@ const App: React.FC = () => {
       <div className="flex h-screen overflow-hidden bg-slate-100 dark:bg-slate-950 transition-colors duration-300">
         <Sidebar 
           role={currentUser.role} 
-          currentRoute={currentHash.replace('#', '')} 
+          currentRoute={currentHash.replace('#', '').split('?')[0]} 
           onNavigate={navigate} 
         />
         
@@ -310,7 +313,7 @@ const App: React.FC = () => {
             onToggleTheme={toggleTheme}
             onSwitchUser={(u) => {
               setCurrentUser(u);
-              if (!isAccessAllowed(currentHash.replace('#', ''), u.role)) {
+              if (!isAccessAllowed(currentHash.replace('#', '').split('?')[0], u.role)) {
                 navigate('#dashboard');
               }
             }} 
@@ -324,7 +327,7 @@ const App: React.FC = () => {
           {/* Mobile Navigation */}
           <BottomNav 
             role={currentUser.role} 
-            currentRoute={currentHash.replace('#', '')} 
+            currentRoute={currentHash.replace('#', '').split('?')[0]} 
             onNavigate={navigate} 
           />
         </div>

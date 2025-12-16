@@ -389,7 +389,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ user, timesheetData, advan
                     {myTasks.slice(0, 3).map(task => (
                         <div 
                             key={task.id} 
-                            onClick={() => window.location.hash = '#tasks'} // Navigate to full view
+                            onClick={() => window.location.hash = `#tasks?id=${task.id}`} // UPDATED LINK WITH ID
                             className="group p-3 rounded-2xl bg-gray-50 dark:bg-slate-700/30 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors border border-transparent hover:border-blue-100 dark:hover:border-blue-800 cursor-pointer"
                         >
                             <div className="flex justify-between items-start mb-1">
