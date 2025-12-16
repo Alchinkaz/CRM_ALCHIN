@@ -113,7 +113,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser, users, messages
   };
 
   return (
-    <div className="h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] flex bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden relative">
+    <div className="h-full flex bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-200 dark:border-slate-700 overflow-hidden relative">
       
       {/* --- SIDEBAR (CONTACTS) --- */}
       <div className={`w-full md:w-80 bg-gray-50/50 dark:bg-slate-900/50 border-r border-gray-200 dark:border-slate-700 flex flex-col ${isMobileView && showChatOnMobile ? 'hidden' : 'flex'}`}>
@@ -268,7 +268,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser, users, messages
                             }}
                             rows={1}
                             placeholder="Написать сообщение..."
-                            className="w-full bg-transparent border-none focus:ring-0 resize-none max-h-32 text-slate-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+                            className="w-full bg-transparent border-none focus:ring-0 resize-none max-h-32 text-slate-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 outline-none"
                             style={{ minHeight: '24px' }}
                         />
                     </div>
