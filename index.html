@@ -3,15 +3,8 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ServiceCRM Pro</title>
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#007AFF">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/10628/10628960.png">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -64,8 +57,6 @@
         color: #1c1c1e;
         min-height: 100vh;
         transition: background-color 0.3s ease, color 0.3s ease;
-        /* Prevent pull-to-refresh on mobile PWA */
-        overscroll-behavior-y: none;
       }
 
       /* Dark Mode Body Override */
@@ -78,7 +69,6 @@
       * {
         scrollbar-width: thin;
         scrollbar-color: #2563eb transparent; /* Firefox fallback */
-        -webkit-tap-highlight-color: transparent; /* Remove blue tap box on mobile */
       }
 
       /* WebKit Browsers (Chrome, Safari, Edge) */
@@ -176,11 +166,6 @@
       .ios-list-item:last-child {
         border-bottom: none;
       }
-      
-      /* Safe Area for PWA */
-      .pb-safe {
-        padding-bottom: env(safe-area-inset-bottom);
-      }
     </style>
 <script type="importmap">
 {
@@ -199,15 +184,5 @@
   <body class="text-slate-900 antialiased selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-blue-900 dark:selection:text-blue-100">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          // Use relative path ./sw.js to avoid origin mismatch issues in previews
-          navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker registered', reg))
-            .catch(err => console.warn('Service Worker registration failed (harmless in preview):', err));
-        });
-      }
-    </script>
   </body>
 </html>

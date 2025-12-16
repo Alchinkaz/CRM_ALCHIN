@@ -11,7 +11,6 @@ interface TasksPageProps {
   tasks: Task[];
   onUpdateTasks: (tasks: Task[]) => void;
   onAddClient?: (client: Client) => void;
-  initialTaskId?: string | null;
 }
 
 // --- UTILITY: Compress Image to prevent LocalStorage quota exceeded ---
@@ -73,7 +72,7 @@ const formatDateTime = (isoString?: string) => {
     });
 };
 
-export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, tasks, onUpdateTasks, onAddClient, initialTaskId }) => {
+export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, tasks, onUpdateTasks, onAddClient }) => {
   const { addToast } = useToast();
   
   // VIEW STATE
@@ -128,16 +127,6 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
   const [reportImages, setReportImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCompressing, setIsCompressing] = useState(false);
-
-  // --- EFFECT: OPEN INITIAL TASK ---
-  useEffect(() => {
-    if (initialTaskId) {
-        const taskToOpen = tasks.find(t => t.id === initialTaskId);
-        if (taskToOpen) {
-            handleEditTask(taskToOpen);
-        }
-    }
-  }, [initialTaskId, tasks]);
 
   // Scroll to bottom of comments
   useEffect(() => {
@@ -1317,8 +1306,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                             {reportImages.map((img, idx) => (
                                 <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-slate-600 group">
                                     <img src={img} alt="Preview" className="w-full h-full object-cover" />
-                                    <button
-                                        type="button"
+                                    <button 
                                         onClick={() => removeReportImage(idx)}
                                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
                                     >
@@ -1328,47 +1316,147 @@ export const TasksPage: React.FC<TasksPageProps> = ({ user, users, clients, task
                             ))}
                         </div>
                     )}
-                    
-                    {reportImages.length === 0 && (
-                        <div 
-                            onClick={() => fileInputRef.current?.click()}
-                            className="border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-8 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
-                        >
-                            <Camera size={32} className="mb-2 opacity-50" />
-                            <span className="text-sm font-medium">Нажмите, чтобы добавить фото</span>
-                        </div>
-                    )}
-                    
-                    {reportImages.length > 0 && (
-                         <button 
-                            onClick={() => fileInputRef.current?.click()}
-                            className="w-full py-3 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
-                        >
-                            <Plus size={18} />
-                            Добавить еще фото
-                        </button>
-                    )}
-                </div>
-             </div>
 
-             <div className="p-6 border-t border-gray-100 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800/50 flex gap-3">
-                <button 
-                  onClick={() => setIsReportModalOpen(false)}
-                  className="flex-1 px-4 py-3 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
-                >
-                  Отмена
-                </button>
-                <button 
-                  onClick={handleCompleteTask}
-                  disabled={!reportComment || reportImages.length === 0}
-                  className="flex-1 px-4 py-3 bg-green-600 text-white rounded-2xl hover:bg-green-700 shadow-lg shadow-green-500/30 font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Отправить отчет
-                </button>
+                    <div 
+                        onClick={() => !isCompressing && fileInputRef.current?.click()}
+                        className={`border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-xl p-6 flex flex-col items-center justify-center text-gray-400 hover:border-green-500 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all cursor-pointer active:scale-95 ${isCompressing ? 'opacity-50 cursor-wait' : ''}`}
+                    >
+                        {isCompressing ? (
+                            <span className="animate-pulse">Обработка фото...</span>
+                        ) : (
+                            <>
+                                <Camera size={32} className="mb-2" />
+                                <span className="text-sm font-medium">Нажмите, чтобы добавить фото</span>
+                                <span className="text-xs opacity-70 mt-1">До 10 фото</span>
+                            </>
+                        )}
+                    </div>
+                </div>
+                
+                <div className="pt-2">
+                    <button 
+                        onClick={handleCompleteTask}
+                        disabled={!reportComment.trim() || isCompressing}
+                        className="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold text-lg hover:opacity-90 shadow-md shadow-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                        <Save size={20} />
+                        Отправить отчет и закрыть
+                    </button>
+                </div>
              </div>
            </div>
         </div>
       )}
+
+      {/* --- IMAGE LIGHTBOX --- */}
+      {previewImage && (
+          <div 
+            className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4 cursor-pointer"
+            onClick={() => setPreviewImage(null)}
+          >
+              <img src={previewImage} className="max-w-full max-h-full rounded shadow-2xl" alt="Full view" />
+              <button className="absolute top-4 right-4 text-white hover:text-gray-300">
+                  <X size={32} />
+              </button>
+          </div>
+      )}
+
+      {/* --- CREATE CLIENT MODAL (SHARED) --- */}
+      {isClientModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-md shadow-2xl flex flex-col border border-gray-100 dark:border-slate-700">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50 rounded-t-2xl">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white dark:drop-shadow-sm">Новый клиент</h2>
+              <button onClick={() => setIsClientModalOpen(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreateClient} className="p-6 space-y-4">
+              {/* ... (Client Form Fields - Identical to previous) ... */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Название / ФИО</label>
+                <input 
+                  required
+                  autoFocus
+                  type="text" 
+                  value={newClientFormData.name}
+                  onChange={e => setNewClientFormData({...newClientFormData, name: e.target.value})}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
+                  placeholder="Например: ТОО Ромашка"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Тип клиента</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[ClientType.COMPANY, ClientType.INDIVIDUAL, ClientType.GOV].map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setNewClientFormData({...newClientFormData, type})}
+                      className={`py-3 px-1 text-xs sm:text-sm rounded-2xl border transition-colors font-bold ${
+                        newClientFormData.type === type 
+                          ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300 shadow-sm' 
+                          : 'border-gray-200 dark:border-slate-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Телефон</label>
+                <div className="relative">
+                  <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500" />
+                  <input 
+                    required
+                    type="tel" 
+                    value={newClientFormData.phone}
+                    onChange={e => setNewClientFormData({...newClientFormData, phone: e.target.value})}
+                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
+                    placeholder="+7 (7xx) xxx xx xx"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Адрес (основной)</label>
+                <div className="relative">
+                  <MapPin size={16} className="absolute left-4 top-4 text-slate-400 dark:text-gray-500" />
+                  <textarea 
+                    rows={2}
+                    value={newClientFormData.address}
+                    onChange={e => setNewClientFormData({...newClientFormData, address: e.target.value})}
+                    className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/50 focus:border-blue-600 transition-all text-slate-900 dark:text-white placeholder-slate-400"
+                    placeholder="Город, Улица, Дом..."
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => setIsClientModalOpen(false)}
+                  className="flex-1 px-4 py-3 text-slate-600 dark:text-gray-300 hover:bg-white/50 dark:hover:bg-slate-700 rounded-2xl transition-colors font-bold"
+                >
+                  Отмена
+                </button>
+                <button 
+                  type="submit" 
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl hover:opacity-90 shadow-md dark:shadow-blue-900/30 font-bold transition-colors flex items-center justify-center gap-2"
+                >
+                  <Save size={18} />
+                  Создать
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
