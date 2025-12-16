@@ -12,7 +12,9 @@ import {
   Briefcase,
   ChevronLeft,
   ChevronRight,
-  MessageCircle
+  MessageCircle,
+  FileText,
+  Package
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,11 +29,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ role, currentRoute, onNavigate
   const menuItems = [
     { id: 'dashboard', label: 'Дашборд', icon: LayoutDashboard, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
     { id: 'chat', label: 'Чат', icon: MessageCircle, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
-    { id: 'employees', label: 'Сотрудники', icon: Users, roles: [UserRole.ADMIN, UserRole.MANAGER] },
     { id: 'tasks', label: 'Заявки', icon: Wrench, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
     { id: 'clients', label: 'Клиенты', icon: Briefcase, roles: [UserRole.ADMIN, UserRole.MANAGER] },
     { id: 'service', label: 'Обслуживание', icon: Car, roles: [UserRole.ADMIN, UserRole.MANAGER] },
+    { id: 'warehouse', label: 'Склад', icon: Package, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
+    { id: 'documents_list', label: 'Документооборот', icon: FileText, roles: [UserRole.ADMIN, UserRole.MANAGER] },
     { id: 'finance', label: 'Финансы', icon: Banknote, roles: [UserRole.ADMIN] },
+    { id: 'employees', label: 'Сотрудники', icon: Users, roles: [UserRole.ADMIN, UserRole.MANAGER] },
     { id: 'docs', label: 'Архитектура', icon: BookOpen, roles: [UserRole.ADMIN, UserRole.MANAGER, UserRole.ENGINEER] },
     { id: 'settings', label: 'Настройки', icon: Settings, roles: [UserRole.ADMIN] },
   ];

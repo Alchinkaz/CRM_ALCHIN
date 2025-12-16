@@ -13,6 +13,8 @@ import { DocumentationPage } from './pages/DocumentationPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { TimesheetPage } from './pages/TimesheetPage';
 import { ServicePage } from './pages/ServicePage';
+import { WarehousePage } from './pages/WarehousePage';
+import { DocumentsPage } from './pages/DocumentsPage';
 import { ChatPage } from './pages/ChatPage';
 import { PublicTaskConfirmation } from './pages/PublicTaskConfirmation'; 
 import { ShieldAlert } from 'lucide-react';
@@ -194,11 +196,13 @@ const App: React.FC = () => {
       case 'tasks':
       case 'docs':
       case 'chat': // Chat allowed for everyone
+      case 'warehouse': // Allow everyone (Engineers see their stock)
         return true; 
       case 'employees':
         return role === UserRole.ADMIN || role === UserRole.MANAGER; // Restrict Engineer
       case 'clients':
       case 'service':
+      case 'documents_list':
         return role === UserRole.ADMIN || role === UserRole.MANAGER;
       case 'finance':
       case 'settings':
@@ -287,11 +291,22 @@ const App: React.FC = () => {
         return (
           <ServicePage 
             user={currentUser} 
+            users={users}
             clients={clients} 
             monthlyServices={monthlyServices}
             tasks={tasks}
             onUpdateTasks={setTasks}
             onUpdateServices={setMonthlyServices}
+            onAddClient={handleAddClient} 
+          />
+        );
+      case 'warehouse':
+        return <WarehousePage user={currentUser} />;
+      case 'documents_list':
+        return (
+          <DocumentsPage 
+            user={currentUser} 
+            clients={clients} 
             onAddClient={handleAddClient} 
           />
         );

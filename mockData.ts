@@ -1,5 +1,5 @@
 
-import { Client, Sale, Task, TimeEntry, MonthlyService, User, UserRole, GpsTracker, CmsObject, MaintenanceObject, Advance, Role, FinancialAccount, Transaction, InventoryItem, ChatMessage } from './types';
+import { Client, Sale, Task, TimeEntry, MonthlyService, User, UserRole, GpsTracker, CmsObject, MaintenanceObject, Advance, Role, FinancialAccount, Transaction, InventoryItem, ChatMessage, ServiceDocument } from './types';
 
 // Default Permissions Setup - System Structure (Keep this)
 const ALL_ACTIONS: any[] = ['view', 'create', 'edit', 'delete'];
@@ -99,5 +99,24 @@ export const MESSAGES: ChatMessage[] = [
         createdAt: new Date().toISOString(),
         isRead: true,
         type: 'text'
+    }
+];
+
+export const DOCUMENTS: ServiceDocument[] = [
+    {
+        id: 'doc1',
+        title: 'Типовой договор на GPS',
+        category: 'Contract',
+        date: '2023-10-01',
+        fileName: 'contract_template_2023.docx',
+        fileSize: '1.2 MB'
+    },
+    {
+        id: 'doc2',
+        title: 'Инструкция по монтажу FMB920',
+        category: 'Manual',
+        date: '2023-01-15',
+        fileName: 'fmb920_manual_ru.pdf',
+        fileSize: '4.5 MB'
     }
 ];

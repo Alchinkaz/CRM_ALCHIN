@@ -232,6 +232,18 @@ export interface MaintenanceObject {
   lastCheckDate: string;
 }
 
+// --- DOCUMENTS TYPES ---
+export interface ServiceDocument {
+  id: string;
+  title: string;
+  category: 'Contract' | 'Act' | 'Invoice' | 'Manual' | 'Other';
+  clientName?: string; // Optional if it's a general manual
+  clientId?: string;
+  date: string;
+  fileName: string;
+  fileSize: string; // e.g. "2.4 MB"
+}
+
 // --- CHAT TYPES ---
 export interface ChatMessage {
   id: string;
